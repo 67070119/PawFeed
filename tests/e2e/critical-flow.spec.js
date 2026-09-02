@@ -41,10 +41,12 @@ test('critical user flow works end-to-end', async ({ page }) => {
   await page.waitForURL(/\/points\/[^/]+\/navigate$/);
   await expect(page.getByRole('heading', { name: 'นำทางไปยังจุดสัตว์จรจัด' })).toBeVisible();
   await expect(page.locator('.navigationMapCanvas')).toBeVisible();
+  await expect(page.locator('.navRouteCard')).toBeVisible();
+  await expect(page.locator('.navBottomSheet')).toBeVisible();
   await expect(page.getByText(/ไม่เปิด Google Maps หรือแอปแผนที่อื่น/)).toBeVisible();
   await page.getByRole('button', { name: /ใช้ตำแหน่งฉัน/ }).click();
   await expect(page.locator('.leaflet-tooltip').filter({ hasText: 'ตำแหน่งฉัน' })).toBeVisible();
-  await expect(page.locator('.navigationStats .stat strong').first()).not.toHaveText('ยังไม่ทราบ');
+  await expect(page.locator('.navCompactStats .navStatItem strong').first()).not.toHaveText('ยังไม่ทราบ');
   await page.getByRole('link', { name: /กลับรายละเอียดจุด/ }).click();
   await page.waitForURL(/\/points\/[^/]+$/);
 

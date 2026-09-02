@@ -57,13 +57,13 @@ export default function NavigatePointPage() {
     if (!window.isSecureContext) {
       stopTracking();
       setManualPicking(true);
-      setError('GPS ของ Browser ใช้ไม่ได้ผ่าน HTTP บนเครือข่าย LAN กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณ หรือเปิดเว็บไซต์ผ่าน HTTPS เพื่อใช้ GPS จริง');
+      setError('ไม่สามารถใช้ GPS จากการเชื่อมต่อนี้ได้ เลือกตำแหน่งบนแผนที่แทน หรือเปิดผ่าน HTTPS เพื่อใช้ GPS');
       return;
     }
 
     if (!navigator.geolocation) {
       setManualPicking(true);
-      setError('Browser นี้ไม่รองรับ GPS กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณ');
+      setError('อุปกรณ์นี้ไม่รองรับ GPS กรุณาเลือกตำแหน่งของคุณบนแผนที่');
       return;
     }
 
@@ -79,7 +79,7 @@ export default function NavigatePointPage() {
       () => {
         stopTracking();
         setManualPicking(true);
-        setError('ไม่ได้รับสิทธิ์ตำแหน่ง กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณแทน');
+        setError('ไม่สามารถเข้าถึงตำแหน่งได้ เลือกตำแหน่งของคุณบนแผนที่แทน');
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
@@ -99,7 +99,7 @@ export default function NavigatePointPage() {
   function beginManualPick() {
     stopTracking();
     setManualPicking(true);
-    setError('แตะตำแหน่งของคุณบนแผนที่ แล้ว PawFeed จะคำนวณระยะตรงไปยังจุดหมายให้ทันที');
+    setError('แตะตำแหน่งของคุณบนแผนที่');
   }
 
   if (loading) return <main className="centerState">กำลังเปิดโหมดนำทาง...</main>;
@@ -107,60 +107,84 @@ export default function NavigatePointPage() {
 
   const destination = [point.latitude, point.longitude];
   const distance = userPosition ? distanceMeters(userPosition, destination) : null;
+  const originLabel = userPosition
+    ? positionSource === 'manual' ? 'ตำแหน่งที่เลือกบนแผนที่' : 'ตำแหน่งของคุณ'
+    : 'ยังไม่ได้ระบุตำแหน่ง';
 
   return (
-    <main className="navigationShell">
-      <section className="navigationMap">
+    <main className="navExperience">
+      <section className="navMapStage" aria-label="แผนที่นำทาง">
         <NavigationMap
           destination={destination}
           userPosition={userPosition}
+          accuracy={accuracy}
           recenterKey={recenterKey}
           manualPickEnabled={manualPicking}
           onManualPick={pickManualPosition}
         />
-      </section>
 
-      <aside className="navigationPanel">
-        <div>
-          <span className="eyebrow">PawFeed Navigation</span>
-          <h1>นำทางไปยังจุดสัตว์จรจัด</h1>
-          <p className="muted">นำทางภายในเว็บโดยไม่เปิด Google Maps หรือแอปแผนที่อื่น</p>
+        <div className="navTopBar">
+          <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">←</Link>
+          <div className="navRouteCard">
+            <div className="navRouteRow">
+              <span className="navOriginDot" />
+              <div><small>ตำแหน่งเริ่มต้น</small><strong>{originLabel}</strong></div>
+            </div>
+            <span className="navRouteConnector" />
+            <div className="navRouteRow">
+              <span className="navDestinationPin">●</span>
+              <div><small>จุดหมาย</small><strong>{point.description}</strong></div>
+            </div>
+          </div>
         </div>
 
-        {error && <div className="warningBox">{error}</div>}
+        {manualPicking && <div className="navPickHint">แตะบนแผนที่เพื่อเลือกตำแหน่งของคุณ</div>}
 
-        <div className="navigationStats">
-          <div className="stat"><small>ระยะตรงโดยประมาณ</small><strong>{formatDistance(distance)}</strong></div>
-          <div className="stat">
-            <small>{positionSource === 'manual' ? 'แหล่งตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
+        <div className="navMapControls">
+          <button className="navMapButton" onClick={() => setRecenterKey((value) => value + 1)} aria-label="จัดแผนที่ให้อยู่กึ่งกลาง">⌖</button>
+        </div>
+      </section>
+
+      <section className="navBottomSheet" aria-label="ข้อมูลการนำทาง">
+        <div className="navSheetHandle" />
+        <div className="navSheetHeader">
+          <div>
+            <span className="eyebrow">PawFeed Navigation</span>
+            <h1>นำทางไปยังจุดสัตว์จรจัด</h1>
+            <p>นำทางภายในเว็บโดยไม่เปิด Google Maps หรือแอปแผนที่อื่น</p>
+          </div>
+          <div className="navDistanceSummary">
+            <strong>{formatDistance(distance)}</strong>
+            <span>ระยะตรง</span>
+          </div>
+        </div>
+
+        {error && <div className="navInlineNotice" role="status">{error}</div>}
+
+        <div className="navigationStats navCompactStats">
+          <div className="navStatItem">
+            <small>ระยะตรงโดยประมาณ</small>
+            <strong>{formatDistance(distance)}</strong>
+          </div>
+          <div className="navStatItem">
+            <small>{positionSource === 'manual' ? 'ตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
             <strong>{positionSource === 'manual' ? 'เลือกบนแผนที่' : accuracy ? `±${accuracy} ม.` : '—'}</strong>
           </div>
         </div>
 
-        <div className="card navigationTarget">
-          <strong>🐾 จุดหมาย</strong>
-          <p>{point.description}</p>
-          <small>{point.latitude.toFixed(6)}, {point.longitude.toFixed(6)}</small>
-        </div>
-
-        <div className="sectionActions">
+        <div className="navPrimaryActions">
           {!tracking ? (
-            <button className="button primary" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
+            <button className="navStartButton" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
           ) : (
-            <button className="button danger" onClick={stopTracking}>หยุดติดตามตำแหน่ง</button>
+            <button className="navStartButton navStopButton" onClick={stopTracking}>■ หยุดติดตาม</button>
           )}
-          <button className={`button ${manualPicking ? 'soft' : ''}`} onClick={beginManualPick}>📍 เลือกตำแหน่งบนแผนที่</button>
-          <button className="button" onClick={() => setRecenterKey((value) => value + 1)}>⌖ จัดแผนที่ให้อยู่กึ่งกลาง</button>
+          <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>📍 เลือกบนแผนที่</button>
         </div>
 
-        {manualPicking && <div className="successBox">แตะบนแผนที่ด้านบนตรงตำแหน่งที่คุณอยู่ เพื่อกำหนด “ตำแหน่งฉัน”</div>}
-
-        <div className="warningBox">
-          เส้นประแสดงระยะตรงระหว่างตำแหน่งของคุณกับจุดหมาย ไม่ใช่เส้นทางถนนหรือคำสั่งเลี้ยวแบบ turn-by-turn
+        <div className="navPhaseNote">
+          ตอนนี้แสดงระยะตรงเพื่อช่วยยืนยันตำแหน่งก่อน เส้นทางตามถนนและเวลาเดินทางจะเพิ่มในขั้นถัดไป
         </div>
-
-        <Link href={`/points/${id}`} className="button block">← กลับรายละเอียดจุด</Link>
-      </aside>
+      </section>
     </main>
   );
 }
