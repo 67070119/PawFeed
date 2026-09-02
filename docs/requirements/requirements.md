@@ -159,11 +159,11 @@ Point Report ต้องเชื่อมกับ Point, User, Report Type �
 
 ### Navigation
 
-#### REQ-NAV-001 — External Navigation
-ผู้ใช้ต้องสามารถกด Navigate จาก Point Detail แล้วเปิดบริการแผนที่ภายนอกด้วย Latitude/Longitude ของ Point นั้นได้
+#### REQ-NAV-001 — In-Web Navigation
+ผู้ใช้ต้องสามารถกด Navigate จาก Point Detail แล้วเปิด Navigation Mode ภายใน PawFeed โดยแสดง Latitude/Longitude ของ Point เป็นจุดหมายและไม่บังคับเปิด Google Maps หรือแอปแผนที่ภายนอก
 
-#### REQ-NAV-002 — No Internal Navigation Engine
-PawFeed v1 จะไม่สร้าง Route/Navigation Engine เอง
+#### REQ-NAV-002 — Location-assisted Navigation
+Navigation Mode ต้องยังใช้งานดูจุดหมายได้โดยไม่ให้สิทธิ์ Location และเมื่อผู้ใช้อนุญาต ต้องแสดงตำแหน่งปัจจุบัน ระยะตรงโดยประมาณ และอัปเดตตำแหน่งระหว่างเปิดหน้า โดย v1 ไม่อ้างว่าเป็นเส้นทางถนนหรือ turn-by-turn
 
 ---
 

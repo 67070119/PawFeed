@@ -18,7 +18,7 @@
 
 PawFeed พึ่งบริการภายนอกเฉพาะส่วนที่เหมาะสมกับ MVP:
 - OpenStreetMap tiles สำหรับแผนที่
-- Google Maps URL สำหรับ Navigation ภายนอก
+- Leaflet/OpenStreetMap สำหรับ Map และ Navigation Mode ภายในเว็บ
 - GitHub สำหรับ Source Control
 - Docker Hub/Microsoft Container Registry/npm registry สำหรับ dependency และ test/runtime images
 

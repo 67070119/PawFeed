@@ -10,7 +10,7 @@
 6. Submit และแสดง Point Detail จากข้อมูลที่ Backend บันทึกจริง
 7. กลับ Map และแสดง Marker จาก Points API
 8. เปิด Marker/Point Detail
-9. แสดงลิงก์ Navigation ไป Google Maps ด้วยพิกัดจุด
+9. เปิด Navigation Mode ภายใน PawFeed แสดงจุดหมาย และทดสอบ Location-assisted view
 10. บันทึก Feeding พร้อม note
 11. แสดง Latest Feeding และ Feeding History ที่เปลี่ยนจากข้อมูลจริง
 12. กด `STILL_HERE` และแสดงผลสำเร็จ

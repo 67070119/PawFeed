@@ -58,7 +58,7 @@ Critical flow:
 
 ```text
 Register → Login → Add Point + image → Detail
-→ Google Maps link → Feeding → Feeding History
+→ In-Web Navigation → Feeding → Feeding History
 → STILL_HERE → Profile Points → Profile Feedings
 ```
 

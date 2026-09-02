@@ -256,12 +256,21 @@
 
 ## 7. Navigation & Profile
 
-### AC-NAV-001 — External Navigation URL
-**Requirement:** REQ-NAV-001, REQ-NAV-002
+### AC-NAV-001 — In-Web Navigation
+**Requirement:** REQ-NAV-001
 
 - Given: Point มี Latitude/Longitude
 - When: ผู้ใช้กด Navigate
-- Then: Browser เปิด External Map URL ที่ประกอบด้วยพิกัดของ Point นั้น โดย PawFeed ไม่คำนวณ Route เอง
+- Then: Browser เปิด `/points/:id/navigate` ภายใน PawFeed และแสดงจุดหมายบนแผนที่ โดยไม่เปิด Google Maps หรือแอปแผนที่ภายนอก
+
+### AC-NAV-002 — Location-assisted Navigation
+**Requirement:** REQ-NAV-002
+
+- Given: ผู้ใช้อยู่ใน Navigation Mode
+- When: ผู้ใช้ไม่อนุญาต Location
+- Then: จุดหมายยังดูได้และระบบอธิบายว่าการนำทางแบบใช้ตำแหน่งไม่พร้อม
+- When: ผู้ใช้อนุญาต Location
+- Then: ระบบแสดงตำแหน่งผู้ใช้ ระยะตรงโดยประมาณ และอัปเดตตำแหน่งระหว่างเปิดหน้า โดยต้องระบุชัดว่าไม่ใช่ road route/turn-by-turn
 
 ### AC-PROFILE-001 — Profile ต้อง Login
 **Requirement:** REQ-PROFILE-001
@@ -413,7 +422,7 @@
 3. Create Point พร้อมรูปและ Location
 4. Marker ใหม่ขึ้น Map
 5. เปิด Point Detail
-6. กด External Navigation
+6. กด In-Web Navigation
 7. บันทึก Feeding
 8. Feeding History / Latest Feeding เปลี่ยน
 9. Submit STILL_HERE

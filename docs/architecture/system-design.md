@@ -15,7 +15,6 @@ flowchart LR
     BE -->|Prisma| DB[(PostgreSQL)]
     BE -->|Read / Write| UP[(Persistent Upload Volume)]
     FE -->|Map Tiles| OSM[OpenStreetMap]
-    FE -->|Open external navigation| GM[Google Maps]
 
     subgraph Delivery
       GH[GitHub] --> J[Jenkins]
@@ -42,6 +41,7 @@ Responsibilities:
 - Profile / personal history
 - แสดง Validation และ Failure State ต่อผู้ใช้
 - ขอ Geolocation Permission เฉพาะเมื่อผู้ใช้เลือกใช้ตำแหน่งปัจจุบัน
+- Navigation Mode ภายในเว็บ แสดงจุดหมาย ตำแหน่งผู้ใช้ และระยะตรงโดยประมาณ
 
 Frontend ไม่ถือ Business Rule สำคัญเป็น Source of Truth การตรวจ Auth, Validation และสิทธิ์ต้องเกิดที่ Backend ด้วยเสมอ
 
@@ -92,13 +92,13 @@ Map UI ใช้ Leaflet และ OpenStreetMap
 
 ระบบต้องยังแสดงหน้าและข้อมูล Point ได้อย่างเหมาะสมหาก Browser ไม่อนุญาต Geolocation ผู้ใช้สามารถเลื่อนแผนที่เองได้
 
-### 3.6 External Navigation
+### 3.6 In-Web Navigation
 
-PawFeed ไม่ทำ Navigation Engine เอง
+PawFeed เปิด Navigation Mode ภายในเว็บที่ `/points/:id/navigate` และใช้ Leaflet/OpenStreetMap ชุดเดียวกับหน้า Map
 
-Frontend สร้าง external map URL จาก Latitude/Longitude ของ Stray Point และเปิดบริการแผนที่ภายนอก เช่น Google Maps
+เมื่อผู้ใช้อนุญาต Browser Geolocation หน้า Navigation จะติดตามตำแหน่งปัจจุบันระหว่างเปิดหน้า คำนวณระยะตรงโดยประมาณด้วยพิกัดบน client และแสดงเส้นตรงเชื่อมไปยังจุดหมาย
 
-การเปิด external navigation ไม่เปลี่ยน state สำคัญใน PawFeed
+MVP ไม่คำนวณ road route หรือ turn-by-turn directions และไม่ส่งผู้ใช้ไป Google Maps โดยอัตโนมัติ ข้อมูลตำแหน่งผู้ใช้ยังคงอยู่ฝั่ง browser และไม่ถูก persist ลงฐานข้อมูล
 
 ## 4. Runtime Containers
 

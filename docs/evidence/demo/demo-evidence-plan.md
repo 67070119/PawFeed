@@ -7,7 +7,7 @@ Phase 8 defines the exact screenshots/video moments to capture from the final re
 3. Add Point form with image
 4. Created Point Detail
 5. Marker popup → Detail interaction
-6. Google Maps navigation link
+6. In-web PawFeed Navigation Mode
 7. Feeding success + history
 8. STILL_HERE success
 9. Profile Points / Feedings

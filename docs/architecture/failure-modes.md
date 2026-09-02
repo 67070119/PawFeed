@@ -92,9 +92,9 @@ Create Point requiring image must fail safely rather than create a Point whose m
 
 Read failure for an existing image should degrade to image placeholder while Point metadata can still load if DB is available.
 
-## 10. External Navigation Failure
+## 10. In-Web Navigation / Geolocation Failure
 
-PawFeed only constructs an external navigation URL. If external map service cannot load, PawFeed cannot recover the external service, but the original Point Detail remains available when user returns.
+หากผู้ใช้ไม่อนุญาต Geolocation หรือ browser ไม่รองรับ หน้า Navigation ต้องยังแสดงจุดหมายได้และแจ้งว่าตำแหน่งปัจจุบันไม่พร้อม หาก OpenStreetMap tile โหลดไม่ได้ ข้อมูล Point และพิกัดยังต้องคงอยู่ โดยระบบห้ามอ้างว่ามี road route/turn-by-turn เมื่อไม่ได้คำนวณเส้นทางจริง
 
 ## 11. Frontend ↔ Backend Network Failure
 
@@ -146,8 +146,8 @@ Optional additional demo:
 | Dependency | Risk | Mitigation |
 |---|---|---|
 | OpenStreetMap tiles | network/service unavailable | UI error/fallback; core DB data preserved |
-| Browser Geolocation | permission denied/unsupported | manual map selection |
-| Google Maps/external navigation | external service unavailable | PawFeed detail remains usable; no core state depends on navigation success |
+| Browser Geolocation | permission denied/unsupported | Navigation/Map ยังแสดงจุดหมายได้โดยไม่ใช้ตำแหน่งผู้ใช้ |
+
 
 ## 16. Verification Principle
 

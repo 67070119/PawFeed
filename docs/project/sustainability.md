@@ -9,7 +9,7 @@
 
 ## Operational Sustainability
 
-ค่าใช้จ่ายหลักหากนำไป deploy จริงคือ compute, storage/database, bandwidth และ backup รูปภาพ โดย OpenStreetMap/Google Maps usage ต้องปฏิบัติตามข้อกำหนดของผู้ให้บริการตามรูปแบบการใช้งานจริง
+ค่าใช้จ่ายหลักหากนำไป deploy จริงคือ compute, storage/database, bandwidth และ backup รูปภาพ โดย OpenStreetMap tile usage ต้องปฏิบัติตามข้อกำหนดของผู้ให้บริการตามรูปแบบการใช้งานจริง
 
 ## Product Sustainability
 

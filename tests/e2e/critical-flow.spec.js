@@ -2,6 +2,21 @@ import { test, expect } from '@playwright/test';
 import { pngFile, registerAndLogin } from './helpers.js';
 
 test('critical user flow works end-to-end', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        watchPosition(success) {
+          setTimeout(() => success({ coords: { latitude: 13.7285, longitude: 100.7794, accuracy: 7 } }), 0);
+          return 1;
+        },
+        clearWatch() {},
+        getCurrentPosition(success) {
+          setTimeout(() => success({ coords: { latitude: 13.7285, longitude: 100.7794, accuracy: 7 } }), 0);
+        },
+      },
+    });
+  });
   await registerAndLogin(page, 'critical');
 
   await page.goto('/points/create');
@@ -19,8 +34,18 @@ test('critical user flow works end-to-end', async ({ page }) => {
 
   await page.waitForURL(/\/points\/[^/]+$/);
   await expect(page.getByText('E2E stray point near building A')).toBeVisible();
-  const navigation = page.getByRole('link', { name: /นำทางด้วย Google Maps/ });
-  await expect(navigation).toHaveAttribute('href', /google\.com\/maps\/dir/);
+  const navigation = page.getByRole('link', { name: /นำทางใน PawFeed/ });
+  await expect(navigation).toHaveAttribute('href', /\/points\/[^/]+\/navigate$/);
+  await navigation.click();
+  await page.waitForURL(/\/points\/[^/]+\/navigate$/);
+  await expect(page.getByRole('heading', { name: 'นำทางไปยังจุดสัตว์จรจัด' })).toBeVisible();
+  await expect(page.locator('.navigationMapCanvas')).toBeVisible();
+  await expect(page.getByText(/ไม่เปิด Google Maps หรือแอปแผนที่อื่น/)).toBeVisible();
+  await page.getByRole('button', { name: /ใช้ตำแหน่งฉัน/ }).click();
+  await expect(page.locator('.leaflet-tooltip').filter({ hasText: 'ตำแหน่งฉัน' })).toBeVisible();
+  await expect(page.locator('.navigationStats .stat strong').first()).not.toHaveText('ยังไม่ทราบ');
+  await page.getByRole('link', { name: /กลับรายละเอียดจุด/ }).click();
+  await page.waitForURL(/\/points\/[^/]+$/);
 
   await page.locator('textarea').fill('E2E feeding note');
   await page.getByRole('button', { name: /ฉันให้อาหารแล้ว/ }).click();

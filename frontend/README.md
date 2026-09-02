@@ -22,7 +22,7 @@ Map
 → Pick location / upload image
 → POST /api/points
 → Point Detail
-→ Google Maps navigation
+→ PawFeed in-web navigation
 → POST Feeding
 → Reload latest feeding/history
 → POST STILL_HERE / NOT_FOUND
@@ -49,7 +49,7 @@ Map
 
 ## Navigation
 
-Navigation ใช้ external Google Maps URL จาก Latitude/Longitude ของ Point ไม่มี internal route engine
+Navigation ใช้หน้า `/points/:id/navigate` ภายใน PawFeed แสดงจุดหมาย ตำแหน่งผู้ใช้เมื่ออนุญาต และระยะตรงโดยประมาณ โดยไม่ทำ road routing/turn-by-turn
 
 ## Verification ใน Phase 5
 
