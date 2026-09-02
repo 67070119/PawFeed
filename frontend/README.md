@@ -49,7 +49,7 @@ Map
 
 ## Navigation
 
-Navigation ใช้หน้า `/points/:id/navigate` ภายใน PawFeed พร้อม Road Route Preview, ETA, DRIVING/WALKING/CYCLING และ Active Navigation ที่แสดง next maneuver + remaining distance/ETA + Follow/Recenter; off-route auto-reroute ยังเป็น Phase 4
+Navigation ใช้หน้า `/points/:id/navigate` ภายใน PawFeed พร้อม Road Route Preview, ETA, DRIVING/WALKING/CYCLING, Active Navigation, Follow/Recenter, GPS quality/recovery และ off-route auto-reroute; voice guidance/live traffic/background navigation ไม่อยู่ใน scope ปัจจุบัน
 
 ## Verification ใน Phase 5
 

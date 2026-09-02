@@ -35,16 +35,17 @@ Implemented:
 - user map drag pauses follow; Recenter resumes GPS follow
 - mobile Playwright flow verifies movement, maneuver progression, recenter, arrival, and stop
 
-Current limitation: Phase 3 does not detect off-route movement or automatically request a replacement route; those failure/recovery behaviors remain Phase 4.
+## Phase 4 — Mobile UX, GPS & Failure Handling — COMPLETED
 
-## Phase 4 — Mobile UX, GPS & Failure Handling
-
-Planned:
-- safe-area and compact-screen polish
-- bottom-sheet interaction/collapse behavior
-- GPS denied/low-accuracy messaging
-- off-route handling and route recalculation
-- route/GPS/network failure UX
+Implemented:
+- collapsible mobile navigation bottom sheet while keeping the primary action accessible
+- GPS quality tiers (good/fair/poor) and explicit low-accuracy messaging
+- off-route distance detection with accuracy-aware threshold and consecutive-fix debounce
+- automatic rerouting from the latest GPS position with cooldown protection
+- poor GPS accuracy suppresses automatic rerouting to avoid jitter-driven route churn
+- reroute failure keeps the previous route and provides manual retry recovery
+- GPS loss during Active Navigation preserves route/navigation context and allows GPS retry
+- Playwright recovery coverage for auto-reroute, poor GPS, provider failure, GPS loss, and mobile sheet interaction
 
 ## Phase 5 — Verification & Polish
 

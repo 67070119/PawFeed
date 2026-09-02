@@ -15,6 +15,7 @@ Evidence ในโฟลเดอร์นี้อ้างถึงผล veri
 | EV-TEST-SECURITY | Password hash + HttpOnly cookie integration assertions |
 | EV-E2E-MAIN | `tests/e2e/critical-flow.spec.js` |
 | EV-E2E-ACTIVE-NAV | `tests/e2e/active-navigation.spec.js` — Start/Stop, GPS progress, maneuver, drag pause, Recenter, arrival |
+| EV-E2E-NAV-RECOVERY | `tests/e2e/active-navigation.spec.js` — off-route reroute, poor GPS guard, reroute retry, GPS recovery, mobile sheet |
 | EV-E2E-FAILURE | `tests/e2e/failure-cases.spec.js` |
 | EV-E2E-PROFILE | Critical browser flow profile assertions |
 | EV-SMOKE | `scripts/smoke-test.sh` |

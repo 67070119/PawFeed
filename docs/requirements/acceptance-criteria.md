@@ -308,6 +308,33 @@
 - When: ผู้ใช้กด Recenter
 - Then: Map กลับมาติดตามตำแหน่ง GPS และข้อความ Pause Follow หายไป
 
+### AC-NAV-007 — Off-route Auto-reroute
+**Requirement:** REQ-NAV-007
+
+- Given: Active Navigation มี Route และ GPS Accuracy อยู่ในระดับที่ยอมรับได้
+- When: ตำแหน่งอยู่ห่างจาก Route เกิน Threshold ต่อเนื่องอย่างน้อย 2 GPS Fixes
+- Then: ระบบ Request Route ใหม่จากตำแหน่งล่าสุดและยังคง Active Navigation
+- And: GPS Fix ที่คลาดเคลื่อนเพียงครั้งเดียวหรือ Accuracy ต่ำมากต้องไม่ทำให้ Auto-reroute ทันที
+
+### AC-NAV-008 — GPS Quality & Recovery
+**Requirement:** REQ-NAV-008
+
+- Given: GPS Accuracy ต่ำมาก
+- When: Active Navigation ทำงาน
+- Then: UI แจ้งว่า GPS ความแม่นยำต่ำและงด Auto-reroute จนข้อมูลดีขึ้น
+- Given: GPS ขาดหายระหว่าง Active Navigation
+- When: Browser Geolocation ส่ง Error
+- Then: Route เดิมและ Active Navigation Context ยังอยู่, UI แสดง Recovery Action และผู้ใช้สามารถลอง GPS ใหม่ได้
+
+### AC-NAV-009 — Mobile Bottom Sheet
+**Requirement:** REQ-NAV-009
+
+- Given: Navigation เปิดบน Mobile Viewport
+- When: ผู้ใช้ย่อ Bottom Sheet
+- Then: รายละเอียดรองถูกซ่อนแต่ Primary Action ยังเข้าถึงได้
+- When: ผู้ใช้ขยาย Bottom Sheet
+- Then: ข้อมูล Route/GPS/Recovery กลับมาแสดงครบ
+
 ### AC-PROFILE-001 — Profile ต้อง Login
 **Requirement:** REQ-PROFILE-001
 

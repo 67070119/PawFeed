@@ -96,7 +96,11 @@ Read failure for an existing image should degrade to image placeholder while Poi
 
 หากผู้ใช้ไม่อนุญาต Geolocation หรือ browser ไม่รองรับ หน้า Navigation ต้องยังแสดงจุดหมายและให้เลือกตำแหน่งเริ่มต้นบนแผนที่ได้
 
-หาก Routing Provider timeout, network fail หรือไม่พบเส้นทาง Backend ต้องคืน controlled error. Frontend ต้องแสดง Error State และอาจใช้เส้นตรงเป็น fallback เพื่ออ้างอิงเท่านั้น โดยต้องไม่แสดง Route Distance/ETA หรือ Road Polyline หลอกว่า provider คำนวณสำเร็จ
+ระหว่าง Active Navigation ระบบจัด GPS Accuracy เป็นระดับ good/fair/poor. เมื่อ Accuracy ต่ำมากระบบต้องเตือนผู้ใช้และงด Auto-reroute เพื่อไม่ให้ GPS jitter สร้าง route churn. Off-route ต้องผ่าน accuracy-aware threshold และ consecutive GPS fixes ก่อน request route ใหม่
+
+หาก GPS ขาดหายระหว่าง Active Navigation ระบบต้องคง route/navigation context เดิม, pause live tracking และให้ผู้ใช้ retry GPS. หาก automatic reroute ล้มเหลว ระบบต้องคง route เดิมและให้ manual retry โดยห้ามแสดง route ใหม่ว่า success
+
+หาก Routing Provider timeout, network fail หรือไม่พบเส้นทางใน Route Preview Backend ต้องคืน controlled error. Frontend อาจใช้เส้นตรงเป็น fallback เพื่ออ้างอิงเท่านั้น โดยต้องไม่แสดง Route Distance/ETA หรือ Road Polyline หลอกว่า provider คำนวณสำเร็จ
 
 หาก OpenStreetMap tile โหลดไม่ได้ ข้อมูล Point, พิกัด และ route summary ที่ได้รับแล้วต้องไม่ถูกตีความเป็นข้อมูลหายจาก Database
 

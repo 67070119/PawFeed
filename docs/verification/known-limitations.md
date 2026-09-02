@@ -9,7 +9,7 @@
 - ไม่มี notification หรือ background job
 - ไม่มีระบบรับเลี้ยง/โรงพยาบาลสัตว์/shelter management
 - ไม่มี internal routing engine; Navigation เปิดบริการแผนที่ภายนอก
-- OpenStreetMap tiles และ OSRM-compatible routing provider เป็น external dependencies; Road Route Preview และ Active Navigation มีแล้ว แต่ off-route detection/automatic rerouting/voice guidance ยังเป็น Navigation Redesign Phase 4
+- OpenStreetMap tiles และ OSRM-compatible routing provider เป็น external dependencies; Road Route Preview, Active Navigation และ off-route automatic rerouting มีแล้ว แต่ยังไม่มี voice guidance, live traffic-aware routing หรือ background navigation เมื่อผู้ใช้ออกจากหน้าเว็บ
 - Upload ใช้ local persistent volume เหมาะกับ MVP single-node; production scale ควรใช้ object storage
 - Auth รุ่นนี้เป็น access cookie แบบง่าย ไม่มี refresh-token/session-management ขั้นสูง
 - ไม่มี automated browser test สำหรับ geolocation permission denied โดยตรง แต่ UI fallback ถูก implement และตรวจด้วย code review

@@ -177,6 +177,15 @@ Route Preview ต้องรองรับการสลับโหมด DR
 #### REQ-NAV-006 — Follow & Recenter
 ระหว่าง Active Navigation แผนที่ต้อง Follow ตำแหน่งผู้ใช้ เมื่อผู้ใช้ลากแผนที่เองระบบต้องหยุด Follow ชั่วคราวและแจ้งสถานะ และเมื่อกด Recenter ต้องกลับมา Follow ตำแหน่งอีกครั้ง
 
+#### REQ-NAV-007 — Off-route Detection & Automatic Rerouting
+ระหว่าง Active Navigation ระบบต้องตรวจว่าตำแหน่งผู้ใช้ออกจาก Road Route อย่างมีนัยสำคัญโดยคำนึงถึง GPS Accuracy และต้องหลีกเลี่ยงการ Reroute จาก GPS Jitter เพียงครั้งเดียว เมื่อยืนยันว่า Off-route และ GPS แม่นยำพอ ระบบต้อง Request Route ใหม่อัตโนมัติจากตำแหน่งล่าสุด
+
+#### REQ-NAV-008 — GPS Quality & Recovery
+Navigation ต้องแสดงคุณภาพ/ความแม่นยำ GPS ที่เข้าใจได้ หาก Accuracy ต่ำมากระบบต้องไม่ Auto-reroute และต้องแจ้งผู้ใช้ หาก GPS ขาดหายระหว่าง Active Navigation ต้องคง Route/Navigation Context เดิมไว้และให้ผู้ใช้ลองเชื่อม GPS ใหม่ได้
+
+#### REQ-NAV-009 — Mobile Navigation Sheet
+Bottom Sheet ของ Navigation ต้องย่อ/ขยายได้บน Mobile โดย Primary Navigation Action ต้องยังเข้าถึงได้ และ Error/Recovery State สำคัญต้องสามารถขยายกลับมาให้ผู้ใช้เห็นได้
+
 ---
 
 ### Profile
@@ -269,7 +278,7 @@ Jenkins Pipeline ต้องทำอย่างน้อย Checkout, Install
 
 รายการต่อไปนี้ไม่อยู่ใน Acceptance Scope ของ PawFeed v1:
 
-- Off-route detection/automatic rerouting และ voice guidance (อยู่ใน Navigation Redesign Phase 4)
+- Voice guidance, live traffic-aware routing และ background navigation เมื่อปิด/ออกจากหน้าเว็บ
 - Real-time GPS Tracking สัตว์
 - AI วิเคราะห์สายพันธุ์ สุขภาพ หรือความหิวจากรูป
 - Donation / Payment

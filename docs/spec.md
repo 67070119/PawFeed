@@ -145,7 +145,7 @@ Navigation Mode แสดงจุดหมายและตำแหน่ง�
 
 Route Preview รองรับ DRIVING, WALKING และ CYCLING. หาก Routing Provider ใช้งานไม่ได้ ระบบต้องแจ้ง Failure และอาจแสดงเส้นตรงเพื่ออ้างอิง แต่ห้ามแสดงเส้นตรงนั้นเป็น Road Route สำเร็จ
 
-PawFeed รองรับ Active Navigation ภายในเว็บแล้ว: ผู้ใช้สามารถ Start/Stop, ดู next maneuver จาก Route Steps, Remaining Distance/ETA และให้แผนที่ Follow GPS พร้อม Recenter หลังลากแผนที่เองได้ โดยยังไม่ทำ off-route detection/automatic rerouting หรือ voice guidance
+PawFeed รองรับ Active Navigation ภายในเว็บแล้ว: ผู้ใช้สามารถ Start/Stop, ดู next maneuver จาก Route Steps, Remaining Distance/ETA, Follow/Recenter และระบบตรวจ Off-route เพื่อขอเส้นทางใหม่อัตโนมัติเมื่อ GPS แม่นยำพอ โดยมี GPS quality/recovery และคง route เดิมหากการ reroute ล้มเหลว ยังไม่รองรับ voice guidance, live traffic-aware routing หรือ background navigation เมื่อออกจากหน้าเว็บ
 
 ---
 
@@ -282,7 +282,7 @@ Storage สามารถเลือกได้ภายหลัง เช�
 
 ## 12. Non-Goals for MVP
 สิ่งที่ยังไม่ทำใน v1:
-- Off-route detection / Automatic rerouting และ Voice Guidance (อยู่ใน Navigation Redesign Phase 4)
+- Voice Guidance, Live Traffic-aware Routing และ Background Navigation เมื่อออกจากหน้าเว็บ
 - Real-time GPS Tracking สัตว์
 - AI วิเคราะห์สายพันธุ์หรือสุขภาพจากรูป
 - ระบบบริจาคเงิน
