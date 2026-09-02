@@ -1,6 +1,6 @@
 # PawFeed — User Flow
 
-เอกสารนี้สรุป User Flow จาก `doc/specv1.md` ให้อ่านง่ายในรูปแบบ Mermaid Diagram
+เอกสารนี้สรุป User Flow จาก `docs/spec.md` ให้อ่านง่ายในรูปแบบ Mermaid Diagram
 
 ---
 
