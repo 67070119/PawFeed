@@ -12,7 +12,7 @@ PawFeed v1 เป็น Web Application สำหรับแชร์ตำแ�
 2. ผู้ใช้สมัครสมาชิก / Login ได้
 3. ผู้ใช้ที่ Login แล้วสร้างจุดพร้อมตำแหน่ง รูป และรายละเอียดได้
 4. จุดใหม่ถูกบันทึกและแสดงบน Map
-5. ผู้ใช้เปิด Point Detail และเปิด Navigation ไปยังพิกัดภายนอกได้
+5. ผู้ใช้เปิด Point Detail และใช้ Navigation Mode ภายใน PawFeed พร้อม Route Preview ตามถนนได้
 6. ผู้ใช้ที่ Login แล้วบันทึกการให้อาหารได้
 7. Point Detail แสดง Feeding History และเวลาที่ให้อาหารล่าสุด
 8. ผู้ใช้ที่ Login แล้วรายงาน STILL_HERE / NOT_FOUND ได้
@@ -163,7 +163,13 @@ Point Report ต้องเชื่อมกับ Point, User, Report Type �
 ผู้ใช้ต้องสามารถกด Navigate จาก Point Detail แล้วเปิด Navigation Mode ภายใน PawFeed โดยแสดง Latitude/Longitude ของ Point เป็นจุดหมายและไม่บังคับเปิด Google Maps หรือแอปแผนที่ภายนอก
 
 #### REQ-NAV-002 — Location-assisted Navigation
-Navigation Mode ต้องยังใช้งานดูจุดหมายได้โดยไม่ให้สิทธิ์ Location และเมื่อผู้ใช้อนุญาต ต้องแสดงตำแหน่งปัจจุบัน ระยะตรงโดยประมาณ และอัปเดตตำแหน่งระหว่างเปิดหน้า โดย v1 ไม่อ้างว่าเป็นเส้นทางถนนหรือ turn-by-turn
+Navigation Mode ต้องยังใช้งานดูจุดหมายได้โดยไม่ให้สิทธิ์ Location และเมื่อผู้ใช้อนุญาต ต้องแสดงตำแหน่งปัจจุบันและอัปเดตตำแหน่งระหว่างเปิดหน้า โดยตำแหน่งผู้ใช้ต้องไม่ถูก Persist ลง Database
+
+#### REQ-NAV-003 — Road Route Preview
+เมื่อทราบตำแหน่งเริ่มต้น ระบบต้องสามารถขอเส้นทางตามถนนจาก Routing Backend และแสดง Route Polyline, ระยะทางตามเส้นทาง และเวลาเดินทางโดยประมาณ หาก Routing Provider ใช้งานไม่ได้ต้องแสดง Error/Fallback โดยไม่สร้าง Road Route ปลอม
+
+#### REQ-NAV-004 — Travel Mode Preview
+Route Preview ต้องรองรับการสลับโหมด DRIVING, WALKING และ CYCLING และคำนวณ Route Distance/ETA ใหม่ตามโหมดที่เลือก
 
 ---
 
@@ -257,7 +263,7 @@ Jenkins Pipeline ต้องทำอย่างน้อย Checkout, Install
 
 รายการต่อไปนี้ไม่อยู่ใน Acceptance Scope ของ PawFeed v1:
 
-- Navigation Engine ภายในระบบ
+- Active turn-by-turn Navigation พร้อมคำสั่งเลี้ยว/voice guidance (จะทำใน Navigation Redesign Phase 3)
 - Real-time GPS Tracking สัตว์
 - AI วิเคราะห์สายพันธุ์ สุขภาพ หรือความหิวจากรูป
 - Donation / Payment

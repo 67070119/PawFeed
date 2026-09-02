@@ -22,6 +22,9 @@ export const env = {
   cookieSecure: bool(process.env.COOKIE_SECURE, process.env.NODE_ENV === 'production'),
   uploadDir: process.env.UPLOAD_DIR ?? './uploads',
   maxUploadSizeMb: int(process.env.MAX_UPLOAD_SIZE_MB, 5),
+  routingBaseUrl: process.env.ROUTING_BASE_URL ?? 'https://routing.openstreetmap.de',
+  routingTimeoutMs: int(process.env.ROUTING_TIMEOUT_MS, 8000),
+  routingRetries: int(process.env.ROUTING_RETRIES, 1),
 };
 
 if (env.nodeEnv === 'production' && (env.jwtAccessSecret === 'change-me' || env.jwtAccessSecret.length < 32)) {

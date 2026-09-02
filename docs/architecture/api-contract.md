@@ -229,7 +229,46 @@ Expected:
 
 No v1 promise that repeated NOT_FOUND automatically makes point INACTIVE.
 
-## 7. Profile
+## 7. Navigation Route Preview
+
+### GET `/api/navigation/route`
+Public. Frontend calls this only after it knows an origin position.
+
+Query:
+
+```text
+originLat=<number>
+originLng=<number>
+destinationLat=<number>
+destinationLng=<number>
+mode=DRIVING|WALKING|CYCLING
+```
+
+Success `200` data:
+
+```json
+{
+  "mode": "DRIVING",
+  "distanceMeters": 2500,
+  "durationSeconds": 300,
+  "geometry": [[13.7285, 100.7794], [13.7291, 100.7789]],
+  "steps": [],
+  "provider": "OSRM"
+}
+```
+
+Rules:
+- backend validates all coordinates and mode
+- frontend never supplies a provider URL
+- backend uses configured `ROUTING_BASE_URL`, timeout and transient retry
+- provider geometry is normalized from `[lng,lat]` to Leaflet `[lat,lng]`
+- `400` invalid query
+- `404` no route for the requested mode
+- `502` routing provider/network failure
+- `504` routing timeout
+- provider failure must not be represented as a successful road route
+
+## 8. Profile
 
 To support documented pages, Phase 4 may implement explicit authenticated endpoints such as:
 
@@ -245,7 +284,7 @@ Rules:
 - backend must scope query by authenticated user id
 - cannot request another user's private profile history through arbitrary client-supplied user id
 
-## 8. Static Upload Access
+## 9. Static Upload Access
 
 Uploaded point image must be retrievable by frontend using a controlled public path or backend static route because Point images are intentionally public content.
 
@@ -254,7 +293,7 @@ Rules:
 - directory traversal must be prevented
 - only files managed by upload storage are served
 
-## 9. HTTP Status Baseline
+## 10. HTTP Status Baseline
 
 | Status | Meaning |
 |---:|---|
@@ -271,7 +310,7 @@ Rules:
 | 500 | controlled internal error |
 | 503 | dependency unavailable/readiness failure |
 
-## 10. API Security Rules
+## 11. API Security Rules
 
 - Validate all client input server-side
 - Do not trust frontend role/auth state
@@ -281,7 +320,7 @@ Rules:
 - Upload MIME/extension/content validation strategy must be implemented conservatively
 - Rate limiting may be added where useful, but is not a mandatory MVP claim unless added to requirement baseline
 
-## 11. Contract Change Rule
+## 12. Contract Change Rule
 
 If Phase 4 changes route names or response shapes:
 1. update this document

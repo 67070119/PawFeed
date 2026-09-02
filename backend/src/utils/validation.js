@@ -3,6 +3,15 @@ import { AppError } from './app-error.js';
 
 export const animalTypeSchema = z.enum(['DOG', 'CAT', 'OTHER']);
 export const reportTypeSchema = z.enum(['STILL_HERE', 'NOT_FOUND']);
+export const navigationModeSchema = z.enum(['DRIVING', 'CYCLING', 'WALKING']);
+
+export const navigationRouteSchema = z.object({
+  originLat: z.coerce.number().finite().min(-90).max(90),
+  originLng: z.coerce.number().finite().min(-180).max(180),
+  destinationLat: z.coerce.number().finite().min(-90).max(90),
+  destinationLng: z.coerce.number().finite().min(-180).max(180),
+  mode: navigationModeSchema.default('DRIVING'),
+});
 
 export const registerSchema = z.object({
   name: z.string().trim().min(1).max(80),

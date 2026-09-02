@@ -141,9 +141,11 @@ INACTIVE = จุดที่สัตว์ไม่อยู่แล้วห
 ### 5.7 Navigation
 เมื่อผู้ใช้กด `นำทาง` ระบบเปิด Navigation Mode ภายใน PawFeed โดยไม่เปิด Google Maps หรือแอปแผนที่ภายนอก
 
-Navigation Mode ต้องแสดงพิกัดจุดหมายบนแผนที่ และสามารถใช้ Browser Geolocation เพื่อแสดงตำแหน่งปัจจุบัน ระยะตรงโดยประมาณ และอัปเดตตำแหน่งระหว่างเปิดหน้าได้เมื่อผู้ใช้อนุญาต
+Navigation Mode แสดงจุดหมายและตำแหน่งเริ่มต้นจาก Browser Geolocation หรือ manual map pick. เมื่อทราบทั้งสองพิกัด Frontend เรียก PawFeed Routing API เพื่อขอ Road Route Preview และแสดงเส้นทางตามถนน ระยะทาง และ ETA
 
-PawFeed v1 ยังไม่คำนวณเส้นทางถนนหรือคำสั่งเลี้ยวแบบ turn-by-turn; เส้นที่แสดงระหว่างผู้ใช้กับจุดหมายเป็นเส้นตรงเพื่อการอ้างอิงเท่านั้น
+Route Preview รองรับ DRIVING, WALKING และ CYCLING. หาก Routing Provider ใช้งานไม่ได้ ระบบต้องแจ้ง Failure และอาจแสดงเส้นตรงเพื่ออ้างอิง แต่ห้ามแสดงเส้นตรงนั้นเป็น Road Route สำเร็จ
+
+PawFeed Phase 2 ยังไม่ใช่ Active turn-by-turn navigation: ยังไม่มี next-maneuver guidance, off-route recalculation ระหว่างนำทาง หรือ voice guidance
 
 ---
 
@@ -280,7 +282,7 @@ Storage สามารถเลือกได้ภายหลัง เช�
 
 ## 12. Non-Goals for MVP
 สิ่งที่ยังไม่ทำใน v1:
-- ระบบ Road Routing / Turn-by-turn Navigation แบบ Google Maps
+- Active Turn-by-turn Navigation / Voice Guidance แบบเต็มรูปแบบ (อยู่ใน Navigation Redesign Phase 3)
 - Real-time GPS Tracking สัตว์
 - AI วิเคราะห์สายพันธุ์หรือสุขภาพจากรูป
 - ระบบบริจาคเงิน

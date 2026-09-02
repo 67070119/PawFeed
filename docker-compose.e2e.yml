@@ -1,0 +1,22 @@
+services:
+  routing-mock:
+    image: node:22-alpine
+    working_dir: /mock
+    command: ["node", "server.js"]
+    volumes:
+      - ./tests/routing-mock:/mock:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+      start_period: 2s
+
+  backend:
+    environment:
+      ROUTING_BASE_URL: http://routing-mock:8080
+      ROUTING_TIMEOUT_MS: 3000
+      ROUTING_RETRIES: 0
+    depends_on:
+      routing-mock:
+        condition: service_healthy

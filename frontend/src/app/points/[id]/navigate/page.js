@@ -8,6 +8,12 @@ import { api } from '../../../../lib/api';
 
 const NavigationMap = dynamic(() => import('../../../../components/NavigationMap'), { ssr: false });
 
+const MODE_OPTIONS = [
+  { value: 'DRIVING', icon: '🚗', label: 'รถ' },
+  { value: 'WALKING', icon: '🚶', label: 'เดิน' },
+  { value: 'CYCLING', icon: '🚲', label: 'จักรยาน' },
+];
+
 function distanceMeters(a, b) {
   const toRad = (value) => (value * Math.PI) / 180;
   const earth = 6371000;
@@ -21,8 +27,23 @@ function distanceMeters(a, b) {
 
 function formatDistance(meters) {
   if (meters == null) return 'ยังไม่ทราบ';
-  if (meters < 1000) return `${Math.round(meters)} เมตร`;
+  if (meters < 1000) return `${Math.round(meters)} ม.`;
   return `${(meters / 1000).toFixed(meters < 10000 ? 1 : 0)} กม.`;
+}
+
+function formatDuration(seconds) {
+  if (seconds == null) return '—';
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes < 60) return `${minutes} นาที`;
+  const hours = Math.floor(minutes / 60);
+  const remain = minutes % 60;
+  return remain ? `${hours} ชม. ${remain} นาที` : `${hours} ชม.`;
+}
+
+function routingErrorMessage(error) {
+  if (error?.code === 'NAVIGATION_ROUTE_NOT_FOUND') return 'ไม่พบเส้นทางที่เหมาะสมสำหรับโหมดนี้';
+  if (error?.code === 'ROUTING_TIMEOUT') return 'คำนวณเส้นทางใช้เวลานานเกินไป กรุณาลองใหม่';
+  return 'คำนวณเส้นทางตามถนนไม่ได้ในขณะนี้ จะแสดงระยะตรงชั่วคราว';
 }
 
 export default function NavigatePointPage() {
@@ -36,7 +57,14 @@ export default function NavigatePointPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [recenterKey, setRecenterKey] = useState(0);
+  const [travelMode, setTravelMode] = useState('DRIVING');
+  const [route, setRoute] = useState(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState('');
   const watchRef = useRef(null);
+  const routeRequestRef = useRef(0);
+  const routeOriginRef = useRef(null);
+  const routeModeRef = useRef(null);
 
   const stopTracking = useCallback(() => {
     if (watchRef.current != null && navigator.geolocation) navigator.geolocation.clearWatch(watchRef.current);
@@ -52,6 +80,48 @@ export default function NavigatePointPage() {
   }, [id]);
 
   useEffect(() => () => stopTracking(), [stopTracking]);
+
+  useEffect(() => {
+    if (!point || !userPosition) {
+      setRoute(null);
+      setRouteError('');
+      return;
+    }
+
+    const lastOrigin = routeOriginRef.current;
+    const canReuse = lastOrigin
+      && routeModeRef.current === travelMode
+      && distanceMeters(lastOrigin, userPosition) < 50;
+    if (canReuse) return;
+
+    const requestId = ++routeRequestRef.current;
+    setRouteLoading(true);
+    setRouteError('');
+
+    const params = new URLSearchParams({
+      originLat: String(userPosition[0]),
+      originLng: String(userPosition[1]),
+      destinationLat: String(point.latitude),
+      destinationLng: String(point.longitude),
+      mode: travelMode,
+    });
+
+    api(`/api/navigation/route?${params}`)
+      .then((data) => {
+        if (routeRequestRef.current !== requestId) return;
+        setRoute(data);
+        routeOriginRef.current = userPosition;
+        routeModeRef.current = travelMode;
+      })
+      .catch((err) => {
+        if (routeRequestRef.current !== requestId) return;
+        setRoute(null);
+        setRouteError(routingErrorMessage(err));
+      })
+      .finally(() => {
+        if (routeRequestRef.current === requestId) setRouteLoading(false);
+      });
+  }, [point, userPosition, travelMode]);
 
   function startTracking() {
     if (!window.isSecureContext) {
@@ -88,6 +158,7 @@ export default function NavigatePointPage() {
 
   function pickManualPosition(position) {
     stopTracking();
+    routeOriginRef.current = null;
     setUserPosition(position);
     setAccuracy(null);
     setPositionSource('manual');
@@ -102,11 +173,19 @@ export default function NavigatePointPage() {
     setError('แตะตำแหน่งของคุณบนแผนที่');
   }
 
+  function selectTravelMode(mode) {
+    if (mode === travelMode) return;
+    routeOriginRef.current = null;
+    setTravelMode(mode);
+    setRoute(null);
+  }
+
   if (loading) return <main className="centerState">กำลังเปิดโหมดนำทาง...</main>;
   if (!point) return <main className="page narrow"><div className="errorBox">{error || 'ไม่พบจุดนี้'}</div><Link href="/" className="button">← กลับแผนที่</Link></main>;
 
   const destination = [point.latitude, point.longitude];
-  const distance = userPosition ? distanceMeters(userPosition, destination) : null;
+  const directDistance = userPosition ? distanceMeters(userPosition, destination) : null;
+  const displayDistance = route?.distanceMeters ?? directDistance;
   const originLabel = userPosition
     ? positionSource === 'manual' ? 'ตำแหน่งที่เลือกบนแผนที่' : 'ตำแหน่งของคุณ'
     : 'ยังไม่ได้ระบุตำแหน่ง';
@@ -118,6 +197,7 @@ export default function NavigatePointPage() {
           destination={destination}
           userPosition={userPosition}
           accuracy={accuracy}
+          routeGeometry={route?.geometry ?? []}
           recenterKey={recenterKey}
           manualPickEnabled={manualPicking}
           onManualPick={pickManualPosition}
@@ -147,24 +227,40 @@ export default function NavigatePointPage() {
 
       <section className="navBottomSheet" aria-label="ข้อมูลการนำทาง">
         <div className="navSheetHandle" />
+
+        <div className="navModeTabs" aria-label="เลือกโหมดเดินทาง">
+          {MODE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`navModeTab ${travelMode === option.value ? 'active' : ''}`}
+              onClick={() => selectTravelMode(option.value)}
+              aria-pressed={travelMode === option.value}
+            >
+              <span>{option.icon}</span>{option.label}
+            </button>
+          ))}
+        </div>
+
         <div className="navSheetHeader">
           <div>
-            <span className="eyebrow">PawFeed Navigation</span>
-            <h1>นำทางไปยังจุดสัตว์จรจัด</h1>
-            <p>นำทางภายในเว็บโดยไม่เปิด Google Maps หรือแอปแผนที่อื่น</p>
+            <span className="eyebrow">Route Preview</span>
+            <h1>{routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : 'เลือกตำแหน่งเริ่มต้น'}</h1>
+            <p>{route ? `เส้นทางตามถนน · ${route.provider}` : 'ระบุตำแหน่งเพื่อคำนวณเส้นทางตามถนน'}</p>
           </div>
           <div className="navDistanceSummary">
-            <strong>{formatDistance(distance)}</strong>
-            <span>ระยะตรง</span>
+            <strong>{formatDistance(displayDistance)}</strong>
+            <span>{route ? 'ตามเส้นทาง' : 'ระยะตรง'}</span>
           </div>
         </div>
 
         {error && <div className="navInlineNotice" role="status">{error}</div>}
+        {routeError && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}</div>}
 
-        <div className="navigationStats navCompactStats">
+        <div className="navCompactStats">
           <div className="navStatItem">
-            <small>ระยะตรงโดยประมาณ</small>
-            <strong>{formatDistance(distance)}</strong>
+            <small>เวลาโดยประมาณ</small>
+            <strong>{routeLoading ? 'กำลังคำนวณ' : formatDuration(route?.durationSeconds)}</strong>
           </div>
           <div className="navStatItem">
             <small>{positionSource === 'manual' ? 'ตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
@@ -176,13 +272,13 @@ export default function NavigatePointPage() {
           {!tracking ? (
             <button className="navStartButton" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
           ) : (
-            <button className="navStartButton navStopButton" onClick={stopTracking}>■ หยุดติดตาม</button>
+            <button className="navStartButton navStopButton" onClick={stopTracking}>■ หยุดอัปเดต GPS</button>
           )}
           <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>📍 เลือกบนแผนที่</button>
         </div>
 
         <div className="navPhaseNote">
-          ตอนนี้แสดงระยะตรงเพื่อช่วยยืนยันตำแหน่งก่อน เส้นทางตามถนนและเวลาเดินทางจะเพิ่มในขั้นถัดไป
+          เส้นสีเขียวคือเส้นทางตามถนนจาก Routing Engine; หากระบบเส้นทางใช้งานไม่ได้ PawFeed จะแสดงเฉพาะระยะตรงและไม่สร้างเส้นทางปลอม
         </div>
       </section>
     </main>

@@ -53,7 +53,9 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-REPORT-003 Last Seen Update | AC-REPORT-001 | Transaction/update service | T-REPORT-LAST-SEEN | EV-TEST-REPORT | VERIFIED |
 | REQ-REPORT-004 Invalid Report Type | AC-REPORT-003 | Enum validation | T-REPORT-INVALID-TYPE | EV-TEST-REPORT | VERIFIED |
 | REQ-NAV-001 In-Web Navigation | AC-NAV-001 | `/points/:id/navigate` + NavigationMap | Playwright critical flow | EV-E2E-MAIN, EV-DEMO-MAIN | VERIFIED |
-| REQ-NAV-002 Location-assisted Navigation | AC-NAV-002 | Browser Geolocation + straight-line distance/line | Playwright navigation + code review | EV-E2E-MAIN, EV-ARCH | VERIFIED |
+| REQ-NAV-002 Location-assisted Navigation | AC-NAV-002 | Browser Geolocation + manual-position fallback | Playwright GPS/manual navigation | EV-E2E-MAIN, EV-ARCH | VERIFIED |
+| REQ-NAV-003 Road Route Preview | AC-NAV-003 | Navigation API + OSRM adapter + road polyline | Unit routing + Playwright route/failure flow + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN | VERIFIED |
+| REQ-NAV-004 Travel Mode Preview | AC-NAV-004 | DRIVING/WALKING/CYCLING tabs + route recalculation | Playwright mode switching + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN | VERIFIED |
 | REQ-PROFILE-001 Authenticated Profile | AC-PROFILE-001 | Protected Profile route/API | E2E-PROFILE-GATE | EV-E2E-PROFILE | VERIFIED |
 | REQ-PROFILE-002 User Points | AC-PROFILE-002 | User Point query + Profile UI | T-PROFILE-POINTS | EV-TEST-PROFILE | VERIFIED |
 | REQ-PROFILE-003 User Feedings | AC-PROFILE-003 | User Feeding query + Profile UI | T-PROFILE-FEEDINGS | EV-TEST-PROFILE | VERIFIED |
@@ -94,7 +96,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | 4. Upload รูป | REQ-IMG-001..005 | File ถูก Validate/Store |
 | 5. Marker ใหม่ขึ้น Map | REQ-POINT-006 / AC-POINT-006 | Marker จาก API หลัง Create |
 | 6. Point Detail | REQ-DETAIL-001..002 | ข้อมูลที่สร้างแสดงครบ |
-| 7. Navigate | REQ-NAV-001..002 / AC-NAV-001..002 | Navigation Mode ภายใน PawFeed แสดงจุดหมายและ Location-assisted view |
+| 7. Navigate | REQ-NAV-001..004 / AC-NAV-001..004 | Navigation Mode ภายใน PawFeed แสดงตำแหน่ง, Road Route Preview, Distance/ETA และ Travel Mode |
 | 8. Feeding | REQ-FEED-001..005 | Feeding Record ถูกบันทึก |
 | 9. Feeding History เปลี่ยน | AC-FEED-003 | Latest/History ก่อน-หลัง |
 | 10. STILL_HERE | REQ-REPORT-001..003 | Report + Last Seen เปลี่ยน |

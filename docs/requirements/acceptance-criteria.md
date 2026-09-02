@@ -268,9 +268,25 @@
 
 - Given: ผู้ใช้อยู่ใน Navigation Mode
 - When: ผู้ใช้ไม่อนุญาต Location
-- Then: จุดหมายยังดูได้และระบบอธิบายว่าการนำทางแบบใช้ตำแหน่งไม่พร้อม
+- Then: จุดหมายยังดูได้และระบบมีทางเลือกให้กำหนดตำแหน่งบนแผนที่
 - When: ผู้ใช้อนุญาต Location
-- Then: ระบบแสดงตำแหน่งผู้ใช้ ระยะตรงโดยประมาณ และอัปเดตตำแหน่งระหว่างเปิดหน้า โดยต้องระบุชัดว่าไม่ใช่ road route/turn-by-turn
+- Then: ระบบแสดงตำแหน่งผู้ใช้และอัปเดตตำแหน่งระหว่างเปิดหน้า โดยไม่ Persist ตำแหน่งผู้ใช้ลง Database
+
+### AC-NAV-003 — Road Route Preview
+**Requirement:** REQ-NAV-003
+
+- Given: Navigation Mode มีตำแหน่งเริ่มต้นและจุดหมาย
+- When: Routing Backend คำนวณเส้นทางสำเร็จ
+- Then: ระบบแสดง Road Route Polyline, Route Distance และ ETA จาก Routing Response
+- When: Routing Provider ไม่พร้อมหรือคำนวณไม่ได้
+- Then: UI แสดง Error/Fallback ที่เข้าใจได้ อาจแสดงระยะตรง แต่ต้องไม่วาด Road Route หลอก
+
+### AC-NAV-004 — Travel Mode Preview
+**Requirement:** REQ-NAV-004
+
+- Given: มี Route Preview
+- When: ผู้ใช้เลือก DRIVING, WALKING หรือ CYCLING
+- Then: ระบบ Request Route ใหม่สำหรับโหมดนั้นและอัปเดต Polyline, Route Distance และ ETA ให้ตรง Response ล่าสุด
 
 ### AC-PROFILE-001 — Profile ต้อง Login
 **Requirement:** REQ-PROFILE-001

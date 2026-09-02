@@ -13,6 +13,7 @@ import { feedingsRouter } from './modules/feedings/feedings.routes.js';
 import { reportsRouter } from './modules/reports/reports.routes.js';
 import { profileRouter } from './modules/profile/profile.routes.js';
 import { healthRouter } from './modules/health/health.routes.js';
+import { navigationRouter } from './modules/navigation/navigation.routes.js';
 
 export function createApp() {
   const app = express();
@@ -44,6 +45,7 @@ export function createApp() {
   app.use('/api/points/:id/reports', reportsRouter);
   app.use('/api/points', pointsRouter);
   app.use('/api/profile', profileRouter);
+  app.use('/api/navigation', navigationRouter);
 
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);

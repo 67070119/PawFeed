@@ -92,9 +92,13 @@ Create Point requiring image must fail safely rather than create a Point whose m
 
 Read failure for an existing image should degrade to image placeholder while Point metadata can still load if DB is available.
 
-## 10. In-Web Navigation / Geolocation Failure
+## 10. In-Web Navigation / Geolocation / Routing Failure
 
-หากผู้ใช้ไม่อนุญาต Geolocation หรือ browser ไม่รองรับ หน้า Navigation ต้องยังแสดงจุดหมายได้และแจ้งว่าตำแหน่งปัจจุบันไม่พร้อม หาก OpenStreetMap tile โหลดไม่ได้ ข้อมูล Point และพิกัดยังต้องคงอยู่ โดยระบบห้ามอ้างว่ามี road route/turn-by-turn เมื่อไม่ได้คำนวณเส้นทางจริง
+หากผู้ใช้ไม่อนุญาต Geolocation หรือ browser ไม่รองรับ หน้า Navigation ต้องยังแสดงจุดหมายและให้เลือกตำแหน่งเริ่มต้นบนแผนที่ได้
+
+หาก Routing Provider timeout, network fail หรือไม่พบเส้นทาง Backend ต้องคืน controlled error. Frontend ต้องแสดง Error State และอาจใช้เส้นตรงเป็น fallback เพื่ออ้างอิงเท่านั้น โดยต้องไม่แสดง Route Distance/ETA หรือ Road Polyline หลอกว่า provider คำนวณสำเร็จ
+
+หาก OpenStreetMap tile โหลดไม่ได้ ข้อมูล Point, พิกัด และ route summary ที่ได้รับแล้วต้องไม่ถูกตีความเป็นข้อมูลหายจาก Database
 
 ## 11. Frontend ↔ Backend Network Failure
 

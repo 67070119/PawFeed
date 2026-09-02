@@ -5,7 +5,7 @@ ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 PROJECT="pawfeed-e2e"
 FRONTEND_PORT="${E2E_FRONTEND_PORT:-3200}"
 BACKEND_PORT="${E2E_BACKEND_PORT:-3201}"
-COMPOSE="docker compose -p $PROJECT -f $ROOT/docker-compose.yml"
+COMPOSE="docker compose -p $PROJECT -f $ROOT/docker-compose.yml -f $ROOT/docker-compose.e2e.yml"
 PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v1.62.1-noble"
 
 cleanup() {

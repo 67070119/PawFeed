@@ -49,7 +49,7 @@ Map
 
 ## Navigation
 
-Navigation ใช้หน้า `/points/:id/navigate` ภายใน PawFeed แสดงจุดหมาย ตำแหน่งผู้ใช้เมื่ออนุญาต และระยะตรงโดยประมาณ โดยไม่ทำ road routing/turn-by-turn
+Navigation ใช้หน้า `/points/:id/navigate` ภายใน PawFeed พร้อม Road Route Preview, ETA และโหมด DRIVING/WALKING/CYCLING ผ่าน Backend Routing API; Active turn-by-turn ยังเป็น Phase 3
 
 ## Verification ใน Phase 5
 

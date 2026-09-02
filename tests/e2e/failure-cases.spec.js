@@ -88,6 +88,47 @@ test('insecure LAN navigation falls back to manual map position', async ({ page 
   await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.42);
 
   await expect(page.locator('.leaflet-tooltip').filter({ hasText: 'ตำแหน่งฉัน' })).toBeVisible();
-  await expect(page.locator('.navCompactStats .navStatItem strong').first()).not.toHaveText('ยังไม่ทราบ');
+  await expect(page.locator('.navigation-road-route path').first()).toBeVisible();
   await expect(page.locator('.navCompactStats .navStatItem strong').nth(1)).toHaveText('เลือกบนแผนที่');
+});
+
+test('routing provider failure keeps direct fallback and shows an error state', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
+    Object.defineProperty(navigator, 'geolocation', {
+      configurable: true,
+      value: {
+        watchPosition(success) {
+          setTimeout(() => success({ coords: { latitude: 13.7285, longitude: 100.7794, accuracy: 8 } }), 0);
+          return 1;
+        },
+        clearWatch() {},
+      },
+    });
+  });
+
+  await registerAndLogin(page, 'route-failure');
+  await page.goto('/points/create');
+  const numbers = page.locator('input[type=\"number\"]');
+  await numbers.nth(0).fill('13.7291');
+  await numbers.nth(1).fill('100.7789');
+  await numbers.nth(2).fill('1');
+  await page.locator('select').selectOption('DOG');
+  await page.locator('textarea').fill('Routing failure point');
+  await page.locator('input[type=\"file\"]').setInputFiles(pngFile);
+  await page.getByRole('button', { name: 'สร้างจุดบนแผนที่' }).click();
+  await page.waitForURL((url) => /^\/points\/[^/]+$/.test(url.pathname) && url.pathname !== '/points/create');
+  const pointId = new URL(page.url()).pathname.split('/').pop();
+
+  await page.route('**/api/navigation/route?**', (route) => route.fulfill({
+    status: 502,
+    contentType: 'application/json',
+    body: JSON.stringify({ success: false, error: { code: 'ROUTING_PROVIDER_ERROR', message: 'provider unavailable' } }),
+  }));
+
+  await page.goto(`/points/${pointId}/navigate`);
+  await page.getByRole('button', { name: /ใช้ตำแหน่งฉัน/ }).click();
+  await expect(page.getByText(/คำนวณเส้นทางตามถนนไม่ได้/)).toBeVisible();
+  await expect(page.locator('.navigation-direct-fallback path').first()).toBeVisible();
+  await expect(page.locator('.navigation-road-route path')).toHaveCount(0);
 });

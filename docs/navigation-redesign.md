@@ -13,17 +13,18 @@ Implemented:
 - preserved HTTPS GPS and manual map-position fallback
 - mobile viewport verification at 390×844
 
-Current limitation: the dashed connection is still straight-line guidance. It is not a road route.
+## Phase 2 — Route Preview UX — COMPLETED
 
-## Phase 2 — Route Preview UX — NEXT
+Implemented:
+- backend OSRM-compatible routing adapter behind `GET /api/navigation/route`
+- road-route geometry rendered as a solid route polyline
+- route distance and ETA from routing response
+- DRIVING, WALKING, and CYCLING preview modes
+- routing validation, timeout, and transient retry
+- direct-line fallback only when road routing is unavailable
+- deterministic Docker routing mock for E2E/CI plus separate live provider smoke verification
 
-Planned:
-- integrate a road-routing engine
-- request route geometry between current position and destination
-- show route polyline following roads
-- distance and ETA from routing response
-- travel-mode selection supported by the chosen routing engine
-- clear route loading/unavailable states
+Current limitation: Route Preview is not yet Active turn-by-turn navigation; next-maneuver UI, off-route detection, and navigation start/stop state belong to Phase 3.
 
 ## Phase 3 — Active Navigation Mode
 
@@ -55,4 +56,4 @@ Planned:
 
 ## Design boundary
 
-PawFeed may use interaction patterns familiar from map applications, but it should keep its own visual identity and must not claim road routing or turn-by-turn navigation until those capabilities are actually integrated and verified.
+PawFeed may use interaction patterns familiar from map applications while keeping its own visual identity. Road Route Preview is integrated and verified in Phase 2, but PawFeed must not claim Active turn-by-turn navigation until Phase 3 capabilities are implemented and verified.

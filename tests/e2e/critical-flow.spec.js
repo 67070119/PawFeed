@@ -39,14 +39,20 @@ test('critical user flow works end-to-end', async ({ page }) => {
   await expect(navigation).toHaveAttribute('href', /\/points\/[^/]+\/navigate$/);
   await navigation.click();
   await page.waitForURL(/\/points\/[^/]+\/navigate$/);
-  await expect(page.getByRole('heading', { name: 'นำทางไปยังจุดสัตว์จรจัด' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'เลือกตำแหน่งเริ่มต้น' })).toBeVisible();
   await expect(page.locator('.navigationMapCanvas')).toBeVisible();
   await expect(page.locator('.navRouteCard')).toBeVisible();
   await expect(page.locator('.navBottomSheet')).toBeVisible();
-  await expect(page.getByText(/ไม่เปิด Google Maps หรือแอปแผนที่อื่น/)).toBeVisible();
   await page.getByRole('button', { name: /ใช้ตำแหน่งฉัน/ }).click();
   await expect(page.locator('.leaflet-tooltip').filter({ hasText: 'ตำแหน่งฉัน' })).toBeVisible();
-  await expect(page.locator('.navCompactStats .navStatItem strong').first()).not.toHaveText('ยังไม่ทราบ');
+  await expect(page.locator('.navigation-road-route path').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: '5 นาที' })).toBeVisible();
+  await expect(page.locator('.navDistanceSummary strong')).toHaveText('2.5 กม.');
+  await expect(page.getByText('เส้นทางตามถนน · OSRM')).toBeVisible();
+  await page.getByRole('button', { name: /เดิน/ }).click();
+  await expect(page.getByRole('heading', { name: '25 นาที' })).toBeVisible();
+  await page.getByRole('button', { name: /จักรยาน/ }).click();
+  await expect(page.getByRole('heading', { name: '8 นาที' })).toBeVisible();
   await page.getByRole('link', { name: /กลับรายละเอียดจุด/ }).click();
   await page.waitForURL(/\/points\/[^/]+$/);
 

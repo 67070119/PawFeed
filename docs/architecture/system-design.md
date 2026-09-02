@@ -96,9 +96,11 @@ Map UI ใช้ Leaflet และ OpenStreetMap
 
 PawFeed เปิด Navigation Mode ภายในเว็บที่ `/points/:id/navigate` และใช้ Leaflet/OpenStreetMap ชุดเดียวกับหน้า Map
 
-เมื่อผู้ใช้อนุญาต Browser Geolocation หน้า Navigation จะติดตามตำแหน่งปัจจุบันระหว่างเปิดหน้า คำนวณระยะตรงโดยประมาณด้วยพิกัดบน client และแสดงเส้นตรงเชื่อมไปยังจุดหมาย
+เมื่อผู้ใช้ระบุตำแหน่งผ่าน Browser Geolocation หรือ manual map pick, Frontend เรียก `GET /api/navigation/route` โดยส่ง origin, destination และ travel mode. Backend validate input แล้วเรียก OSRM-compatible routing provider ผ่าน `ROUTING_BASE_URL`; Backend normalize road geometry, distance, duration และ maneuver steps ก่อนส่งกลับ Frontend.
 
-MVP ไม่คำนวณ road route หรือ turn-by-turn directions และไม่ส่งผู้ใช้ไป Google Maps โดยอัตโนมัติ ข้อมูลตำแหน่งผู้ใช้ยังคงอยู่ฝั่ง browser และไม่ถูก persist ลงฐานข้อมูล
+Route Preview รองรับ DRIVING, WALKING และ CYCLING. หาก provider timeout/unavailable ระบบแสดง Error State และเส้นตรง fallback เพื่ออ้างอิงเท่านั้น โดยไม่สร้าง road route ปลอม. Routing adapter retry transient network/5xx ตาม `ROUTING_RETRIES`.
+
+Phase 2 ยังไม่เปิด Active turn-by-turn mode หรือ voice guidance. ข้อมูลตำแหน่งผู้ใช้ใช้สำหรับ request route ระหว่าง session และไม่ถูก persist ลงฐานข้อมูล
 
 ## 4. Runtime Containers
 

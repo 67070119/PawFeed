@@ -30,6 +30,9 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-pawfeed}:${POSTGRES_PASSWORD:-pawfeed_dev}@postgres:5432/${POSTGRES_DB:-pawfeed}?schema=public
       UPLOAD_DIR: /app/uploads
       MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-5}
+      ROUTING_BASE_URL: ${ROUTING_BASE_URL:-https://routing.openstreetmap.de}
+      ROUTING_TIMEOUT_MS: ${ROUTING_TIMEOUT_MS:-8000}
+      ROUTING_RETRIES: ${ROUTING_RETRIES:-1}
     volumes:
       - pawfeed-uploads:/app/uploads
     ports:
