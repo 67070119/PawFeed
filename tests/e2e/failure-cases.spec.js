@@ -51,3 +51,12 @@ test('network failure never shows false create success', async ({ page }) => {
   await expect(page.getByText('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง')).toBeVisible();
   await expect(page).toHaveURL(/\/points\/create$/);
 });
+
+
+test('geolocation denied shows fallback while map remains usable', async ({ page, context }) => {
+  await context.clearPermissions();
+  await page.goto('/');
+  await page.getByRole('button', { name: /ตำแหน่งฉัน/ }).click();
+  await expect(page.getByText('ไม่ได้รับสิทธิ์ตำแหน่ง คุณยังสามารถเลื่อนแผนที่เองได้')).toBeVisible();
+  await expect(page.locator('.leaflet-container')).toBeVisible();
+});

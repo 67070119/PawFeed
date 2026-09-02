@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 7 — Automated Test, Jenkins & Course Container: COMPLETED**
+สถานะปัจจุบัน: **Phase 8 — Verification, Evidence & Submission: COMPLETED (repository-side)**
 
-Phase ถัดไป: **Phase 8 — Verification, Evidence & Submission**
+Development Plan **8/8 Phase เสร็จแล้ว**
 
-Unit, Integration, Docker Runtime, Playwright E2E และ Full Course Container verification ผ่านแล้ว พร้อม Jenkins Pipeline as Code สำหรับ CI/CD
+Final verification ผ่าน Unit 11/11, Integration 7/7, Playwright E2E 7/7 และ Full Course Container `tuchsanai/devtools:2569_1` ด้วย exit code 0. ยังมี submission blockers ภายนอก repository ได้แก่ Jenkins job run จริง, รายชื่อทีมจริง และการจัดทำ final Slide/Report/Video
 
 ## Core MVP
 
@@ -153,6 +153,20 @@ http://localhost:3000
 - [Jenkins CI/CD](docs/devops/jenkins.md)
 - [Course Container](docs/devops/course-container.md)
 - [Automated Verification](docs/verification/automated-tests.md)
+- [Final Verification Status](docs/verification/final-status.md)
+- [Demo Scenario](docs/verification/demo-scenario.md)
+- [Failure Cases](docs/verification/failure-cases.md)
+- [Known Limitations](docs/verification/known-limitations.md)
+- [Evidence Register](docs/evidence/README.md)
+- [Submission Checklist](docs/submission/checklist.md)
+- [Report Outline](docs/submission/report-outline.md)
+- [Slide Outline](docs/submission/slide-outline.md)
+- [Video Outline](docs/submission/video-outline.md)
+- [Problem & Evidence](docs/project/problem-evidence.md)
+- [Target Users](docs/project/target-users.md)
+- [Social Impact](docs/project/social-impact.md)
+- [Team & Network](docs/project/team-network.md)
+- [Sustainability](docs/project/sustainability.md)
 - [Backend Implementation](backend/README.md)
 - [Frontend Implementation](frontend/README.md)
 

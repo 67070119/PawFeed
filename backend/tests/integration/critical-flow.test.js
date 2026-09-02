@@ -146,4 +146,58 @@ describe('PawFeed real database critical flow', () => {
       .attach('image', Buffer.from('not an image'), { filename: 'fake.txt', contentType: 'text/plain' });
     expect(nonImage.status).toBe(415);
   });
+
+  test('session lifecycle, password hashing and current user work correctly', async () => {
+    const user = await prisma.user.findUnique({ where: { email: 'integration@example.com' } });
+    expect(user.passwordHash).toBeTruthy();
+    expect(user.passwordHash).not.toBe('Passw0rd123');
+
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({ email: 'integration@example.com', password: 'Passw0rd123' }).expect(200);
+    const me = await agent.get('/api/auth/me');
+    expect(me.status).toBe(200);
+    expect(me.body.data.email).toBe('integration@example.com');
+
+    const logout = await agent.post('/api/auth/logout');
+    expect(logout.status).toBe(200);
+    expect(logout.headers['set-cookie']?.join(';')).toContain('pawfeed_access=;');
+    await agent.get('/api/auth/me').expect(401);
+  });
+
+  test('missing point, optional feeding note and invalid report type are handled', async () => {
+    const point = await prisma.strayPoint.findFirst({ select: { id: true } });
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({ email: 'integration@example.com', password: 'Passw0rd123' }).expect(200);
+
+    const noNote = await agent.post(`/api/points/${point.id}/feedings`).send({});
+    expect(noNote.status).toBe(201);
+    expect(noNote.body.data.feeding.note).toBeNull();
+
+    const invalidReport = await agent.post(`/api/points/${point.id}/reports`).send({ type: 'UNKNOWN' });
+    expect(invalidReport.status).toBe(400);
+
+    const missing = await request(app).get('/api/points/missing-point-id');
+    expect(missing.status).toBe(404);
+    expect(missing.body.error.code).toBe('POINT_NOT_FOUND');
+  });
+
+  test('oversized image is rejected by configured upload limit', async () => {
+    const agent = request.agent(app);
+    await agent.post('/api/auth/login').send({ email: 'integration@example.com', password: 'Passw0rd123' }).expect(200);
+    const oversized = Buffer.alloc((5 * 1024 * 1024) + 1, 0);
+    oversized.set(pngBuffer, 0);
+
+    const response = await agent
+      .post('/api/points')
+      .field('animalType', 'DOG')
+      .field('estimatedCount', '1')
+      .field('description', 'oversized image')
+      .field('latitude', '13.7')
+      .field('longitude', '100.7')
+      .attach('image', oversized, { filename: 'large.png', contentType: 'image/png' });
+
+    expect(response.status).toBe(413);
+    expect(response.body.error.code).toBe('FILE_TOO_LARGE');
+  });
+
 });

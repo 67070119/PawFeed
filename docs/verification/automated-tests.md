@@ -30,7 +30,7 @@ Runner:
 
 ใช้ PostgreSQL 17 จริงจาก `docker-compose.test.yml` และ apply Prisma migration ก่อน test
 
-Result: **1 suite / 4 tests / PASS**
+Result: **1 suite / 7 tests / PASS**
 
 ครอบคลุม Register, Login, auth cookie, Create Point + image, safe filename, bounding-box query, Feeding, latest feeding, STILL_HERE, profile และ failure cases ของ credential/guest/coordinate/non-image
 
@@ -52,7 +52,7 @@ Runner:
 
 ใช้ official image `mcr.microsoft.com/playwright:v1.62.1-noble` จึงไม่พึ่ง Chromium ของเครื่องสมาชิก
 
-Result: **6 tests / PASS** ทั้ง Docker environment ปกติและ Full Course Container
+Result: **7 tests / PASS** ทั้ง Docker environment ปกติและ Full Course Container
 
 Critical flow:
 

@@ -73,11 +73,11 @@ Full run `COURSE_RUN_E2E=1` ผ่านจริง:
 - Frontend lint: PASS
 - Frontend build: PASS
 - Frontend audit: `0` high vulnerabilities
-- Integration: `4/4` PASS
+- Integration: `7/7` PASS
 - Compose build/up: PASS
 - Smoke: PASS
 - Persistence: PASS
-- Playwright E2E: `6/6` PASS
+- Playwright E2E: `7/7` PASS
 - Cleanup: PASS
 - Final exit code: `0`
 

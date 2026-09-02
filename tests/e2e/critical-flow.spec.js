@@ -35,4 +35,10 @@ test('critical user flow works end-to-end', async ({ page }) => {
 
   await page.goto('/profile/feedings');
   await expect(page.getByText('E2E feeding note')).toBeVisible();
+
+  await page.goto('/');
+  const marker = page.locator('.leaflet-marker-icon').first();
+  await expect(marker).toBeVisible();
+  await marker.click();
+  await expect(page.getByRole('link', { name: 'ดูรายละเอียด' })).toBeVisible();
 });
