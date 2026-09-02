@@ -60,3 +60,33 @@ test('geolocation denied shows fallback while map remains usable', async ({ page
   await expect(page.getByText('ไม่ได้รับสิทธิ์ตำแหน่ง คุณยังสามารถเลื่อนแผนที่เองได้')).toBeVisible();
   await expect(page.locator('.leaflet-container')).toBeVisible();
 });
+
+
+test('insecure LAN navigation falls back to manual map position', async ({ page }) => {
+  await registerAndLogin(page, 'manual-nav');
+  await page.goto('/points/create');
+
+  const numberInputs = page.locator('input[type="number"]');
+  await numberInputs.nth(0).fill('13.7291');
+  await numberInputs.nth(1).fill('100.7789');
+  await numberInputs.nth(2).fill('1');
+  await page.locator('select').selectOption('DOG');
+  await page.locator('textarea').fill('Manual navigation point');
+  await page.locator('input[type="file"]').setInputFiles(pngFile);
+  await page.getByRole('button', { name: 'สร้างจุดบนแผนที่' }).click();
+  await page.waitForURL((url) => /^\/points\/[^/]+$/.test(url.pathname) && url.pathname !== '/points/create');
+
+  const pointId = new URL(page.url()).pathname.split('/').pop();
+  await page.goto(`/points/${pointId}/navigate`);
+  await page.getByRole('button', { name: /ใช้ตำแหน่งฉัน/ }).click();
+  await expect(page.getByText(/HTTP บนเครือข่าย LAN/)).toBeVisible();
+  await expect(page.getByText(/แตะบนแผนที่ด้านบน/)).toBeVisible();
+
+  const map = page.locator('.navigationMapCanvas');
+  const box = await map.boundingBox();
+  await page.mouse.click(box.x + box.width * 0.35, box.y + box.height * 0.65);
+
+  await expect(page.locator('.leaflet-tooltip').filter({ hasText: 'ตำแหน่งฉัน' })).toBeVisible();
+  await expect(page.locator('.navigationStats .stat strong').first()).not.toHaveText('ยังไม่ทราบ');
+  await expect(page.getByText('เลือกบนแผนที่')).toBeVisible();
+});

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 
 function ViewController({ destination, userPosition, recenterKey }) {
   const map = useMap();
@@ -17,13 +17,25 @@ function ViewController({ destination, userPosition, recenterKey }) {
   return null;
 }
 
-export default function NavigationMap({ destination, userPosition, recenterKey = 0 }) {
+function ManualPositionPicker({ enabled, onPick }) {
+  useMapEvents({
+    click(event) {
+      if (!enabled) return;
+      onPick([event.latlng.lat, event.latlng.lng]);
+    },
+  });
+
+  return null;
+}
+
+export default function NavigationMap({ destination, userPosition, recenterKey = 0, manualPickEnabled = false, onManualPick }) {
   const route = userPosition ? [userPosition, destination] : null;
 
   return (
-    <MapContainer center={destination} zoom={16} className="navigationMapCanvas" scrollWheelZoom>
+    <MapContainer center={destination} zoom={16} className={`navigationMapCanvas${manualPickEnabled ? ' manualPickActive' : ''}`} scrollWheelZoom>
       <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <ViewController destination={destination} userPosition={userPosition} recenterKey={recenterKey} />
+      <ManualPositionPicker enabled={manualPickEnabled} onPick={onManualPick} />
 
       <CircleMarker center={destination} radius={12} pathOptions={{ color: '#b94747', fillColor: '#b94747', fillOpacity: 0.9 }}>
         <Tooltip permanent direction="top" offset={[0, -10]}>จุดสัตว์จรจัด</Tooltip>

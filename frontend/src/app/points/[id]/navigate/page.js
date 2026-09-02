@@ -31,6 +31,8 @@ export default function NavigatePointPage() {
   const [userPosition, setUserPosition] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
   const [tracking, setTracking] = useState(false);
+  const [manualPicking, setManualPicking] = useState(false);
+  const [positionSource, setPositionSource] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [recenterKey, setRecenterKey] = useState(0);
@@ -52,25 +54,52 @@ export default function NavigatePointPage() {
   useEffect(() => () => stopTracking(), [stopTracking]);
 
   function startTracking() {
-    if (!navigator.geolocation) {
-      setError('Browser นี้ไม่รองรับการอ่านตำแหน่ง คุณยังดูจุดปลายทางบนแผนที่ได้');
+    if (!window.isSecureContext) {
+      stopTracking();
+      setManualPicking(true);
+      setError('GPS ของ Browser ใช้ไม่ได้ผ่าน HTTP บนเครือข่าย LAN กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณ หรือเปิดเว็บไซต์ผ่าน HTTPS เพื่อใช้ GPS จริง');
       return;
     }
 
+    if (!navigator.geolocation) {
+      setManualPicking(true);
+      setError('Browser นี้ไม่รองรับ GPS กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณ');
+      return;
+    }
+
+    setManualPicking(false);
     setError('');
     watchRef.current = navigator.geolocation.watchPosition(
       ({ coords }) => {
         setUserPosition([coords.latitude, coords.longitude]);
         setAccuracy(Math.round(coords.accuracy));
+        setPositionSource('gps');
         setTracking(true);
       },
       () => {
         stopTracking();
-        setError('ไม่ได้รับสิทธิ์ตำแหน่ง คุณยังดูตำแหน่งจุดสัตว์จรจัดบนแผนที่ได้');
+        setManualPicking(true);
+        setError('ไม่ได้รับสิทธิ์ตำแหน่ง กรุณาแตะบนแผนที่เพื่อระบุตำแหน่งของคุณแทน');
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
     setTracking(true);
+  }
+
+  function pickManualPosition(position) {
+    stopTracking();
+    setUserPosition(position);
+    setAccuracy(null);
+    setPositionSource('manual');
+    setManualPicking(false);
+    setError('');
+    setRecenterKey((value) => value + 1);
+  }
+
+  function beginManualPick() {
+    stopTracking();
+    setManualPicking(true);
+    setError('แตะตำแหน่งของคุณบนแผนที่ แล้ว PawFeed จะคำนวณระยะตรงไปยังจุดหมายให้ทันที');
   }
 
   if (loading) return <main className="centerState">กำลังเปิดโหมดนำทาง...</main>;
@@ -82,7 +111,13 @@ export default function NavigatePointPage() {
   return (
     <main className="navigationShell">
       <section className="navigationMap">
-        <NavigationMap destination={destination} userPosition={userPosition} recenterKey={recenterKey} />
+        <NavigationMap
+          destination={destination}
+          userPosition={userPosition}
+          recenterKey={recenterKey}
+          manualPickEnabled={manualPicking}
+          onManualPick={pickManualPosition}
+        />
       </section>
 
       <aside className="navigationPanel">
@@ -96,7 +131,10 @@ export default function NavigatePointPage() {
 
         <div className="navigationStats">
           <div className="stat"><small>ระยะตรงโดยประมาณ</small><strong>{formatDistance(distance)}</strong></div>
-          <div className="stat"><small>ความแม่นยำ GPS</small><strong>{accuracy ? `±${accuracy} ม.` : '—'}</strong></div>
+          <div className="stat">
+            <small>{positionSource === 'manual' ? 'แหล่งตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
+            <strong>{positionSource === 'manual' ? 'เลือกบนแผนที่' : accuracy ? `±${accuracy} ม.` : '—'}</strong>
+          </div>
         </div>
 
         <div className="card navigationTarget">
@@ -111,8 +149,11 @@ export default function NavigatePointPage() {
           ) : (
             <button className="button danger" onClick={stopTracking}>หยุดติดตามตำแหน่ง</button>
           )}
+          <button className={`button ${manualPicking ? 'soft' : ''}`} onClick={beginManualPick}>📍 เลือกตำแหน่งบนแผนที่</button>
           <button className="button" onClick={() => setRecenterKey((value) => value + 1)}>⌖ จัดแผนที่ให้อยู่กึ่งกลาง</button>
         </div>
+
+        {manualPicking && <div className="successBox">แตะบนแผนที่ด้านบนตรงตำแหน่งที่คุณอยู่ เพื่อกำหนด “ตำแหน่งฉัน”</div>}
 
         <div className="warningBox">
           เส้นประแสดงระยะตรงระหว่างตำแหน่งของคุณกับจุดหมาย ไม่ใช่เส้นทางถนนหรือคำสั่งเลี้ยวแบบ turn-by-turn

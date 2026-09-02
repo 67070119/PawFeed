@@ -3,6 +3,7 @@ import { pngFile, registerAndLogin } from './helpers.js';
 
 test('critical user flow works end-to-end', async ({ page }) => {
   await page.addInitScript(() => {
+    Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
     Object.defineProperty(navigator, 'geolocation', {
       configurable: true,
       value: {
