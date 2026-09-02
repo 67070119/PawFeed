@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 2 — Requirements & Acceptance Criteria: COMPLETED**
+สถานะปัจจุบัน: **Phase 3 — System Design & Dev Environment: COMPLETED**
 
-Phase ถัดไป: **Phase 3 — System Design & Dev Environment**
+Phase ถัดไป: **Phase 4 — Backend Core**
 
-Application code ยังไม่เริ่มพัฒนาใน Phase 1–2
+Application code ยังไม่เริ่มพัฒนาใน Phase 1–3
 
 ## Core MVP
 
@@ -104,6 +104,13 @@ PawFeed/
 - [Requirements Baseline](docs/requirements/requirements.md)
 - [Acceptance Criteria](docs/requirements/acceptance-criteria.md)
 - [Traceability Matrix](docs/requirements/traceability-matrix.md)
+- [System Design](docs/architecture/system-design.md)
+- [Data Flow](docs/architecture/data-flow.md)
+- [Database Design](docs/architecture/database-design.md)
+- [API Contract](docs/architecture/api-contract.md)
+- [Security & Privacy](docs/architecture/security-privacy.md)
+- [Failure Modes](docs/architecture/failure-modes.md)
+- [Development Environment](docs/devops/development-environment.md)
 
 ## Planned Development Phases
 
