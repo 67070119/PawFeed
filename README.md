@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 3 — System Design & Dev Environment: COMPLETED**
+สถานะปัจจุบัน: **Phase 4 — Backend Core: COMPLETED**
 
-Phase ถัดไป: **Phase 4 — Backend Core**
+Phase ถัดไป: **Phase 5 — Frontend & End-to-End User Flow**
 
-Application code ยังไม่เริ่มพัฒนาใน Phase 1–3
+Backend Core ถูก implement แล้ว ส่วน Frontend/Docker/Full Integration จะทำใน Phase ถัดไปตามลำดับ
 
 ## Core MVP
 
@@ -111,6 +111,7 @@ PawFeed/
 - [Security & Privacy](docs/architecture/security-privacy.md)
 - [Failure Modes](docs/architecture/failure-modes.md)
 - [Development Environment](docs/devops/development-environment.md)
+- [Backend Implementation](backend/README.md)
 
 ## Planned Development Phases
 

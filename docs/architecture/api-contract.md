@@ -66,7 +66,7 @@ Input:
 Rules:
 - required fields
 - valid email format
-- password policy จะ lock ใน backend implementation โดยต้องมี automated test
+- password 8–128 ตัวอักษร และต้องมีตัวอักษรอย่างน้อย 1 ตัวกับตัวเลขอย่างน้อย 1 ตัว
 - duplicate email reject
 
 Expected:
@@ -156,21 +156,23 @@ Rules:
 - DOG/CAT/OTHER only
 - count >= 1
 - coordinate validation
-- image type/size validation
-- server-controlled filename
+- image type/size validation: JPEG, PNG, WebP และขนาดตาม `MAX_UPLOAD_SIZE_MB`
+- ตรวจทั้ง MIME type และ file signature
+- server-controlled UUID filename
 
 Expected:
 - `201`
 - `400` validation/file error
 - `401` unauthenticated
 - controlled `5xx` on internal dependency failure
+- เมื่อสร้างสำเร็จ `lastSeenAt` เริ่มจากเวลารายงานจุด
 
 ### PATCH `/api/points/:id`
 Authenticated
 
 This endpoint remains in baseline spec but exact editable fields/ownership rules must be minimized and locked before implementation. It must not become an unrestricted generic update endpoint.
 
-Phase 4 implementation should expose only fields that are truly required by MVP and protect ownership/authorization.
+Phase 4 lock: แก้ไขได้เฉพาะ `estimatedCount`, `description`, `usualTime` และเฉพาะผู้สร้าง Point เท่านั้น ผู้ใช้อื่นถูก Reject ด้วย 403.
 
 ## 5. Feedings
 

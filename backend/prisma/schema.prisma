@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AnimalType {
+  DOG
+  CAT
+  OTHER
+}
+
+enum PointStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum PointReportType {
+  STILL_HERE
+  NOT_FOUND
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  points       StrayPoint[]
+  feedings     Feeding[]
+  reports      PointReport[]
+}
+
+model StrayPoint {
+  id              String         @id @default(cuid())
+  createdByUserId String
+  animalType      AnimalType
+  estimatedCount  Int
+  description     String
+  latitude        Float
+  longitude       Float
+  usualTime       String?
+  status          PointStatus    @default(ACTIVE)
+  lastSeenAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  createdBy       User           @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+  images          PointImage[]
+  feedings        Feeding[]
+  reports         PointReport[]
+
+  @@index([status])
+  @@index([latitude, longitude])
+  @@index([createdByUserId])
+  @@index([createdAt])
+}
+
+model PointImage {
+  id        String     @id @default(cuid())
+  pointId   String
+  imageUrl  String
+  createdAt DateTime   @default(now())
+  point     StrayPoint @relation(fields: [pointId], references: [id], onDelete: Restrict)
+
+  @@index([pointId])
+}
+
+model Feeding {
+  id        String     @id @default(cuid())
+  pointId   String
+  userId    String
+  note      String?
+  imageUrl  String?
+  fedAt     DateTime   @default(now())
+  createdAt DateTime   @default(now())
+  point     StrayPoint @relation(fields: [pointId], references: [id], onDelete: Restrict)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([pointId, fedAt(sort: Desc)])
+  @@index([userId, fedAt(sort: Desc)])
+}
+
+model PointReport {
+  id        String          @id @default(cuid())
+  pointId   String
+  userId    String
+  type      PointReportType
+  createdAt DateTime        @default(now())
+  point     StrayPoint      @relation(fields: [pointId], references: [id], onDelete: Restrict)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([pointId, createdAt(sort: Desc)])
+  @@index([userId])
+}
