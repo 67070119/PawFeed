@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 6 — Docker, Persistence & Reproducibility: COMPLETED**
+สถานะปัจจุบัน: **Phase 7 — Automated Test, Jenkins & Course Container: COMPLETED**
 
-Phase ถัดไป: **Phase 7 — Automated Test, Jenkins & Course Container**
+Phase ถัดไป: **Phase 8 — Verification, Evidence & Submission**
 
-ระบบรันผ่าน Docker Compose ได้จริง พร้อม Database/Upload persistence และ smoke verification แล้ว
+Unit, Integration, Docker Runtime, Playwright E2E และ Full Course Container verification ผ่านแล้ว พร้อม Jenkins Pipeline as Code สำหรับ CI/CD
 
 ## Core MVP
 
@@ -150,6 +150,9 @@ http://localhost:3000
 - [Failure Modes](docs/architecture/failure-modes.md)
 - [Development Environment](docs/devops/development-environment.md)
 - [Docker & Reproducibility](docs/devops/docker.md)
+- [Jenkins CI/CD](docs/devops/jenkins.md)
+- [Course Container](docs/devops/course-container.md)
+- [Automated Verification](docs/verification/automated-tests.md)
 - [Backend Implementation](backend/README.md)
 - [Frontend Implementation](frontend/README.md)
 

@@ -2,7 +2,7 @@
 
 เอกสารนี้เชื่อม Proposal/Requirement → Acceptance Criteria → Planned Implementation → Verification → Evidence
 
-สถานะใน Phase 2 เป็น `BASELINED` เพราะยังไม่เริ่ม Application Implementation
+Matrix ถูก baseline ใน Phase 2 และ implementation/test หลักมีแล้วถึง Phase 7 แต่สถานะราย Requirement จะถูก reconcile เป็น `IMPLEMENTED` / `VERIFIED` / `DEFECT` / `LIMITATION` พร้อม Evidence จริงใน Phase 8 เพื่อไม่ประกาศ VERIFIED ก่อนหลักฐานครบ
 
 ## Status Legend
 

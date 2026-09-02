@@ -12,8 +12,12 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand",
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit --runInBand",
+    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest tests/integration --runInBand",
+    "lint": "eslint \"src/**/*.js\"",
+    "build": "prisma generate && node --check src/server.js",
+    "test:all": "npm run test:unit && npm run test:integration"
   },
   "dependencies": {
     "@prisma/client": "6.12.0",
@@ -28,6 +32,8 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "eslint": "10.9.1",
+    "globals": "17.12.0",
     "jest": "30.1.3",
     "prisma": "6.12.0",
     "supertest": "7.1.4"
