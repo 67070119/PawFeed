@@ -10,7 +10,7 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 Development Plan **8/8 Phase เสร็จแล้ว**
 
-Final verification ผ่าน Unit 11/11, Integration 7/7, Playwright E2E 7/7 และ Full Course Container `tuchsanai/devtools:2569_1` ด้วย exit code 0. ยังมี submission blockers ภายนอก repository ได้แก่ Jenkins job run จริง, รายชื่อทีมจริง และการจัดทำ final Slide/Report/Video
+Final verification ล่าสุดผ่าน Unit 15/15, Integration 7/7, Playwright E2E 16/16, Live Routing Smoke ครบ DRIVING/WALKING/CYCLING และ Full Course Container `tuchsanai/devtools:2569_1` ด้วย exit code 0. Navigation Redesign เสร็จ 5/5 Phase แล้ว; submission blockers ภายนอก repository ยังมี Jenkins job run จริง, รายชื่อทีมจริง และการจัดทำ final Slide/Report/Video
 
 ## Core MVP
 
@@ -21,7 +21,7 @@ PawFeed จะรองรับ User Flow หลักดังนี้:
 3. ผู้ใช้สมัครสมาชิกและเข้าสู่ระบบ
 4. ผู้ใช้ที่ Login แล้วสร้างจุดสัตว์จรจัดพร้อมตำแหน่งและรูปภาพ
 5. จุดใหม่ปรากฏบนแผนที่
-6. ผู้ใช้เปิด Navigation ไปยังพิกัดผ่านบริการแผนที่ภายนอก
+6. ผู้ใช้เปิด Navigation ภายใน PawFeed เพื่อดู Road Route Preview และเริ่ม Active Navigation พร้อม GPS/ETA/คำแนะนำเส้นทาง
 7. ผู้ใช้บันทึกว่าให้อาหารแล้ว
 8. ระบบแสดง Feeding History และเวลาที่ให้อาหารล่าสุด
 9. ข้อมูลสำคัญต้อง Persist หลัง Container Restart

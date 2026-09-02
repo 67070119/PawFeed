@@ -582,6 +582,8 @@ export default function NavigatePointPage() {
           )}
         </div>
 
+        <div className="navPrivacyNote">ตำแหน่งใช้เฉพาะระหว่างนำทางและไม่เก็บเป็นประวัติ</div>
+
         <div className="navPhaseNote">
           {activeNavigation
             ? 'PawFeed ตรวจระยะห่างจาก route และปรับเส้นทางใหม่อัตโนมัติเมื่อ GPS แม่นยำพอ หาก provider ล้มเหลวจะคง route เดิมและให้ลองใหม่'

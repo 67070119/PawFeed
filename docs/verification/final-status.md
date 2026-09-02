@@ -2,9 +2,9 @@
 
 ## Requirement Summary
 
-จาก Requirement Baseline 56 ข้อ:
+จาก Requirement Baseline ปัจจุบัน **63 ข้อ**:
 
-- **VERIFIED: 54**
+- **VERIFIED: 61**
 - **IMPLEMENTED: 2**
 - **DEFECT: 0**
 - **LIMITATION status: 0** (known product limitations documented separately)
@@ -18,12 +18,16 @@
 
 ## Automated Verification
 
-- Unit: 11/11 PASS
-- Integration: 7/7 PASS
-- Browser E2E: 7/7 PASS
+- Unit: **15/15 PASS**
+- Integration: **7/7 PASS**
+- Browser E2E: **16/16 PASS**
+- Mobile navigation viewports: **375×667, 390×844, 430×932 PASS**
+- Live Routing Smoke: **DRIVING / WALKING / CYCLING PASS**
 - Lint/Build/Audit: PASS
 - Docker Smoke/Persistence: PASS
-- Course Container final result: ดู `docs/evidence/course-container/course-container-summary.md`
+- Course Container `tuchsanai/devtools:2569_1`: **PASS / exit code 0** with E2E
+
+Navigation Redesign: **5/5 Phase completed**.
 
 ## Submission Blockers
 

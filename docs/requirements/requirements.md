@@ -228,7 +228,7 @@ Token/Session Credential ที่ใช้ Authentication ใน Browser ต้
 Secret, Password, Token และ Production Credential ต้องไม่ถูก Commit ลง Git Repository และ Configuration ตัวอย่างต้องใช้ Placeholder
 
 #### REQ-NFR-PRIV-001 — Location Privacy
-ระบบต้องไม่ติดตามหรือจัดเก็บตำแหน่งปัจจุบันของ User แบบต่อเนื่อง และเก็บเฉพาะพิกัด Stray Point ที่ผู้ใช้ตั้งใจเผยแพร่
+ระบบสามารถติดตามตำแหน่งปัจจุบันของ User แบบ session-scoped เฉพาะเมื่อผู้ใช้ให้ Permission และเปิด/เริ่ม Navigation เพื่อคำนวณ Route/Reroute ได้ แต่ต้องไม่ Persist ตำแหน่งปัจจุบันเป็น Location History ใน Database หรือ raw GPS query ใน application request logs และต้องหยุด Browser Watch เมื่อผู้ใช้ออกจากหน้า/หยุด Tracking
 
 ---
 

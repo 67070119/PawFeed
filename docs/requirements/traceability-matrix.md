@@ -54,8 +54,8 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-REPORT-004 Invalid Report Type | AC-REPORT-003 | Enum validation | T-REPORT-INVALID-TYPE | EV-TEST-REPORT | VERIFIED |
 | REQ-NAV-001 In-Web Navigation | AC-NAV-001 | `/points/:id/navigate` + NavigationMap | Playwright critical flow | EV-E2E-MAIN, EV-DEMO-MAIN | VERIFIED |
 | REQ-NAV-002 Location-assisted Navigation | AC-NAV-002 | Browser Geolocation + manual-position fallback | Playwright GPS/manual navigation | EV-E2E-MAIN, EV-ARCH | VERIFIED |
-| REQ-NAV-003 Road Route Preview | AC-NAV-003 | Navigation API + OSRM adapter + road polyline | Unit routing + Playwright route/failure flow + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN | VERIFIED |
-| REQ-NAV-004 Travel Mode Preview | AC-NAV-004 | DRIVING/WALKING/CYCLING tabs + route recalculation | Playwright mode switching + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN | VERIFIED |
+| REQ-NAV-003 Road Route Preview | AC-NAV-003 | Navigation API + OSRM adapter + road polyline | Unit routing + Playwright route/failure flow + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN, EV-LIVE-ROUTING | VERIFIED |
+| REQ-NAV-004 Travel Mode Preview | AC-NAV-004 | DRIVING/WALKING/CYCLING tabs + route recalculation | Playwright mode switching + live routing smoke | EV-TEST-NAV, EV-E2E-MAIN, EV-LIVE-ROUTING | VERIFIED |
 | REQ-NAV-005 Active Navigation Mode | AC-NAV-005 | Active navigation state + maneuver/remaining metrics | Playwright active-navigation GPS movement flow | EV-E2E-ACTIVE-NAV | VERIFIED |
 | REQ-NAV-006 Follow & Recenter | AC-NAV-006 | NavigationMap follow state + drag pause + recenter | Playwright active-navigation drag/recenter flow | EV-E2E-ACTIVE-NAV | VERIFIED |
 | REQ-NAV-007 Off-route Detection & Automatic Rerouting | AC-NAV-007 | Route-deviation threshold + consecutive-fix debounce + reroute | Playwright off-route auto-reroute/retry flow | EV-E2E-NAV-RECOVERY | VERIFIED |
@@ -77,7 +77,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-NFR-SEC-001 Password Hashing | AC-SEC-001 | Password hashing service | T-SEC-PASSWORD-HASH | EV-TEST-SECURITY | VERIFIED |
 | REQ-NFR-SEC-002 HttpOnly Cookie | AC-SEC-002 | Auth cookie config | T-SEC-COOKIE | EV-TEST-SECURITY | VERIFIED |
 | REQ-NFR-SEC-003 Secret Management | AC-SEC-003 | `.gitignore`, `.env.example`, runtime env | Repository inspection | EV-SECURITY-REVIEW | VERIFIED |
-| REQ-NFR-PRIV-001 Location Privacy | AC-PRIV-001 | Client-only geolocation usage | Architecture/code review + E2E | EV-PRIVACY-REVIEW | VERIFIED |
+| REQ-NFR-PRIV-001 Location Privacy | AC-PRIV-001 | Session-scoped Browser Geolocation + transient Routing API use; no DB location history | Architecture/code review + GPS/E2E recovery tests | EV-PRIVACY-REVIEW, EV-E2E-ACTIVE-NAV | VERIFIED |
 | REQ-NFR-ERR-001 Validation Error on UI | AC-ERR-001 | Shared API error UI/form errors | E2E-INVALID-COORDINATE, E2E-NON-IMAGE | EV-DEMO-FAILURE | VERIFIED |
 | REQ-NFR-ERR-002 API Failure on UI | AC-ERR-002 | Frontend request/error state | E2E-API-FAILURE | EV-E2E-FAILURE | VERIFIED |
 | REQ-NFR-ERR-003 No Partial Success Claim | AC-ERR-002 | Success only after API confirmation | E2E-API-FAILURE | EV-E2E-FAILURE | VERIFIED |

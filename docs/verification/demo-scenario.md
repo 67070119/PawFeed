@@ -10,7 +10,7 @@
 6. Submit และแสดง Point Detail จากข้อมูลที่ Backend บันทึกจริง
 7. กลับ Map และแสดง Marker จาก Points API
 8. เปิด Marker/Point Detail
-9. เปิด Navigation Mode ภายใน PawFeed แสดงจุดหมาย และทดสอบ Location-assisted view
+9. เปิด Navigation Mode ภายใน PawFeed → ใช้ตำแหน่ง → ดู Road Route Preview/ETA → สลับโหมดเดินทาง → Start Active Navigation → แสดง maneuver/remaining distance → ทดสอบ Recenter และ Stop
 10. บันทึก Feeding พร้อม note
 11. แสดง Latest Feeding และ Feeding History ที่เปลี่ยนจากข้อมูลจริง
 12. กด `STILL_HERE` และแสดงผลสำเร็จ

@@ -26,6 +26,10 @@
 - Invalid report type → `400`
 - Missing point → `404 POINT_NOT_FOUND`
 - API/network failure ระหว่าง Create → UI error และไม่แสดง false success
+- Routing Provider failure → UI แสดง fallback/error โดยไม่วาด Road Route ปลอม
+- Automatic reroute failure → คง route เดิมและมีปุ่ม retry
+- Poor GPS accuracy → แจ้งเตือนและงด Auto-reroute
+- GPS loss ระหว่าง Active Navigation → คง navigation context และให้ลอง GPS ใหม่
 
 ## Demo Principle
 

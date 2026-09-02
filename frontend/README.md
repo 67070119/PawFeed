@@ -8,7 +8,7 @@ Frontend ของ PawFeed ใช้ Next.js 16 + React 19 + React Leaflet แ�
 - `/login` — Login และ redirect กลับ protected route
 - `/register` — Register
 - `/points/create` — Protected create point, map picker, current location, image upload
-- `/points/:id` — Public detail, external navigation, feeding, STILL_HERE / NOT_FOUND
+- `/points/:id` — Public detail, in-web Navigation, feeding, STILL_HERE / NOT_FOUND
 - `/profile` — Protected activity overview
 - `/profile/points` — Protected points created by current user
 - `/profile/feedings` — Protected feeding history
@@ -45,7 +45,7 @@ Map
 - Library: Leaflet / React Leaflet
 - Point query เปลี่ยนตาม viewport bounding box
 - Browser location อ่านเมื่อผู้ใช้กดปุ่มและอนุญาตเท่านั้น
-- ไม่มี continuous location tracking
+- Browser Geolocation tracking ใช้เฉพาะ session Navigation; current location ไม่ถูก Persist เป็น location history
 
 ## Navigation
 

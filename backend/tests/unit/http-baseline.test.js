@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import { createApp } from '../../src/app.js';
 import { env } from '../../src/config/env.js';
 
@@ -35,6 +35,26 @@ describe('HTTP baseline without database dependency', () => {
 
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  test('request logs omit query strings so GPS coordinates are not persisted in logs', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    try {
+      const response = await request(app).get('/api/navigation/route?originLat=13.7&originLng=100.7&destinationLat=13.8&destinationLng=100.8&mode=FLYING');
+      expect(response.status).toBe(400);
+      await new Promise((resolve) => setImmediate(resolve));
+
+      const entry = logSpy.mock.calls
+        .map(([line]) => JSON.parse(line))
+        .find((item) => item.path === '/api/navigation/route');
+
+      expect(entry).toBeDefined();
+      expect(entry.path).toBe('/api/navigation/route');
+      expect(JSON.stringify(entry)).not.toContain('originLat');
+      expect(JSON.stringify(entry)).not.toContain('100.7');
+    } finally {
+      logSpy.mockRestore();
+    }
   });
 
   test('authenticated create requires an image before database write', async () => {

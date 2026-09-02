@@ -4,21 +4,22 @@
 
 | Layer | Tool | Scope |
 |---|---|---|
-| Unit / HTTP baseline | Jest + Supertest | Validation, upload signature, auth gate, health/error baseline |
+| Unit / HTTP baseline | Jest + Supertest | Validation, upload signature, auth gate, health/error baseline, routing validation/normalization |
 | Integration | Jest + Supertest + PostgreSQL | API + Prisma + migration + real database flow |
-| Runtime | Docker Compose + curl | Health, proxy, restart, persistence |
-| Browser E2E | Playwright Chromium | Frontend → Backend → PostgreSQL/Upload + Failure UI |
+| Runtime | Docker Compose + curl | Health, proxy, restart, persistence, live routing smoke |
+| Browser E2E | Playwright Chromium | Frontend → Backend → PostgreSQL/Upload + Navigation + Failure UI |
 
 ## Unit Tests
 
 ```text
 backend/tests/unit/
 ├── http-baseline.test.js
+├── navigation.test.js
 ├── upload.test.js
 └── validation.test.js
 ```
 
-Result: **3 suites / 11 tests / PASS**
+Result: **4 suites / 15 tests / PASS**
 
 ## Integration Tests
 
@@ -32,12 +33,13 @@ Runner:
 
 Result: **1 suite / 7 tests / PASS**
 
-ครอบคลุม Register, Login, auth cookie, Create Point + image, safe filename, bounding-box query, Feeding, latest feeding, STILL_HERE, profile และ failure cases ของ credential/guest/coordinate/non-image
+ครอบคลุม Register, Login, auth cookie, Create Point + image, safe filename, bounding-box query, Feeding, latest feeding, STILL_HERE, profile และ failure cases ของ credential/guest/coordinate/non-image/oversized image/missing point/invalid report
 
 ## Browser E2E
 
 ```text
 tests/e2e/
+├── active-navigation.spec.js
 ├── critical-flow.spec.js
 ├── failure-cases.spec.js
 ├── helpers.js
@@ -52,32 +54,31 @@ Runner:
 
 ใช้ official image `mcr.microsoft.com/playwright:v1.62.1-noble` จึงไม่พึ่ง Chromium ของเครื่องสมาชิก
 
-Result: **7 tests / PASS** ทั้ง Docker environment ปกติและ Full Course Container
+Result: **16 tests / PASS** ทั้ง Docker environment ปกติและ Full Course Container
 
-Critical flow:
+Navigation coverage includes:
+- Road Route Preview + DRIVING/WALKING/CYCLING
+- Active Navigation Start/Stop
+- next maneuver + remaining distance/ETA + arrival
+- Follow/Recenter after user map drag
+- off-route detection + automatic rerouting
+- poor GPS accuracy guard
+- reroute failure + manual retry recovery
+- GPS loss + retry recovery
+- collapsible mobile bottom sheet
+- portrait layout verification at `375×667`, `390×844`, `430×932`
 
-```text
-Register → Login → Add Point + image → Detail
-→ In-Web Navigation → Feeding → Feeding History
-→ STILL_HERE → Profile Points → Profile Feedings
-```
-
-Failure UI:
-
-- Guest Create → Redirect Login
-- Invalid Login → Generic Error
-- Missing Image → Error + ไม่มี Success State
-- Disguised Non-image → Backend Reject + UI Error
-- Network Failure → Error + ไม่ redirect/ไม่แสดง Success หลอก
+Critical/failure coverage also includes marker interaction, guest gate, invalid login, upload failures, API/network no-false-success behavior, geolocation denied fallback and insecure-LAN manual-position fallback.
 
 ## Runtime Verification
 
 ```bash
 ./scripts/smoke-test.sh
 ./scripts/verify-persistence.sh
+./scripts/smoke-routing.sh
 ```
 
-ตรวจ Backend readiness, Frontend, same-origin proxy และ User/Point/Image/Feeding/Report หลัง container restart
+`smoke-routing.sh` verifies the live configured routing provider for DRIVING, WALKING and CYCLING. Because it is an external dependency, each mode has a bounded retry and still fails if all attempts are exhausted.
 
 ## Course Container
 
@@ -85,8 +86,10 @@ Failure UI:
 COURSE_RUN_E2E=1 ./scripts/course-container-test.sh
 ```
 
-Phase 7 result: **PASS, exit code 0**
+Latest final result: **PASS / exit code 0**, including Playwright **16/16 PASS**.
+
+Course Container E2E uses an internal deterministic routing mock so CI reproducibility does not depend on public routing availability; live provider verification remains a separate runtime smoke gate.
 
 ## Regression Rule
 
-เมื่อ Requirement เปลี่ยน ต้อง update Acceptance Criteria, implementation และ automated test ที่เกี่ยวข้อง และ Phase 8 ต้องอ้าง evidence จาก source revision ล่าสุด
+เมื่อ Requirement เปลี่ยน ต้อง update Acceptance Criteria, implementation และ automated test ที่เกี่ยวข้อง และ evidence ต้องอ้าง source revision ล่าสุดเท่านั้น

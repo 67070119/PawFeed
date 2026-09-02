@@ -62,12 +62,12 @@ Host Docker
         └── Playwright runner
 ```
 
-## Phase 7 Result
+## Latest Final Result
 
 Full run `COURSE_RUN_E2E=1` ผ่านจริง:
 
 - Backend lint: PASS
-- Unit: `11/11` PASS
+- Unit: `15/15` PASS
 - Backend build: PASS
 - Backend audit: `0` high vulnerabilities
 - Frontend lint: PASS
@@ -77,11 +77,11 @@ Full run `COURSE_RUN_E2E=1` ผ่านจริง:
 - Compose build/up: PASS
 - Smoke: PASS
 - Persistence: PASS
-- Playwright E2E: `7/7` PASS
+- Playwright E2E: `16/16` PASS
 - Cleanup: PASS
 - Final exit code: `0`
 
-Phase 8 จะเก็บ evidence จาก source revision รุ่นส่งจริง
+Latest Navigation Redesign Phase 5 full run ใช้ source revision ปัจจุบันและผ่านด้วย exit code 0
 
 ## Port Conflict
 

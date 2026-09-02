@@ -395,12 +395,14 @@
 - When: ตรวจ tracked files และ `.env.example`
 - Then: ไม่มี Production Password/Token/Secret และไฟล์ตัวอย่างใช้ Placeholder
 
-### AC-PRIV-001 — ไม่มี Continuous User Tracking
+### AC-PRIV-001 — Session-scoped Navigation Location
 **Requirement:** REQ-NFR-PRIV-001
 
 - Given: ผู้ใช้อนุญาต Browser Location
-- When: ใช้งาน Map
-- Then: ระบบใช้ตำแหน่งเพื่อแสดง/ช่วยเลือกพิกัดโดยไม่สร้าง Continuous Location History ของ User ใน Database
+- When: เปิดหรือเริ่ม Navigation
+- Then: ระบบใช้ตำแหน่งแบบ session-scoped สำหรับ Route/Active Navigation/Reroute และไม่ Persist Current Location เป็น Location History ใน Database
+- And: request logs ต้องไม่เก็บ raw GPS query parameters
+- And: เมื่อออกจากหน้า Navigation หรือหยุด Tracking ต้องหยุด Browser Geolocation Watch
 
 ---
 

@@ -68,8 +68,11 @@ PawFeed intentionally publishes Stray Point coordinates because this is core pro
 
 Current user's browser location:
 - ask permission before access
-- do not continuously track
-- do not persist as user history
+- may be watched continuously only while the user is actively using Navigation
+- may be sent transiently to PawFeed Backend for route/reroute requests
+- do not persist as user location history in PostgreSQL
+- request logging stores route path only and strips query parameters so GPS coordinates are not written to request logs
+- stop Browser Geolocation watch when leaving Navigation or stopping tracking
 - if denied, application remains usable by manual map interaction
 
 ## 8. Public Data Boundary
@@ -126,4 +129,4 @@ Minimum verifiable cases:
 
 ## 13. Privacy Statement Baseline
 
-README/UI should make it clear that location published for a Stray Point is public content, while current user location is used only after browser permission and is not continuously stored by PawFeed.
+README/UI should make it clear that Stray Point coordinates are public content, while current user location is permission-gated, session-scoped navigation data that may be sent transiently for routing but is not persisted as PawFeed location history.

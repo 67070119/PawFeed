@@ -61,7 +61,7 @@ flowchart TD
     E --> F[User เลื่อน Map และเลือกตำแหน่งเอง]
 ```
 
-PawFeed ไม่ส่งหรือเก็บ current user location แบบต่อเนื่อง
+PawFeed อาจติดตาม current user location แบบ session-scoped ระหว่าง Navigation และส่งพิกัดชั่วคราวไป Backend เพื่อ route/reroute แต่ไม่ persist เป็น location history
 
 ## 5. Create Point Flow
 
@@ -153,12 +153,20 @@ MVP ยังไม่รับปาก auto-inactivate Point จากจำ�
 
 ```text
 User clicks Navigate
-→ Frontend reads published StrayPoint coordinate
-→ Generate external navigation URL
-→ Open external map service
+→ Frontend opens /points/:id/navigate inside PawFeed
+→ Browser Geolocation or manual map pick provides origin
+→ Frontend calls GET /api/navigation/route
+→ Backend validates coordinates/mode
+→ Backend calls configured OSRM-compatible provider
+→ Backend normalizes road geometry + distance + duration + maneuver steps
+→ Frontend renders Road Route Preview
+→ User starts Active Navigation
+→ GPS updates drive Follow/Recenter, remaining distance/ETA and next maneuver
+→ accuracy-aware off-route detection may request a replacement route
+→ reroute/GPS failures preserve navigation context and expose retry actions
 ```
 
-ไม่มีการส่ง current location ของผู้ใช้ไปเก็บใน PawFeed
+Current user location is session/runtime navigation data only and is not persisted in PawFeed database.
 
 ## 10. Profile Flow
 

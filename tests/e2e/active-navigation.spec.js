@@ -65,6 +65,7 @@ test('active navigation follows GPS, shows maneuver, recenters, and stops cleanl
 
   await expect(page.locator('.navManeuverCopy strong')).toContainText('เลี้ยวขวา');
   await expect(page.locator('.navActiveSheet')).toBeVisible();
+  await expect(page.getByText('ตำแหน่งใช้เฉพาะระหว่างนำทางและไม่เก็บเป็นประวัติ')).toBeVisible();
   await expect(page.getByRole('button', { name: /สิ้นสุดการนำทาง/ })).toBeVisible();
 
   const remaining = page.locator('.navDistanceSummary strong');
@@ -190,4 +191,60 @@ test('mobile navigation bottom sheet can collapse and expand without losing prim
   await page.getByRole('button', { name: 'ขยายแผงข้อมูล' }).click();
   await expect(page.locator('.navBottomSheet')).not.toHaveClass(/navSheetCollapsed/);
   await expect(page.locator('.navModeTabs')).toBeVisible();
+});
+
+test('navigation layout stays usable across common mobile portrait viewports', async ({ page }) => {
+  await installGeoMock(page);
+  await createNavigationPoint(page, 'mobile-layout');
+
+  const viewports = [
+    { width: 375, height: 667 },
+    { width: 390, height: 844 },
+    { width: 430, height: 932 },
+  ];
+
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.locator('.navTopBar')).toBeVisible();
+    await expect(page.locator('.navBottomSheet')).toBeVisible();
+    await expect(page.getByRole('button', { name: /เริ่มนำทาง/ })).toBeVisible();
+
+    const layout = await page.evaluate(() => {
+      const top = document.querySelector('.navTopBar').getBoundingClientRect();
+      const sheet = document.querySelector('.navBottomSheet').getBoundingClientRect();
+      return {
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+        topBottom: top.bottom,
+        sheetTop: sheet.top,
+        sheetRight: sheet.right,
+        viewportWidth: window.innerWidth,
+      };
+    });
+
+    expect(layout.noHorizontalOverflow).toBe(true);
+    expect(layout.topBottom).toBeLessThan(layout.sheetTop);
+    expect(layout.sheetRight).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  }
+
+  await startActiveNavigation(page);
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    await expect(page.locator('.navActiveTopBar')).toBeVisible();
+    await expect(page.locator('.navActiveSheet')).toBeVisible();
+    await expect(page.getByRole('button', { name: /สิ้นสุดการนำทาง/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'กลับมาติดตามตำแหน่งฉัน' })).toBeVisible();
+
+    const layout = await page.evaluate(() => {
+      const top = document.querySelector('.navActiveTopBar').getBoundingClientRect();
+      const sheet = document.querySelector('.navActiveSheet').getBoundingClientRect();
+      return {
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+        topBottom: top.bottom,
+        sheetTop: sheet.top,
+      };
+    });
+
+    expect(layout.noHorizontalOverflow).toBe(true);
+    expect(layout.topBottom).toBeLessThan(layout.sheetTop);
+  }
 });

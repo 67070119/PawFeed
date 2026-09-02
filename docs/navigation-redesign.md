@@ -47,16 +47,17 @@ Implemented:
 - GPS loss during Active Navigation preserves route/navigation context and allows GPS retry
 - Playwright recovery coverage for auto-reroute, poor GPS, provider failure, GPS loss, and mobile sheet interaction
 
-## Phase 5 — Verification & Polish
+## Phase 5 — Verification & Polish — COMPLETED
 
-Planned:
-- expanded Playwright navigation coverage
-- route API failure tests
-- start/stop navigation tests
-- mobile viewport coverage
-- final lint/build/Course Container verification
-- synchronize requirements, acceptance criteria, traceability, and evidence
+Verified and finalized:
+- Playwright navigation regression expanded to 16/16 tests
+- route provider failure, reroute retry, GPS loss/recovery, poor-GPS guard and Start/Stop flows verified
+- mobile portrait layout guards at 375×667, 390×844 and 430×932
+- live configured routing provider smoke passed for DRIVING, WALKING and CYCLING
+- Full Course Container `tuchsanai/devtools:2569_1` with E2E passed with exit code 0
+- lint/build/audit/integration/smoke/persistence gates remain green
+- requirements, acceptance criteria, traceability, architecture, evidence and README synchronized to the final navigation behavior
 
 ## Design boundary
 
-PawFeed may use interaction patterns familiar from map applications while keeping its own visual identity. Active in-web navigation with route-step guidance is integrated and verified in Phase 3. Off-route detection, automatic rerouting, voice guidance, and deeper mobile failure polish remain outside the completed Phase 3 scope.
+PawFeed uses familiar map-app interaction patterns while keeping PawFeed visual identity. Navigation Redesign 5/5 is complete with Road Route Preview, Active Navigation, Follow/Recenter, GPS quality/recovery and off-route automatic rerouting. Remaining non-goals are voice guidance, live traffic-aware routing, background navigation after leaving the page, and a self-hosted routing engine.
