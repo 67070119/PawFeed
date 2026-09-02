@@ -14,7 +14,7 @@ export const authRouter = Router();
 const cookieOptions = {
   httpOnly: true,
   sameSite: 'lax',
-  secure: env.nodeEnv === 'production',
+  secure: env.cookieSecure,
   path: '/',
 };
 

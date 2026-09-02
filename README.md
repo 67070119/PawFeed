@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 5 — Frontend & End-to-End User Flow: COMPLETED**
+สถานะปัจจุบัน: **Phase 6 — Docker, Persistence & Reproducibility: COMPLETED**
 
-Phase ถัดไป: **Phase 6 — Docker, Persistence & Reproducibility**
+Phase ถัดไป: **Phase 7 — Automated Test, Jenkins & Course Container**
 
-Frontend และ Backend Critical Flow ถูก implement แล้ว Full browser E2E automation จะทำใน Phase 7
+ระบบรันผ่าน Docker Compose ได้จริง พร้อม Database/Upload persistence และ smoke verification แล้ว
 
 ## Core MVP
 
@@ -80,6 +80,44 @@ PawFeed/
 
 ห้าม Commit `.env`, Password, Token, Secret หรือข้อมูลอ่อนไหวจริงเข้า Repository
 
+## Quick Start
+
+ต้องมี Docker + Docker Compose เท่านั้นสำหรับ runtime หลัก
+
+```bash
+./scripts/start.sh
+```
+
+เปิดระบบที่:
+
+```text
+http://localhost:3000
+```
+
+ตรวจ health/smoke:
+
+```bash
+./scripts/smoke-test.sh
+```
+
+ตรวจ persistence แบบสร้างข้อมูลจริงและ restart containers:
+
+```bash
+./scripts/verify-persistence.sh
+```
+
+หยุดระบบโดยไม่ลบข้อมูล:
+
+```bash
+./scripts/stop.sh
+```
+
+ลบ environment และ named volumes แบบตั้งใจเท่านั้น:
+
+```bash
+./scripts/reset.sh --yes
+```
+
 ## DevTools Delivery Requirements
 
 ระบบรุ่นส่งต้องรองรับอย่างน้อย:
@@ -111,6 +149,7 @@ PawFeed/
 - [Security & Privacy](docs/architecture/security-privacy.md)
 - [Failure Modes](docs/architecture/failure-modes.md)
 - [Development Environment](docs/devops/development-environment.md)
+- [Docker & Reproducibility](docs/devops/docker.md)
 - [Backend Implementation](backend/README.md)
 - [Frontend Implementation](frontend/README.md)
 

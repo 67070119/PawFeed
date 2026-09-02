@@ -11,7 +11,7 @@
 ```mermaid
 flowchart LR
     U[User Browser] --> FE[Next.js Frontend]
-    FE -->|REST / JSON| BE[Express Backend API]
+    FE -->|Same-origin /api proxy| BE[Express Backend API]
     BE -->|Prisma| DB[(PostgreSQL)]
     BE -->|Read / Write| UP[(Persistent Upload Volume)]
     FE -->|Map Tiles| OSM[OpenStreetMap]
@@ -123,7 +123,7 @@ postgres-data
 pawfeed-uploads
 ```
 
-Frontend ติดต่อ Backend ผ่าน service/network configuration ที่กำหนดใน environment ไม่ hard-code host ของเครื่องสมาชิก
+Browser เรียก API/Upload แบบ same-origin ผ่าน Next.js (`/api/*`, `/uploads/*`) และ Frontend container rewrite ไป `http://backend:3001` ภายใน Docker network จึงไม่ hard-code host ของเครื่องสมาชิกใน Browser
 
 Backend ติดต่อ PostgreSQL ผ่าน `DATABASE_URL`
 
@@ -165,7 +165,7 @@ sequenceDiagram
     participant FS as Upload Volume
 
     User->>FE: Login
-    FE->>API: POST /api/auth/login
+    FE->>API: POST /api/auth/login ผ่าน same-origin rewrite
     API->>DB: Validate user
     API-->>FE: Auth cookie + user
 
