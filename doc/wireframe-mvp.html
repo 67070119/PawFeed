@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PawFeed — Community Care Map</title>
+  <style>
+    :root {
+      --ink:#17332d;
+      --muted:#72817d;
+      --green:#16866f;
+      --green-dark:#0d6655;
+      --green-soft:#e8f5f1;
+      --mint:#f1f9f6;
+      --cream:#fbfaf6;
+      --white:#ffffff;
+      --orange:#f3a64a;
+      --red:#c95d5d;
+      --line:#dfe8e4;
+      --shadow:0 14px 40px rgba(22,64,54,.10);
+      --shadow-sm:0 6px 18px rgba(22,64,54,.08);
+      --radius:22px;
+      --radius-sm:14px;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--cream);
+      color:var(--ink);
+      line-height:1.5;
+    }
+    button,input,select,textarea { font:inherit; }
+    button { cursor:pointer; }
+    h1,h2,h3,p { margin-top:0; }
+
+    .topbar {
+      height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:0 28px;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(23,51,45,.08);
+      position:sticky;
+      top:0;
+      z-index:60;
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:850; letter-spacing:-.4px; font-size:21px; }
+    .brand-mark {
+      width:40px;height:40px;border-radius:13px;
+      display:grid;place-items:center;
+      background:var(--green);color:#fff;font-size:20px;
+      box-shadow:0 8px 20px rgba(22,134,111,.22);
+    }
+    .brand small { display:block; margin-top:-2px; font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+    .top-actions { display:flex; gap:8px; align-items:center; }
+
+    .btn {
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      padding:10px 15px;
+      border-radius:12px;
+      font-weight:750;
+      transition:.18s ease;
+      box-shadow:0 1px 0 rgba(0,0,0,.02);
+    }
+    .btn:hover { transform:translateY(-1px); border-color:#c3d6cf; box-shadow:var(--shadow-sm); }
+    .btn.primary { background:var(--green); color:#fff; border-color:var(--green); }
+    .btn.primary:hover { background:var(--green-dark); }
+    .btn.soft { background:var(--green-soft); color:var(--green-dark); border-color:transparent; }
+    .btn.ghost { background:transparent; border-color:transparent; color:var(--muted); box-shadow:none; }
+    .btn.danger { color:var(--red); background:#fff5f5; border-color:#f2dada; }
+    .btn.block { width:100%; }
+    .icon-btn { width:42px;height:42px;padding:0;border-radius:13px;display:grid;place-items:center; }
+
+    .screen-switcher {
+      padding:10px 24px;
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      background:#fff;
+      border-bottom:1px solid var(--line);
+      scrollbar-width:none;
+    }
+    .screen-switcher::-webkit-scrollbar { display:none; }
+    .screen-switcher button {
+      white-space:nowrap;
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      font-weight:750;
+    }
+    .screen-switcher button.active { background:var(--green-soft); color:var(--green-dark); }
+
+    .screen { display:none; min-height:calc(100vh - 121px); }
+    .screen.active { display:block; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:6px 10px; border-radius:999px;
+      background:var(--green-soft); color:var(--green-dark);
+      font-size:12px; font-weight:800;
+    }
+
+    /* MAP */
+    .map-layout {
+      min-height:calc(100vh - 121px);
+      position:relative;
+      overflow:hidden;
+      background:#e8efeb;
+      isolation:isolate;
+    }
+    .map-layout::before {
+      content:"";
+      position:absolute;inset:0;
+      background:
+        radial-gradient(circle at 16% 26%, #d5eadc 0 9%, transparent 9.3%),
+        radial-gradient(circle at 80% 22%, #d4e6dd 0 12%, transparent 12.3%),
+        radial-gradient(circle at 77% 76%, #d7ebdf 0 14%, transparent 14.3%),
+        linear-gradient(24deg, transparent 47%, rgba(255,255,255,.9) 47.2% 51.8%, transparent 52%),
+        linear-gradient(98deg, transparent 52%, rgba(255,255,255,.94) 52.2% 56.5%, transparent 56.8%),
+        linear-gradient(-9deg, transparent 31%, rgba(255,255,255,.92) 31.2% 35.5%, transparent 35.8%);
+      z-index:-3;
+    }
+    .map-layout::after {
+      content:"";
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(23,51,45,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(23,51,45,.035) 1px, transparent 1px);
+      background-size:56px 56px;
+      z-index:-2;
+    }
+    .map-road-label { position:absolute;color:#9bab9f;font-size:11px;font-weight:700;letter-spacing:.04em;z-index:0; }
+    .rl1 { left:22%;top:45%;transform:rotate(-9deg); }
+    .rl2 { left:59%;top:29%;transform:rotate(7deg); }
+    .rl3 { left:65%;top:67%; }
+
+    .map-tools {
+      position:absolute;top:22px;left:24px;right:24px;
+      display:flex;gap:10px;align-items:center;z-index:7;
+    }
+    .search-wrap { position:relative; flex:1; max-width:510px; }
+    .search-icon { position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px; }
+    .search {
+      width:100%;
+      background:rgba(255,255,255,.96);
+      border:1px solid rgba(23,51,45,.08);
+      border-radius:16px;
+      padding:14px 16px 14px 43px;
+      color:var(--ink);
+      box-shadow:var(--shadow);
+      outline:none;
+    }
+    .search:focus { border-color:#90c9ba; box-shadow:0 0 0 4px rgba(22,134,111,.10),var(--shadow); }
+    .map-fab {
+      width:48px;height:48px;border:1px solid rgba(23,51,45,.08);
+      border-radius:16px;background:#fff;color:var(--green-dark);font-size:20px;
+      box-shadow:var(--shadow);font-weight:900;
+    }
+    .map-legend {
+      position:absolute;left:24px;bottom:24px;z-index:6;
+      background:rgba(255,255,255,.93);border:1px solid rgba(23,51,45,.08);
+      border-radius:16px;padding:11px 14px;box-shadow:var(--shadow-sm);
+      font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;
+    }
+    .legend-dot { width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-soft); }
+    .add-point {
+      position:absolute;right:24px;bottom:24px;z-index:6;
+      padding:13px 18px;border-radius:15px;
+      box-shadow:0 12px 26px rgba(22,134,111,.24);
+    }
+    .marker {
+      position:absolute;
+      width:50px;height:50px;border-radius:18px 18px 18px 6px;
+      transform:rotate(-45deg);
+      background:#fff;
+      border:2px solid rgba(22,134,111,.22);
+      display:grid;place-items:center;z-index:4;
+      box-shadow:0 10px 25px rgba(34,84,70,.18);
+      transition:.2s ease;
+    }
+    .marker:hover { transform:rotate(-45deg) translate(3px,-3px) scale(1.06); }
+    .marker span { transform:rotate(45deg);font-size:22px; }
+    .m1 { top:35%;left:29%; }
+    .m2 { top:59%;left:68%; }
+    .m3 { top:25%;left:74%; }
+    .me {
+      position:absolute;top:61%;left:44%;width:18px;height:18px;
+      background:#2778df;border:4px solid #fff;border-radius:50%;z-index:3;
+      box-shadow:0 0 0 2px rgba(39,120,223,.25),0 6px 15px rgba(39,120,223,.25);
+    }
+    .me::after { content:"";position:absolute;inset:-14px;border-radius:50%;background:rgba(39,120,223,.09);z-index:-1; }
+
+    .detail-drawer {
+      position:absolute;top:16px;right:16px;bottom:16px;
+      width:min(410px,calc(100% - 32px));
+      background:rgba(255,255,255,.98);
+      border:1px solid rgba(23,51,45,.08);
+      border-radius:24px;
+      padding:18px;
+      overflow-y:auto;
+      z-index:20;
+      box-shadow:0 24px 70px rgba(18,57,47,.20);
+      transform:translateX(calc(100% + 28px));
+      transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    }
+    .detail-drawer.open { transform:translateX(0); }
+    .drawer-header { display:flex;justify-content:space-between;align-items:flex-start;gap:12px; }
+    .drawer-header h2 { margin:8px 0 0;font-size:23px;line-height:1.25;letter-spacing:-.5px; }
+    .hero-photo {
+      height:210px;border-radius:18px;margin:16px 0;
+      display:grid;place-items:center;
+      background:linear-gradient(145deg,#dcebe4,#f3f7f5);
+      overflow:hidden;position:relative;
+    }
+    .hero-photo::before { content:"🐕";font-size:72px;filter:drop-shadow(0 8px 12px rgba(0,0,0,.08)); }
+    .photo-chip { position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.9);padding:6px 9px;border-radius:9px;font-size:11px;font-weight:800;color:var(--muted); }
+    .status-box {
+      padding:13px 14px;border-radius:14px;margin:12px 0;
+      background:#fff7e8;border:1px solid #f5dfb7;color:#77531d;
+    }
+    .status-box strong { color:#664712; }
+    .meta-grid { display:grid;grid-template-columns:1fr 1fr;gap:9px; }
+    .meta-item { border:1px solid var(--line);padding:11px 12px;background:#fbfdfc;border-radius:13px;color:var(--muted);font-size:13px; }
+    .meta-item strong { color:var(--ink);display:block;margin-bottom:2px;font-size:12px; }
+    .stack { display:grid;gap:9px; }
+    .history-item { padding:11px 13px;background:var(--mint);border-radius:13px;margin-bottom:8px;color:#49635b;font-size:14px; }
+    .history-item strong { color:var(--ink); }
+
+    /* CONTENT */
+    .page-wrap { max-width:1040px;margin:0 auto;padding:38px 22px 70px; }
+    .page-title { display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px; }
+    .page-title h1 { margin:10px 0 0;font-size:34px;line-height:1.16;letter-spacing:-1.1px; }
+    .flow-note {
+      background:#eff8f5;border:1px solid #d9eee7;color:#547069;
+      padding:11px 14px;border-radius:14px;margin-bottom:18px;font-size:13px;
+    }
+    .flow-note code { color:var(--green-dark);font-weight:800;background:transparent; }
+    .card { background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:16px;box-shadow:var(--shadow-sm); }
+    .card h3 { font-size:18px;margin-bottom:14px;letter-spacing:-.25px; }
+    .detail-hero { display:grid;grid-template-columns:1.15fr .85fr;gap:18px; }
+    .detail-hero .hero-photo { margin:0;height:320px; }
+    .detail-summary { display:flex;flex-direction:column;justify-content:center; }
+    .detail-summary h2 { font-size:27px;line-height:1.2;letter-spacing:-.5px;margin-bottom:9px; }
+    .detail-summary p { color:var(--muted); }
+    .badges { display:flex;gap:7px;flex-wrap:wrap;margin:8px 0 15px; }
+    .tag { display:inline-flex;align-items:center;border:0;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:800;background:var(--green-soft);color:var(--green-dark); }
+    .tag.orange { background:#fff3e3;color:#9a651e; }
+
+    .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .field { display:grid;gap:7px; }
+    .field.full { grid-column:1/-1; }
+    .field label { font-weight:780;font-size:13px;color:#38554d; }
+    .field input,.field select,.field textarea {
+      width:100%;border:1px solid #d4e0dc;border-radius:13px;padding:11px 12px;background:#fff;color:var(--ink);outline:none;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus { border-color:#8fc7b8;box-shadow:0 0 0 4px rgba(22,134,111,.09); }
+    .field textarea { min-height:110px;resize:vertical; }
+    .upload-box {
+      border:1.5px dashed #9fc6ba;min-height:180px;display:grid;place-items:center;text-align:center;
+      background:var(--mint);padding:22px;border-radius:17px;color:#5f786f;
+    }
+    .upload-icon { width:48px;height:48px;border-radius:15px;background:#fff;display:grid;place-items:center;margin:0 auto 10px;font-size:21px;box-shadow:var(--shadow-sm); }
+    .mini-map {
+      height:265px;position:relative;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+      background:
+        radial-gradient(circle at 15% 25%,#d8eadf 0 10%,transparent 10.4%),
+        radial-gradient(circle at 80% 75%,#d9ebdf 0 13%,transparent 13.4%),
+        linear-gradient(18deg,transparent 44%,#fff 44.3% 51%,transparent 51.3%),
+        linear-gradient(95deg,transparent 52%,#fff 52.3% 58%,transparent 58.3%),#eaf0ed;
+    }
+    .mini-map::after {
+      content:'📍 เลือกตำแหน่ง';position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);
+      background:#fff;padding:9px 12px;border-radius:12px;box-shadow:var(--shadow-sm);font-weight:800;font-size:12px;
+    }
+    .form-actions { display:flex;justify-content:flex-end;gap:9px;margin-top:18px; }
+
+    /* AUTH */
+    .auth-shell { min-height:calc(100vh - 121px);display:grid;grid-template-columns:1fr 1fr;background:#fff; }
+    .auth-visual {
+      margin:18px;border-radius:28px;min-height:620px;padding:50px;
+      display:flex;flex-direction:column;justify-content:space-between;
+      background:linear-gradient(155deg,#0f745f,#17493f);color:#fff;overflow:hidden;position:relative;
+    }
+    .auth-visual::before,.auth-visual::after { content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.07); }
+    .auth-visual::before { width:420px;height:420px;right:-120px;top:-120px; }
+    .auth-visual::after { width:260px;height:260px;left:-80px;bottom:-70px; }
+    .auth-visual .paw { font-size:74px;position:relative;z-index:1; }
+    .auth-visual h2 { font-size:38px;line-height:1.1;letter-spacing:-1.2px;max-width:470px;position:relative;z-index:1;margin-bottom:14px; }
+    .auth-visual p { max-width:500px;color:#d7eee7;position:relative;z-index:1; }
+    .auth-panel { display:grid;place-items:center;padding:34px; }
+    .auth-card { width:min(430px,100%); }
+    .auth-card h2 { font-size:30px;letter-spacing:-.7px;margin:12px 0 7px; }
+    .auth-card .subtitle { color:var(--muted);margin-bottom:24px; }
+    .divider { display:flex;align-items:center;gap:10px;color:#9aa7a3;margin:15px 0;font-size:12px; }
+    .divider::before,.divider::after { content:"";height:1px;background:var(--line);flex:1; }
+    .auth-hint { font-size:12px;color:var(--muted);margin:14px 0 0;line-height:1.55; }
+
+    /* PROFILE */
+    .profile-grid { display:grid;grid-template-columns:280px 1fr;gap:18px; }
+    .profile-menu { height:max-content;position:sticky;top:142px; }
+    .avatar { width:64px;height:64px;border-radius:20px;background:var(--green-soft);display:grid;place-items:center;font-size:28px;margin-bottom:12px; }
+    .profile-menu button { width:100%;text-align:left;margin-bottom:7px; }
+    .stats { display:grid;grid-template-columns:repeat(3,1fr);gap:12px; }
+    .stat { padding:17px;border-radius:17px;background:var(--mint);border:1px solid #e4efeb; }
+    .stat strong { display:block;font-size:28px;letter-spacing:-.6px;margin-top:5px; }
+    .stat span { color:var(--muted);font-size:12px; }
+    .list-card { display:grid;grid-template-columns:92px 1fr auto;gap:14px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:16px;margin-bottom:9px; }
+    .thumb { width:92px;height:76px;background:linear-gradient(145deg,#deede7,#f4f8f6);border-radius:13px;display:grid;place-items:center;font-size:31px; }
+    .list-card p { margin:5px 0 0;color:var(--muted);font-size:12px; }
+
+    @media (max-width:820px) {
+      .topbar { height:auto;min-height:68px;padding:11px 14px; }
+      .brand small { display:none; }
+      .top-actions .btn.ghost { display:none; }
+      .screen-switcher { padding:9px 12px; }
+      .map-tools { left:12px;right:12px;top:12px; }
+      .map-legend { display:none; }
+      .add-point { right:14px;bottom:14px; }
+      .detail-drawer { top:auto;left:8px;right:8px;bottom:8px;width:auto;height:74%;border-radius:24px;transform:translateY(calc(100% + 16px)); }
+      .detail-drawer.open { transform:translateY(0); }
+      .detail-hero { grid-template-columns:1fr; }
+      .detail-hero .hero-photo { height:250px; }
+      .form-grid,.profile-grid,.auth-shell { grid-template-columns:1fr; }
+      .field.full { grid-column:auto; }
+      .auth-visual { display:none; }
+      .auth-panel { min-height:calc(100vh - 121px);padding:28px 20px; }
+      .profile-menu { position:static; }
+      .stats { grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:560px) {
+      .topbar { gap:8px; }
+      .brand { font-size:18px; }
+      .brand-mark { width:36px;height:36px;border-radius:11px; }
+      .top-actions .btn { padding:9px 11px;font-size:12px; }
+      .page-wrap { padding:26px 14px 52px; }
+      .page-title { align-items:flex-start;flex-direction:column; }
+      .page-title h1 { font-size:28px; }
+      .card { padding:16px;border-radius:18px; }
+      .meta-grid,.stats { grid-template-columns:1fr 1fr; }
+      .list-card { grid-template-columns:72px 1fr; }
+      .thumb { width:72px;height:64px; }
+      .list-card .btn { grid-column:1/-1; }
+      .m1 { left:18%; }.m2 { left:70%; }.m3 { left:72%;top:28%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🐾</div>
+      <div>PawFeed <small>Community Care Map</small></div>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" onclick="showScreen('map')">สำรวจแผนที่</button>
+      <button class="btn ghost" onclick="showScreen('profile')">กิจกรรมของฉัน</button>
+      <button class="btn soft" onclick="showScreen('login')">เข้าสู่ระบบ</button>
+    </div>
+  </header>
+
+  <nav class="screen-switcher" aria-label="Prototype screen switcher">
+    <button data-target="map" class="active" onclick="showScreen('map')">Map</button>
+    <button data-target="detail" onclick="showScreen('detail')">Point Detail</button>
+    <button data-target="create" onclick="showScreen('create')">Add Point</button>
+    <button data-target="feeding" onclick="showScreen('feeding')">Feeding</button>
+    <button data-target="login" onclick="showScreen('login')">Login</button>
+    <button data-target="register" onclick="showScreen('register')">Register</button>
+    <button data-target="profile" onclick="showScreen('profile')">Profile</button>
+  </nav>
+
+  <section id="screen-map" class="screen active">
+    <div class="map-layout">
+      <span class="map-road-label rl1">ถนนฉลองกรุง</span>
+      <span class="map-road-label rl2">KMITL</span>
+      <span class="map-road-label rl3">ลาดกระบัง</span>
+      <div class="map-tools">
+        <div class="search-wrap"><span class="search-icon">⌕</span><input class="search" placeholder="ค้นหาพื้นที่ หรือจุดสัตว์จรจัด..." /></div>
+        <button class="map-fab" title="ตำแหน่งของฉัน">◎</button>
+      </div>
+      <button class="marker m1" onclick="openDrawer()" aria-label="สุนัขจรจัด"><span>🐶</span></button>
+      <button class="marker m2" onclick="openDrawer()" aria-label="แมวจรจัด"><span>🐱</span></button>
+      <button class="marker m3" onclick="openDrawer()" aria-label="จุดสัตว์จรจัด"><span>🐾</span></button>
+      <div class="me" title="ตำแหน่งของฉัน"></div>
+      <div class="map-legend"><span class="legend-dot"></span> 12 จุดที่มีการอัปเดตในบริเวณนี้</div>
+      <button class="btn primary add-point" onclick="showScreen('create')">＋ เพิ่มจุดสัตว์จรจัด</button>
+
+      <aside id="map-drawer" class="detail-drawer">
+        <div class="drawer-header">
+          <div><span class="eyebrow">🐶 DOG · ACTIVE</span><h2>สุนัขจรจัดหน้าอาคาร A</h2></div>
+          <button class="btn icon-btn" onclick="closeDrawer()">✕</button>
+        </div>
+        <div class="hero-photo"><span class="photo-chip">อัปเดตรูปวันนี้ 16:45</span></div>
+        <div class="status-box"><strong>🍚 ให้อาหารล่าสุด 3 ชั่วโมงก่อน</strong><br><small>มีผู้ใช้อัปเดตสถานะแล้ววันนี้</small></div>
+        <div class="meta-grid">
+          <div class="meta-item"><strong>จำนวน</strong>ประมาณ 4 ตัว</div>
+          <div class="meta-item"><strong>มักพบ</strong>17:00–20:00</div>
+          <div class="meta-item"><strong>พบล่าสุด</strong>วันนี้ 16:45</div>
+          <div class="meta-item"><strong>ระยะห่าง</strong>ประมาณ 650 ม.</div>
+        </div>
+        <p style="margin:14px 2px;color:var(--muted);font-size:14px;">มักอยู่ข้างอาคารใกล้ร้านสะดวกซื้อ มีสุนัขโต 3 ตัวและลูกสุนัข 1 ตัว</p>
+        <div class="stack">
+          <button class="btn primary" onclick="alert('Prototype: เปิด Google Maps ด้วย latitude / longitude')">↗ นำทางไปยังจุด</button>
+          <button class="btn" onclick="showScreen('feeding')">🍚 ฉันให้อาหารแล้ว</button>
+          <button class="btn ghost" onclick="showScreen('detail')">ดูรายละเอียดทั้งหมด →</button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="screen-detail" class="screen">
+    <main class="page-wrap">
+      <div class="flow-note"><strong>Demo flow:</strong> Map → Marker → <code>Point Detail</code> → Navigate / Feeding / Report</div>
+      <div class="page-title">
+        <div><span class="eyebrow">รายละเอียดจุด</span><h1>สุนัขจรจัดหน้าอาคาร A</h1></div>
+        <button class="btn" onclick="showScreen('map')">← กลับแผนที่</button>
+      </div>
+
+      <div class="card detail-hero">
+        <div class="hero-photo"><span class="photo-chip">รูปที่รายงานล่าสุด</span></div>
+        <div class="detail-summary">
+          <span class="eyebrow" style="width:max-content;">พบล่าสุดวันนี้ 16:45</span>
+          <h2 style="margin-top:13px;">กลุ่มสุนัข 4 ตัวบริเวณหน้าอาคาร</h2>
+          <p>มักอยู่ข้างอาคารใกล้ร้านสะดวกซื้อ มีสุนัขโต 3 ตัวและลูกสุนัข 1 ตัว</p>
+          <div class="badges"><span class="tag">DOG</span><span class="tag">ACTIVE</span><span class="tag orange">17:00–20:00</span></div>
+          <button class="btn primary" onclick="alert('Prototype: เปิดบริการแผนที่ภายนอก')">↗ นำทางไปยังจุด</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📍 ตำแหน่ง</h3>
+        <div class="mini-map" style="height:225px;"></div>
+        <p style="color:var(--muted);margin:12px 0 0;font-size:13px;">บริเวณหน้าอาคาร A · ลาดกระบัง กรุงเทพมหานคร</p>
+      </div>
+
+      <div class="card">
+        <h3>🍚 สถานะการให้อาหาร</h3>
+        <div class="status-box"><strong>ให้อาหารล่าสุดเมื่อ 3 ชั่วโมงก่อน</strong><br><small>ข้อมูลนี้ช่วยให้ผู้ใช้ตัดสินใจก่อนเดินทางไปยังจุด</small></div>
+        <button class="btn primary" onclick="showScreen('feeding')">ฉันให้อาหารแล้ว</button>
+      </div>
+
+      <div class="card">
+        <h3>ประวัติการดูแลล่าสุด</h3>
+        <div class="history-item"><strong>วันนี้ 15:20 · User A</strong><br>อาหารเม็ด 1 ถุง + เติมน้ำ</div>
+        <div class="history-item"><strong>เมื่อวาน 18:10 · User B</strong><br>ให้อาหารแล้ว</div>
+        <div class="history-item"><strong>2 วันที่แล้ว 17:40 · User C</strong><br>ให้อาหารแล้ว</div>
+      </div>
+
+      <div class="card">
+        <h3>ช่วยยืนยันข้อมูลจุดนี้</h3>
+        <p style="color:var(--muted);">การยืนยันจากชุมชนช่วยให้หมุดบนแผนที่ไม่เก่าเกินไป</p>
+        <div class="form-actions" style="justify-content:flex-start;">
+          <button class="btn soft">✓ ยังพบสัตว์อยู่</button>
+          <button class="btn danger">? ไม่พบแล้ว</button>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <section id="screen-create" class="screen">
+    <main class="page-wrap">
+      <div class="flow-note"><strong>Demo flow:</strong> Login → <code>Add Stray Point</code> → Location → Photo → Detail → Submit</div>
+      <div class="page-title"><div><span class="eyebrow">สร้างหมุดใหม่</span><h1>เพิ่มจุดสัตว์จรจัด</h1><p style="color:var(--muted);margin:8px 0 0;">ช่วยแชร์ตำแหน่งเพื่อให้คนในพื้นที่เข้าถึงและช่วยดูแลได้ง่ายขึ้น</p></div></div>
+
+      <div class="card">
+        <h3>1 · เลือกตำแหน่ง</h3>
+        <div class="mini-map"></div>
+        <div class="form-grid" style="margin-top:15px;">
+          <div class="field"><label>Latitude</label><input value="13.729100" /></div>
+          <div class="field"><label>Longitude</label><input value="100.778900" /></div>
+        </div>
+        <div class="form-actions"><button class="btn soft">◎ ใช้ตำแหน่งปัจจุบัน</button></div>
+      </div>
+
+      <div class="card">
+        <h3>2 · เพิ่มรูปสัตว์หรือบริเวณที่พบ</h3>
+        <div class="upload-box"><div><div class="upload-icon">＋</div><strong>อัปโหลดรูป หรือถ่ายรูปใหม่</strong><br><small>JPG, PNG · ระบบจะตรวจสอบขนาดไฟล์ก่อนอัปโหลด</small></div></div>
+      </div>
+
+      <div class="card">
+        <h3>3 · รายละเอียดสัตว์</h3>
+        <div class="form-grid">
+          <div class="field"><label>ประเภทสัตว์ *</label><select><option>สุนัข (DOG)</option><option>แมว (CAT)</option><option>อื่น ๆ (OTHER)</option></select></div>
+          <div class="field"><label>จำนวนโดยประมาณ *</label><input type="number" value="4" min="1" /></div>
+          <div class="field full"><label>คำอธิบาย *</label><textarea>มักอยู่ข้างอาคาร ใกล้ร้านสะดวกซื้อ...</textarea></div>
+          <div class="field full"><label>ช่วงเวลาที่มักพบ</label><input placeholder="เช่น 17:00 - 20:00" /></div>
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn" onclick="showScreen('map')">ยกเลิก</button><button class="btn primary" onclick="alert('Prototype: สร้างจุดสำเร็จ');showScreen('map');">สร้างจุดบนแผนที่</button></div>
+    </main>
+  </section>
+
+  <section id="screen-feeding" class="screen">
+    <main class="page-wrap" style="max-width:760px;">
+      <div class="flow-note"><strong>Demo flow:</strong> Point Detail → <code>Feeding</code> → Note / Photo optional → Save</div>
+      <div class="page-title"><div><span class="eyebrow">บันทึกการดูแล</span><h1>ให้อาหารแล้ว</h1><p style="color:var(--muted);margin:8px 0 0;">อัปเดตข้อมูลให้คนอื่นรู้ว่าจุดนี้ได้รับการดูแลล่าสุดเมื่อไร</p></div></div>
+      <div class="card" style="background:var(--mint);">
+        <div style="display:flex;gap:13px;align-items:center;"><div style="width:54px;height:54px;border-radius:16px;background:#fff;display:grid;place-items:center;font-size:26px;">🐶</div><div><strong>สุนัขจรจัดหน้าอาคาร A</strong><br><span style="color:var(--muted);font-size:13px;">ให้อาหารล่าสุด 3 ชั่วโมงก่อน</span></div></div>
+      </div>
+      <div class="card">
+        <div class="field"><label>หมายเหตุ</label><textarea placeholder="เช่น ให้อาหารเม็ด 1 ถุง และเติมน้ำแล้ว"></textarea></div>
+        <div class="field" style="margin-top:16px;"><label>รูปหลังให้อาหาร (ไม่บังคับ)</label><div class="upload-box" style="min-height:145px;"><div><div class="upload-icon">📷</div><strong>เพิ่มรูปหลังให้อาหาร</strong></div></div></div>
+        <div class="form-actions"><button class="btn" onclick="showScreen('detail')">ยกเลิก</button><button class="btn primary" onclick="alert('บันทึก Feeding สำเร็จ → อัปเดตเวลาล่าสุด');showScreen('detail');">✓ ยืนยันการให้อาหาร</button></div>
+      </div>
+    </main>
+  </section>
+
+  <section id="screen-login" class="screen">
+    <div class="auth-shell">
+      <div class="auth-visual"><div class="paw">🐾</div><div><h2>ช่วยกันดูแลสัตว์จรจัดในพื้นที่ของเรา</h2><p>ค้นหาจุดที่ต้องการความช่วยเหลือ ดูการให้อาหารล่าสุด และร่วมอัปเดตข้อมูลให้ชุมชน</p></div></div>
+      <div class="auth-panel"><div class="auth-card"><span class="eyebrow">ยินดีต้อนรับกลับ</span><h2>เข้าสู่ระบบ PawFeed</h2><p class="subtitle">เข้าสู่ระบบเพื่อเพิ่มจุดและบันทึกการให้อาหาร</p><div class="stack"><div class="field"><label>Email</label><input type="email" placeholder="name@example.com" /></div><div class="field"><label>Password</label><input type="password" placeholder="••••••••" /></div><button class="btn primary" onclick="showScreen('map')">เข้าสู่ระบบ</button></div><div class="divider">หรือ</div><button class="btn block" onclick="showScreen('register')">สร้างบัญชีใหม่</button><p class="auth-hint">Guest ยังสามารถดูแผนที่และรายละเอียดจุดได้ โดยไม่จำเป็นต้องสร้างบัญชี</p></div></div>
+    </div>
+  </section>
+
+  <section id="screen-register" class="screen">
+    <div class="auth-shell">
+      <div class="auth-visual"><div class="paw">🐾</div><div><h2>เริ่มช่วยเหลือจากจุดเล็ก ๆ ใกล้ตัว</h2><p>สร้างบัญชีเพื่อรายงานจุดสัตว์จรจัด บันทึกการให้อาหาร และช่วยยืนยันข้อมูลให้เป็นปัจจุบัน</p></div></div>
+      <div class="auth-panel"><div class="auth-card"><span class="eyebrow">เข้าร่วมชุมชน</span><h2>สร้างบัญชี PawFeed</h2><p class="subtitle">ใช้เวลาไม่ถึงหนึ่งนาที</p><div class="stack"><div class="field"><label>ชื่อที่แสดง</label><input placeholder="ชื่อของคุณ" /></div><div class="field"><label>Email</label><input type="email" placeholder="name@example.com" /></div><div class="field"><label>Password</label><input type="password" placeholder="••••••••" /></div><div class="field"><label>Confirm Password</label><input type="password" placeholder="••••••••" /></div><button class="btn primary" onclick="showScreen('map')">สร้างบัญชี</button></div><div class="divider">มีบัญชีแล้ว?</div><button class="btn block" onclick="showScreen('login')">เข้าสู่ระบบ</button></div></div>
+    </div>
+  </section>
+
+  <section id="screen-profile" class="screen">
+    <main class="page-wrap">
+      <div class="page-title"><div><span class="eyebrow">บัญชีของฉัน</span><h1>กิจกรรมของฉัน</h1></div></div>
+      <div class="profile-grid">
+        <aside class="card profile-menu"><div class="avatar">🙂</div><h3 style="margin:0 0 3px;">User A</h3><p style="color:var(--muted);font-size:13px;">user@example.com</p><button class="btn soft">ภาพรวม</button><button class="btn ghost">จุดที่ฉันสร้าง</button><button class="btn ghost">ประวัติการให้อาหาร</button><button class="btn ghost">ตั้งค่าบัญชี</button><button class="btn danger">ออกจากระบบ</button></aside>
+        <div>
+          <div class="card"><h3>ภาพรวมการช่วยเหลือ</h3><div class="stats"><div class="stat"><span>จุดที่สร้าง</span><strong>3</strong></div><div class="stat"><span>ครั้งที่ให้อาหาร</span><strong>8</strong></div><div class="stat"><span>ยืนยันข้อมูล</span><strong>12</strong></div></div></div>
+          <div class="card"><h3>จุดที่ฉันสร้างล่าสุด</h3><div class="list-card"><div class="thumb">🐶</div><div><strong>สุนัขจรจัดหน้าอาคาร A</strong><div class="badges" style="margin:5px 0 0;"><span class="tag">DOG</span><span class="tag">ACTIVE</span></div><p>อัปเดตล่าสุดวันนี้ 16:45</p></div><button class="btn" onclick="showScreen('detail')">ดูรายละเอียด</button></div><div class="list-card"><div class="thumb">🐱</div><div><strong>แมวจรจัดข้างตลาด</strong><div class="badges" style="margin:5px 0 0;"><span class="tag">CAT</span><span class="tag">ACTIVE</span></div><p>อัปเดตล่าสุดเมื่อวาน</p></div><button class="btn">ดูรายละเอียด</button></div></div>
+          <div class="card"><h3>ประวัติการให้อาหารล่าสุด</h3><div class="history-item"><strong>วันนี้ 15:20</strong> · สุนัขจรจัดหน้าอาคาร A</div><div class="history-item"><strong>30 ส.ค. 18:10</strong> · แมวจรจัดข้างตลาด</div></div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <script>
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.screen-switcher button').forEach(el => el.classList.remove('active'));
+      const screen=document.getElementById('screen-'+name);if(screen)screen.classList.add('active');
+      const navButton=document.querySelector('.screen-switcher button[data-target="'+name+'"]');if(navButton)navButton.classList.add('active');
+      window.scrollTo({top:0,behavior:'smooth'});closeDrawer();
+    }
+    function openDrawer(){document.getElementById('map-drawer').classList.add('open');}
+    function closeDrawer(){const drawer=document.getElementById('map-drawer');if(drawer)drawer.classList.remove('open');}
+  </script>
+</body>
+</html>
