@@ -24,16 +24,18 @@ Implemented:
 - direct-line fallback only when road routing is unavailable
 - deterministic Docker routing mock for E2E/CI plus separate live provider smoke verification
 
-Current limitation: Route Preview is not yet Active turn-by-turn navigation; next-maneuver UI, off-route detection, and navigation start/stop state belong to Phase 3.
+## Phase 3 — Active Navigation Mode — COMPLETED
 
-## Phase 3 — Active Navigation Mode
+Implemented:
+- explicit Start/Stop active navigation state
+- GPS-follow map behavior during active navigation
+- remaining distance and ETA derived from progress along route geometry
+- next maneuver/instruction derived from normalized route steps
+- arrival state near the destination
+- user map drag pauses follow; Recenter resumes GPS follow
+- mobile Playwright flow verifies movement, maneuver progression, recenter, arrival, and stop
 
-Planned:
-- Start/Stop navigation state
-- follow current position while navigating
-- remaining distance and ETA
-- next maneuver/instruction from route steps
-- recenter behavior after the user moves the map
+Current limitation: Phase 3 does not detect off-route movement or automatically request a replacement route; those failure/recovery behaviors remain Phase 4.
 
 ## Phase 4 — Mobile UX, GPS & Failure Handling
 
@@ -56,4 +58,4 @@ Planned:
 
 ## Design boundary
 
-PawFeed may use interaction patterns familiar from map applications while keeping its own visual identity. Road Route Preview is integrated and verified in Phase 2, but PawFeed must not claim Active turn-by-turn navigation until Phase 3 capabilities are implemented and verified.
+PawFeed may use interaction patterns familiar from map applications while keeping its own visual identity. Active in-web navigation with route-step guidance is integrated and verified in Phase 3. Off-route detection, automatic rerouting, voice guidance, and deeper mobile failure polish remain outside the completed Phase 3 scope.

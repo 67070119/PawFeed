@@ -100,7 +100,7 @@ PawFeed เปิด Navigation Mode ภายในเว็บที่ `/poin
 
 Route Preview รองรับ DRIVING, WALKING และ CYCLING. หาก provider timeout/unavailable ระบบแสดง Error State และเส้นตรง fallback เพื่ออ้างอิงเท่านั้น โดยไม่สร้าง road route ปลอม. Routing adapter retry transient network/5xx ตาม `ROUTING_RETRIES`.
 
-Phase 2 ยังไม่เปิด Active turn-by-turn mode หรือ voice guidance. ข้อมูลตำแหน่งผู้ใช้ใช้สำหรับ request route ระหว่าง session และไม่ถูก persist ลงฐานข้อมูล
+Phase 3 เพิ่ม Active Navigation state บน Frontend โดยใช้ Route Steps/Geometry ที่ Backend normalize แล้วเพื่อแสดง next maneuver และคำนวณ Remaining Distance/ETA ตามตำแหน่งปัจจุบัน. ระหว่าง Active Navigation แผนที่จะ Follow GPS; user drag จะ pause follow และ Recenter จะ resume follow. ระบบยังไม่ทำ off-route detection/automatic rerouting หรือ voice guidance. ข้อมูลตำแหน่งผู้ใช้ไม่ถูก persist ลงฐานข้อมูล
 
 ## 4. Runtime Containers
 

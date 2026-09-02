@@ -171,6 +171,12 @@ Navigation Mode ต้องยังใช้งานดูจุดหมา�
 #### REQ-NAV-004 — Travel Mode Preview
 Route Preview ต้องรองรับการสลับโหมด DRIVING, WALKING และ CYCLING และคำนวณ Route Distance/ETA ใหม่ตามโหมดที่เลือก
 
+#### REQ-NAV-005 — Active Navigation Mode
+เมื่อมี GPS Position และ Road Route Preview พร้อม ผู้ใช้ต้องสามารถ Start Active Navigation ได้ ระบบต้องแสดงคำแนะนำ Maneuver ถัดไปจาก Route Steps พร้อม Remaining Distance/ETA ที่เปลี่ยนตามตำแหน่ง และผู้ใช้ต้อง Stop เพื่อกลับ Route Preview ได้
+
+#### REQ-NAV-006 — Follow & Recenter
+ระหว่าง Active Navigation แผนที่ต้อง Follow ตำแหน่งผู้ใช้ เมื่อผู้ใช้ลากแผนที่เองระบบต้องหยุด Follow ชั่วคราวและแจ้งสถานะ และเมื่อกด Recenter ต้องกลับมา Follow ตำแหน่งอีกครั้ง
+
 ---
 
 ### Profile
@@ -263,7 +269,7 @@ Jenkins Pipeline ต้องทำอย่างน้อย Checkout, Install
 
 รายการต่อไปนี้ไม่อยู่ใน Acceptance Scope ของ PawFeed v1:
 
-- Active turn-by-turn Navigation พร้อมคำสั่งเลี้ยว/voice guidance (จะทำใน Navigation Redesign Phase 3)
+- Off-route detection/automatic rerouting และ voice guidance (อยู่ใน Navigation Redesign Phase 4)
 - Real-time GPS Tracking สัตว์
 - AI วิเคราะห์สายพันธุ์ สุขภาพ หรือความหิวจากรูป
 - Donation / Payment

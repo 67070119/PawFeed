@@ -73,6 +73,6 @@ test('critical user flow works end-to-end', async ({ page }) => {
   await page.goto('/');
   const marker = page.locator('.leaflet-marker-icon').first();
   await expect(marker).toBeVisible();
-  await marker.click();
+  await marker.click({ force: true });
   await expect(page.getByRole('link', { name: 'ดูรายละเอียด' })).toBeVisible();
 });

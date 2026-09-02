@@ -46,6 +46,78 @@ function routingErrorMessage(error) {
   return 'คำนวณเส้นทางตามถนนไม่ได้ในขณะนี้ จะแสดงระยะตรงชั่วคราว';
 }
 
+function nearestGeometryIndex(geometry, position) {
+  if (!geometry?.length || !position) return 0;
+  let nearest = 0;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  geometry.forEach((coordinate, index) => {
+    const distance = distanceMeters(position, coordinate);
+    if (distance < nearestDistance) {
+      nearest = index;
+      nearestDistance = distance;
+    }
+  });
+  return nearest;
+}
+
+function remainingMetrics(route, position, destination) {
+  if (!route || !position || route.geometry.length < 2) {
+    return { distanceMeters: route?.distanceMeters ?? null, durationSeconds: route?.durationSeconds ?? null, geometryIndex: 0 };
+  }
+  if (distanceMeters(position, destination) <= 20) {
+    return { distanceMeters: 0, durationSeconds: 0, geometryIndex: route.geometry.length - 1 };
+  }
+
+  const currentIndex = nearestGeometryIndex(route.geometry, position);
+  let totalGeometry = 0;
+  let remainingGeometry = distanceMeters(position, route.geometry[currentIndex]);
+
+  for (let index = 0; index < route.geometry.length - 1; index += 1) {
+    const segment = distanceMeters(route.geometry[index], route.geometry[index + 1]);
+    totalGeometry += segment;
+    if (index >= currentIndex) remainingGeometry += segment;
+  }
+
+  const ratio = totalGeometry > 0 ? Math.min(1, Math.max(0, remainingGeometry / totalGeometry)) : 1;
+  return {
+    distanceMeters: Math.round(route.distanceMeters * ratio),
+    durationSeconds: Math.round(route.durationSeconds * ratio),
+    geometryIndex: currentIndex,
+  };
+}
+
+function nextManeuver(route, position, currentGeometryIndex) {
+  if (!route?.steps?.length || !position) return null;
+  const actionable = route.steps
+    .filter((step) => step.location && step.maneuverType !== 'depart')
+    .map((step) => ({ ...step, geometryIndex: nearestGeometryIndex(route.geometry, step.location) }));
+
+  for (const step of actionable) {
+    const distance = distanceMeters(position, step.location);
+    if (step.geometryIndex > currentGeometryIndex || distance > 25) return { ...step, distanceToManeuver: distance };
+  }
+  return actionable.at(-1) ?? null;
+}
+
+function maneuverIcon(step) {
+  if (!step) return '↑';
+  if (step.maneuverType === 'arrive') return '●';
+  if (step.maneuverModifier?.includes('left')) return '↰';
+  if (step.maneuverModifier?.includes('right')) return '↱';
+  if (step.maneuverModifier === 'uturn') return '↶';
+  return '↑';
+}
+
+function maneuverText(step) {
+  if (!step) return 'ไปตามเส้นทาง';
+  if (step.maneuverType === 'arrive') return 'ไปถึงจุดหมาย';
+  const road = step.name ? ` เข้าสู่ ${step.name}` : '';
+  if (step.maneuverModifier?.includes('left')) return `เลี้ยวซ้าย${road}`;
+  if (step.maneuverModifier?.includes('right')) return `เลี้ยวขวา${road}`;
+  if (step.maneuverModifier === 'uturn') return `กลับรถ${road}`;
+  return `ตรงไป${road}`;
+}
+
 export default function NavigatePointPage() {
   const { id } = useParams();
   const [point, setPoint] = useState(null);
@@ -61,6 +133,8 @@ export default function NavigatePointPage() {
   const [route, setRoute] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState('');
+  const [activeNavigation, setActiveNavigation] = useState(false);
+  const [followUser, setFollowUser] = useState(true);
   const watchRef = useRef(null);
   const routeRequestRef = useRef(0);
   const routeOriginRef = useRef(null);
@@ -87,6 +161,7 @@ export default function NavigatePointPage() {
       setRouteError('');
       return;
     }
+    if (activeNavigation && route) return;
 
     const lastOrigin = routeOriginRef.current;
     const canReuse = lastOrigin
@@ -121,9 +196,10 @@ export default function NavigatePointPage() {
       .finally(() => {
         if (routeRequestRef.current === requestId) setRouteLoading(false);
       });
-  }, [point, userPosition, travelMode]);
+  }, [point, userPosition, travelMode, activeNavigation, route]);
 
   function startTracking() {
+    if (watchRef.current != null) return;
     if (!window.isSecureContext) {
       stopTracking();
       setManualPicking(true);
@@ -148,6 +224,7 @@ export default function NavigatePointPage() {
       },
       () => {
         stopTracking();
+        setActiveNavigation(false);
         setManualPicking(true);
         setError('ไม่สามารถเข้าถึงตำแหน่งได้ เลือกตำแหน่งของคุณบนแผนที่แทน');
       },
@@ -158,6 +235,7 @@ export default function NavigatePointPage() {
 
   function pickManualPosition(position) {
     stopTracking();
+    setActiveNavigation(false);
     routeOriginRef.current = null;
     setUserPosition(position);
     setAccuracy(null);
@@ -169,15 +247,34 @@ export default function NavigatePointPage() {
 
   function beginManualPick() {
     stopTracking();
+    setActiveNavigation(false);
     setManualPicking(true);
     setError('แตะตำแหน่งของคุณบนแผนที่');
   }
 
   function selectTravelMode(mode) {
-    if (mode === travelMode) return;
+    if (mode === travelMode || activeNavigation) return;
     routeOriginRef.current = null;
     setTravelMode(mode);
     setRoute(null);
+  }
+
+  function startActiveNavigation() {
+    if (!route || !userPosition || positionSource !== 'gps' || !tracking) return;
+    setActiveNavigation(true);
+    setFollowUser(true);
+    setRecenterKey((value) => value + 1);
+  }
+
+  function stopActiveNavigation() {
+    setActiveNavigation(false);
+    setFollowUser(true);
+    setRecenterKey((value) => value + 1);
+  }
+
+  function recenter() {
+    setFollowUser(true);
+    setRecenterKey((value) => value + 1);
   }
 
   if (loading) return <main className="centerState">กำลังเปิดโหมดนำทาง...</main>;
@@ -185,13 +282,22 @@ export default function NavigatePointPage() {
 
   const destination = [point.latitude, point.longitude];
   const directDistance = userPosition ? distanceMeters(userPosition, destination) : null;
-  const displayDistance = route?.distanceMeters ?? directDistance;
+  const activeMetrics = activeNavigation ? remainingMetrics(route, userPosition, destination) : null;
+  const displayDistance = activeMetrics?.distanceMeters ?? route?.distanceMeters ?? directDistance;
+  const displayDuration = activeMetrics?.durationSeconds ?? route?.durationSeconds ?? null;
+  const currentManeuver = activeNavigation
+    ? nextManeuver(route, userPosition, activeMetrics?.geometryIndex ?? 0)
+    : null;
+  const arrived = activeNavigation && directDistance != null && directDistance <= 20;
   const originLabel = userPosition
     ? positionSource === 'manual' ? 'ตำแหน่งที่เลือกบนแผนที่' : 'ตำแหน่งของคุณ'
     : 'ยังไม่ได้ระบุตำแหน่ง';
 
+  const activeInstruction = arrived ? 'ถึงจุดหมายแล้ว' : maneuverText(currentManeuver);
+  const activeInstructionDistance = arrived ? '0 ม.' : formatDistance(currentManeuver?.distanceToManeuver);
+
   return (
-    <main className="navExperience">
+    <main className={`navExperience${activeNavigation ? ' navActiveExperience' : ''}`}>
       <section className="navMapStage" aria-label="แผนที่นำทาง">
         <NavigationMap
           destination={destination}
@@ -201,84 +307,111 @@ export default function NavigatePointPage() {
           recenterKey={recenterKey}
           manualPickEnabled={manualPicking}
           onManualPick={pickManualPosition}
+          activeNavigation={activeNavigation}
+          followUser={followUser}
+          onUserMapInteraction={() => setFollowUser(false)}
         />
 
-        <div className="navTopBar">
-          <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">←</Link>
-          <div className="navRouteCard">
-            <div className="navRouteRow">
-              <span className="navOriginDot" />
-              <div><small>ตำแหน่งเริ่มต้น</small><strong>{originLabel}</strong></div>
-            </div>
-            <span className="navRouteConnector" />
-            <div className="navRouteRow">
-              <span className="navDestinationPin">●</span>
-              <div><small>จุดหมาย</small><strong>{point.description}</strong></div>
+        {activeNavigation ? (
+          <div className="navActiveTopBar" aria-label="คำแนะนำการนำทาง">
+            <div className="navManeuverIcon">{arrived ? '✓' : maneuverIcon(currentManeuver)}</div>
+            <div className="navManeuverCopy">
+              <small>{arrived ? 'จุดหมาย' : activeInstructionDistance}</small>
+              <strong>{activeInstruction}</strong>
+              {!arrived && currentManeuver?.name && <span>{currentManeuver.name}</span>}
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="navTopBar">
+            <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">←</Link>
+            <div className="navRouteCard">
+              <div className="navRouteRow">
+                <span className="navOriginDot" />
+                <div><small>ตำแหน่งเริ่มต้น</small><strong>{originLabel}</strong></div>
+              </div>
+              <span className="navRouteConnector" />
+              <div className="navRouteRow">
+                <span className="navDestinationPin">●</span>
+                <div><small>จุดหมาย</small><strong>{point.description}</strong></div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {manualPicking && <div className="navPickHint">แตะบนแผนที่เพื่อเลือกตำแหน่งของคุณ</div>}
 
         <div className="navMapControls">
-          <button className="navMapButton" onClick={() => setRecenterKey((value) => value + 1)} aria-label="จัดแผนที่ให้อยู่กึ่งกลาง">⌖</button>
+          <button
+            className={`navMapButton${activeNavigation && !followUser ? ' navRecenterNeeded' : ''}`}
+            onClick={recenter}
+            aria-label={activeNavigation ? 'กลับมาติดตามตำแหน่งฉัน' : 'จัดแผนที่ให้อยู่กึ่งกลาง'}
+          >⌖</button>
         </div>
       </section>
 
-      <section className="navBottomSheet" aria-label="ข้อมูลการนำทาง">
+      <section className={`navBottomSheet${activeNavigation ? ' navActiveSheet' : ''}`} aria-label="ข้อมูลการนำทาง">
         <div className="navSheetHandle" />
 
-        <div className="navModeTabs" aria-label="เลือกโหมดเดินทาง">
-          {MODE_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={`navModeTab ${travelMode === option.value ? 'active' : ''}`}
-              onClick={() => selectTravelMode(option.value)}
-              aria-pressed={travelMode === option.value}
-            >
-              <span>{option.icon}</span>{option.label}
-            </button>
-          ))}
-        </div>
+        {!activeNavigation && (
+          <div className="navModeTabs" aria-label="เลือกโหมดเดินทาง">
+            {MODE_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`navModeTab ${travelMode === option.value ? 'active' : ''}`}
+                onClick={() => selectTravelMode(option.value)}
+                aria-pressed={travelMode === option.value}
+              >
+                <span>{option.icon}</span>{option.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="navSheetHeader">
           <div>
-            <span className="eyebrow">Route Preview</span>
-            <h1>{routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : 'เลือกตำแหน่งเริ่มต้น'}</h1>
-            <p>{route ? `เส้นทางตามถนน · ${route.provider}` : 'ระบุตำแหน่งเพื่อคำนวณเส้นทางตามถนน'}</p>
+            <span className="eyebrow">{activeNavigation ? 'กำลังนำทาง' : 'Route Preview'}</span>
+            <h1>{activeNavigation ? formatDuration(displayDuration) : routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : 'เลือกตำแหน่งเริ่มต้น'}</h1>
+            <p>{activeNavigation ? `${formatDistance(displayDistance)} ถึงจุดหมาย` : route ? `เส้นทางตามถนน · ${route.provider}` : 'ระบุตำแหน่งเพื่อคำนวณเส้นทางตามถนน'}</p>
           </div>
           <div className="navDistanceSummary">
             <strong>{formatDistance(displayDistance)}</strong>
-            <span>{route ? 'ตามเส้นทาง' : 'ระยะตรง'}</span>
+            <span>{activeNavigation ? 'เหลือ' : route ? 'ตามเส้นทาง' : 'ระยะตรง'}</span>
           </div>
         </div>
 
         {error && <div className="navInlineNotice" role="status">{error}</div>}
-        {routeError && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}</div>}
+        {routeError && !activeNavigation && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}</div>}
+        {activeNavigation && !followUser && <div className="navInlineNotice navFollowNotice" role="status">คุณเลื่อนแผนที่แล้ว กดปุ่ม ⌖ เพื่อกลับมาติดตามตำแหน่ง</div>}
 
         <div className="navCompactStats">
           <div className="navStatItem">
-            <small>เวลาโดยประมาณ</small>
-            <strong>{routeLoading ? 'กำลังคำนวณ' : formatDuration(route?.durationSeconds)}</strong>
+            <small>{activeNavigation ? 'เวลาที่เหลือ' : 'เวลาโดยประมาณ'}</small>
+            <strong>{routeLoading ? 'กำลังคำนวณ' : formatDuration(displayDuration)}</strong>
           </div>
           <div className="navStatItem">
-            <small>{positionSource === 'manual' ? 'ตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
-            <strong>{positionSource === 'manual' ? 'เลือกบนแผนที่' : accuracy ? `±${accuracy} ม.` : '—'}</strong>
+            <small>{activeNavigation ? 'GPS' : positionSource === 'manual' ? 'ตำแหน่ง' : 'ความแม่นยำ GPS'}</small>
+            <strong>{activeNavigation ? accuracy ? `±${accuracy} ม.` : 'กำลังติดตาม' : positionSource === 'manual' ? 'เลือกบนแผนที่' : accuracy ? `±${accuracy} ม.` : '—'}</strong>
           </div>
         </div>
 
         <div className="navPrimaryActions">
-          {!tracking ? (
-            <button className="navStartButton" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
+          {activeNavigation ? (
+            <button className="navStartButton navStopButton" onClick={stopActiveNavigation}>■ สิ้นสุดการนำทาง</button>
+          ) : route && positionSource === 'gps' && tracking ? (
+            <button className="navStartButton" onClick={startActiveNavigation}>▶ เริ่มนำทาง</button>
           ) : (
-            <button className="navStartButton navStopButton" onClick={stopTracking}>■ หยุดอัปเดต GPS</button>
+            <button className="navStartButton" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
           )}
-          <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>📍 เลือกบนแผนที่</button>
+          {!activeNavigation && (
+            <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>📍 เลือกบนแผนที่</button>
+          )}
         </div>
 
         <div className="navPhaseNote">
-          เส้นสีเขียวคือเส้นทางตามถนนจาก Routing Engine; หากระบบเส้นทางใช้งานไม่ได้ PawFeed จะแสดงเฉพาะระยะตรงและไม่สร้างเส้นทางปลอม
+          {activeNavigation
+            ? 'PawFeed ใช้ Route Steps เพื่อแสดงคำแนะนำถัดไปและติดตามตำแหน่งบนเส้นทาง โดยยังไม่ทำ off-route auto-reroute ใน Phase นี้'
+            : 'เส้นสีเขียวคือเส้นทางตามถนนจาก Routing Engine; ใช้ GPS เพื่อเริ่ม Active Navigation'}
         </div>
       </section>
     </main>

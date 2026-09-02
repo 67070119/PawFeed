@@ -41,15 +41,21 @@ const server = http.createServer((req, res) => {
       legs: [{
         steps: [
           {
-            distance: Math.round(result.distance * 0.6),
-            duration: Math.round(result.duration * 0.6),
+            distance: Math.round(result.distance * 0.45),
+            duration: Math.round(result.duration * 0.45),
             name: 'Mock Road A',
             maneuver: { type: 'depart', modifier: 'straight', location: [originLng, originLat] },
           },
           {
-            distance: Math.round(result.distance * 0.4),
-            duration: Math.round(result.duration * 0.4),
+            distance: Math.round(result.distance * 0.35),
+            duration: Math.round(result.duration * 0.35),
             name: 'Mock Road B',
+            maneuver: { type: 'turn', modifier: 'right', location: [midLng, midLat] },
+          },
+          {
+            distance: Math.round(result.distance * 0.2),
+            duration: Math.round(result.duration * 0.2),
+            name: 'Destination Road',
             maneuver: { type: 'arrive', modifier: 'straight', location: [destinationLng, destinationLat] },
           },
         ],

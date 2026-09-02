@@ -3,10 +3,16 @@
 import { useEffect } from 'react';
 import { Circle, CircleMarker, MapContainer, Pane, Polyline, TileLayer, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 
-function ViewController({ destination, userPosition, routeGeometry, recenterKey }) {
+function ViewController({ destination, userPosition, routeGeometry, recenterKey, activeNavigation, followUser }) {
   const map = useMap();
 
   useEffect(() => {
+    if (activeNavigation) {
+      if (followUser && userPosition) {
+        map.setView(userPosition, Math.max(map.getZoom(), 17), { animate: true });
+      }
+      return;
+    }
     if (routeGeometry?.length > 1) {
       map.fitBounds(routeGeometry, { paddingTopLeft: [48, 120], paddingBottomRight: [48, 260], maxZoom: 17 });
       return;
@@ -16,16 +22,19 @@ function ViewController({ destination, userPosition, routeGeometry, recenterKey 
       return;
     }
     map.setView(destination, 16);
-  }, [map, destination, userPosition, routeGeometry, recenterKey]);
+  }, [map, destination, userPosition, routeGeometry, recenterKey, activeNavigation, followUser]);
 
   return null;
 }
 
-function ManualPositionPicker({ enabled, onPick }) {
+function MapInteractionController({ manualPickEnabled, onManualPick, activeNavigation, onUserMapInteraction }) {
   useMapEvents({
     click(event) {
-      if (!enabled) return;
-      onPick([event.latlng.lat, event.latlng.lng]);
+      if (!manualPickEnabled) return;
+      onManualPick([event.latlng.lat, event.latlng.lng]);
+    },
+    dragstart() {
+      if (activeNavigation) onUserMapInteraction?.();
     },
   });
   return null;
@@ -39,19 +48,34 @@ export default function NavigationMap({
   recenterKey = 0,
   manualPickEnabled = false,
   onManualPick,
+  activeNavigation = false,
+  followUser = false,
+  onUserMapInteraction,
 }) {
   const fallbackLine = userPosition && routeGeometry.length < 2 ? [userPosition, destination] : null;
 
   return (
-    <MapContainer center={destination} zoom={16} className={`navigationMapCanvas${manualPickEnabled ? ' manualPickActive' : ''}`} scrollWheelZoom zoomControl={false}>
+    <MapContainer center={destination} zoom={16} className={`navigationMapCanvas${manualPickEnabled ? ' manualPickActive' : ''}${activeNavigation ? ' activeNavigationMap' : ''}`} scrollWheelZoom zoomControl={false}>
       <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      <ViewController destination={destination} userPosition={userPosition} routeGeometry={routeGeometry} recenterKey={recenterKey} />
-      <ManualPositionPicker enabled={manualPickEnabled} onPick={onManualPick} />
+      <ViewController
+        destination={destination}
+        userPosition={userPosition}
+        routeGeometry={routeGeometry}
+        recenterKey={recenterKey}
+        activeNavigation={activeNavigation}
+        followUser={followUser}
+      />
+      <MapInteractionController
+        manualPickEnabled={manualPickEnabled}
+        onManualPick={onManualPick}
+        activeNavigation={activeNavigation}
+        onUserMapInteraction={onUserMapInteraction}
+      />
 
       {routeGeometry.length > 1 && (
         <Pane name="route-preview" className="navigation-road-route" style={{ zIndex: 430 }}>
-          <Polyline positions={routeGeometry} pathOptions={{ color: '#ffffff', weight: 10, opacity: 0.9 }} />
-          <Polyline positions={routeGeometry} pathOptions={{ color: '#16866f', weight: 6, opacity: 0.96 }} />
+          <Polyline positions={routeGeometry} pathOptions={{ color: '#ffffff', weight: activeNavigation ? 11 : 10, opacity: 0.92 }} />
+          <Polyline positions={routeGeometry} pathOptions={{ color: '#16866f', weight: activeNavigation ? 7 : 6, opacity: 0.98 }} />
         </Pane>
       )}
 
@@ -68,8 +92,8 @@ export default function NavigationMap({
       {userPosition && (
         <>
           {accuracy && <Circle center={userPosition} radius={accuracy} pathOptions={{ color: '#2f80ed', fillColor: '#2f80ed', fillOpacity: 0.08, weight: 1 }} />}
-          <CircleMarker center={userPosition} radius={10} pathOptions={{ color: '#ffffff', fillColor: '#2f80ed', fillOpacity: 1, weight: 4 }}>
-            <Tooltip permanent direction="top" offset={[0, -9]}>ตำแหน่งฉัน</Tooltip>
+          <CircleMarker center={userPosition} radius={activeNavigation ? 11 : 10} pathOptions={{ color: '#ffffff', fillColor: '#2f80ed', fillOpacity: 1, weight: 4 }}>
+            <Tooltip permanent={!activeNavigation} direction="top" offset={[0, -9]}>ตำแหน่งฉัน</Tooltip>
           </CircleMarker>
         </>
       )}

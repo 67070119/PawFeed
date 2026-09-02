@@ -288,6 +288,26 @@
 - When: ผู้ใช้เลือก DRIVING, WALKING หรือ CYCLING
 - Then: ระบบ Request Route ใหม่สำหรับโหมดนั้นและอัปเดต Polyline, Route Distance และ ETA ให้ตรง Response ล่าสุด
 
+### AC-NAV-005 — Active Navigation Start/Progress/Stop
+**Requirement:** REQ-NAV-005
+
+- Given: GPS Tracking ทำงานและมี Road Route Preview
+- When: ผู้ใช้กด Start Navigation
+- Then: UI เปลี่ยนเป็น Active Navigation, แสดง Maneuver ถัดไปจาก Route Steps และ Remaining Distance/ETA
+- When: GPS Position เดินหน้าไปตาม Route
+- Then: Maneuver/Remaining metrics เปลี่ยนตามตำแหน่ง และเมื่อถึงจุดหมายระบบแสดง Arrival State
+- When: ผู้ใช้กด Stop Navigation
+- Then: ระบบออกจาก Active Navigation และกลับ Route Preview โดยไม่ออกจาก PawFeed
+
+### AC-NAV-006 — Follow & Recenter
+**Requirement:** REQ-NAV-006
+
+- Given: Active Navigation กำลัง Follow GPS
+- When: ผู้ใช้ลาก Map เอง
+- Then: ระบบหยุด Follow ชั่วคราวและแสดงว่าต้อง Recenter เพื่อกลับมาติดตาม
+- When: ผู้ใช้กด Recenter
+- Then: Map กลับมาติดตามตำแหน่ง GPS และข้อความ Pause Follow หายไป
+
 ### AC-PROFILE-001 — Profile ต้อง Login
 **Requirement:** REQ-PROFILE-001
 
