@@ -17,7 +17,7 @@ export default function NavBar() {
   return (
     <header className="topbar">
       <Link className="brand" href="/">
-        <span className="brandMark">🐾</span>
+        <span className="brandMark" aria-hidden="true"><span className="brandGlyph" /></span>
         <span>PawFeed<small>Community Care Map</small></span>
       </Link>
       <nav className="navActions">
