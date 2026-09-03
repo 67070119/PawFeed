@@ -1,13 +1,13 @@
 'use client';
 
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, TileLayer, ZoomControl, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
 const pickerIcon = L.divIcon({
   className: 'mapMarkerHost',
-  html: '<div class="mapPickerMarker"><span></span></div>',
-  iconSize: [42, 48],
-  iconAnchor: [21, 46],
+  html: '<div class="mapPickerMarker"><div class="mapPickerMarkerFace"><span></span></div><i></i></div>',
+  iconSize: [48, 56],
+  iconAnchor: [24, 52],
 });
 
 function Picker({ value, onChange }) {
@@ -19,8 +19,9 @@ function Picker({ value, onChange }) {
 export default function MapPicker({ value, onChange }) {
   const center = Number.isFinite(value.latitude) && Number.isFinite(value.longitude) ? [value.latitude, value.longitude] : [13.7291,100.7789];
   return (
-    <MapContainer center={center} zoom={16} className="pickerMap mapPickerCanvas" scrollWheelZoom>
+    <MapContainer center={center} zoom={16} className="pickerMap mapPickerCanvas" scrollWheelZoom zoomControl={false}>
       <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <ZoomControl position="bottomright" />
       <Picker value={value} onChange={onChange} />
     </MapContainer>
   );

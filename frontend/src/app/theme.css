@@ -445,14 +445,14 @@ textarea {
 }
 
 /* map redesign phase 3 */
-.mapShell { background: #e6ebe7; }
+.mapShell { background: #e9eeeb; }
 .pawMapCanvas,
 .mapPickerCanvas,
-.navigationMapCanvas { background: #dfe7e2; }
+.navigationMapCanvas { background: #e7ece9; }
 .pawMapCanvas .leaflet-tile,
 .mapPickerCanvas .leaflet-tile,
 .navigationMapCanvas .leaflet-tile {
-  filter: saturate(.78) contrast(.96) brightness(1.035);
+  filter: saturate(.68) contrast(.94) brightness(1.05);
 }
 
 .mapOverlay {
@@ -479,7 +479,7 @@ textarea {
 .mapInfo strong { font-size: 15px; font-weight: 720; }
 .mapInfo > span:last-of-type { margin-top: 2px; display: block; }
 .mapInfo .errorBox { margin: 9px 0 0; padding: 8px 10px; font-size: 11px; }
-.mapLocateButton { background: rgba(255,254,251,.95); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); }
+.mapLocateButton { background: rgba(255,255,255,.96); box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); }
 .mapAdd {
   right: 20px;
   bottom: 24px;
@@ -488,86 +488,8 @@ textarea {
   box-shadow: 0 12px 28px rgba(40,82,70,.18);
 }
 
-.mapMarkerHost { background: transparent !important; border: 0 !important; }
-.mapAnimalMarker,
-.mapPickerMarker {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px 14px 14px 5px;
-  transform: rotate(-45deg);
-  display: grid;
-  place-items: center;
-  border: 3px solid rgba(255,254,251,.98);
-  box-shadow: 0 8px 20px rgba(31,45,41,.22), 0 0 0 1px rgba(31,45,41,.08);
-}
-.mapAnimalMarker span,
-.mapPickerMarker span { transform: rotate(45deg); }
-.mapAnimalMarker span {
-  color: #fff;
-  font-size: 11px;
-  font-weight: 820;
-  letter-spacing: .04em;
-}
-.mapAnimalMarker--dog { background: #356b5b; }
-.mapAnimalMarker--cat { background: #8a6a4d; }
-.mapAnimalMarker--other { background: #687a75; }
-.mapPickerMarker { background: #2f594d; }
-.mapPickerMarker span {
-  width: 9px;
-  height: 9px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-}
-
-.mapUserMarker {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(78,120,144,.18);
-  animation: mapUserPulse 2.1s ease-out infinite;
-}
-.mapUserMarker span {
-  width: 14px;
-  height: 14px;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  background: #4e7890;
-  box-shadow: 0 3px 10px rgba(31,45,41,.22);
-}
-@keyframes mapUserPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(78,120,144,.24); }
-  55% { box-shadow: 0 0 0 10px rgba(78,120,144,0); }
-}
-
-.pawPopup .leaflet-popup-content-wrapper {
-  border-radius: 18px;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(31,45,41,.08);
-}
-.pawPopup .leaflet-popup-content { margin: 15px; }
-.pawPopup .leaflet-popup-tip { background: var(--surface); }
-.popupCard { min-width: 205px; }
-.popupTitleRow { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
-.popupTitleRow strong { margin: 0; font-size: 14px; }
-.popupAnimalCode {
-  width: 29px;
-  height: 29px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 820;
-}
-.popupAnimalCode--dog { background: #356b5b; }
-.popupAnimalCode--cat { background: #8a6a4d; }
-.popupAnimalCode--other { background: #687a75; }
-.popupMeta { margin: 3px 0; font-size: 11px; }
-.popupCard .button { margin-top: 11px; min-height: 36px; font-size: 12px; }
+.mapMarkerHost{background:transparent!important;border:0!important}.mapAnimalMarker{position:relative;width:46px;height:54px;display:grid;justify-items:center;align-content:start;transition:transform .16s ease,filter .16s ease;transform-origin:50% 88%}.mapAnimalMarkerFace{width:42px;height:42px;border:3px solid #fff;border-radius:16px;display:grid;place-items:center;box-shadow:0 8px 22px rgba(31,45,41,.2);position:relative;z-index:2}.mapAnimalGlyph{width:22px;height:18px;border:2px solid #fff;border-radius:48% 48% 44% 44%;position:relative;display:block}.mapAnimalGlyph:before,.mapAnimalGlyph:after{content:"";position:absolute;width:7px;height:8px;border:2px solid #fff;top:-7px}.mapAnimalGlyph:before{left:-3px;border-radius:70% 35% 50% 50%}.mapAnimalGlyph:after{right:-3px;border-radius:35% 70% 50% 50%}.mapAnimalGlyph i:before,.mapAnimalGlyph i:after{content:"";position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;top:6px}.mapAnimalGlyph i:before{left:5px}.mapAnimalGlyph i:after{right:5px}.mapAnimalMarkerStem{width:12px;height:12px;margin-top:-7px;transform:rotate(45deg);border-right:3px solid #fff;border-bottom:3px solid #fff;position:relative;z-index:1}.mapAnimalMarker--dog .mapAnimalMarkerFace,.mapAnimalMarker--dog .mapAnimalMarkerStem{background:var(--primary)}.mapAnimalMarker--cat .mapAnimalMarkerFace,.mapAnimalMarker--cat .mapAnimalMarkerStem{background:var(--accent)}.mapAnimalMarker--other .mapAnimalMarkerFace,.mapAnimalMarker--other .mapAnimalMarkerStem{background:#65756f}.mapAnimalMarker.isSelected{transform:translateY(-3px) scale(1.12);filter:drop-shadow(0 8px 12px rgba(31,45,41,.16))}.mapAnimalMarker.isSelected .mapAnimalMarkerFace{box-shadow:0 0 0 4px rgba(255,255,255,.9),0 0 0 7px rgba(47,107,93,.2),0 10px 24px rgba(31,45,41,.2)}.mapPickerMarker{position:relative;width:46px;height:54px;display:grid;justify-items:center;align-content:start}.mapPickerMarkerFace{width:42px;height:42px;border:3px solid #fff;border-radius:16px;background:var(--primary-dark);display:grid;place-items:center;box-shadow:0 9px 22px rgba(31,45,41,.22)}.mapPickerMarkerFace span{width:13px;height:13px;border:3px solid #fff;border-radius:50%;position:relative}.mapPickerMarkerFace span:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#fff}.mapPickerMarker>i{width:12px;height:12px;margin-top:-7px;background:var(--primary-dark);transform:rotate(45deg);border-right:3px solid #fff;border-bottom:3px solid #fff}
+.mapUserMarker{position:relative;width:36px;height:36px;display:grid;place-items:center}.mapUserMarkerPulse{position:absolute;width:34px;height:34px;border-radius:50%;background:rgba(82,120,138,.18);animation:mapUserPulse 2s ease-out infinite}.mapUserMarkerDot{position:relative;width:16px;height:16px;border:4px solid #fff;border-radius:50%;background:var(--info);box-shadow:0 3px 12px rgba(31,45,41,.22)}@keyframes mapUserPulse{0%,100%{transform:scale(.8);opacity:.9}70%{transform:scale(1.35);opacity:0}}.pawPopup .leaflet-popup-content-wrapper{border-radius:20px;background:var(--surface);color:var(--ink);box-shadow:0 18px 45px rgba(31,45,41,.16);border:1px solid rgba(31,45,41,.07)}.pawPopup .leaflet-popup-content{margin:16px}.pawPopup .leaflet-popup-tip{background:var(--surface);box-shadow:none}.popupCard{min-width:206px}.popupTypeRow{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:11px;font-weight:680}.popupAnimalIcon{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;position:relative}.popupAnimalIcon i{width:11px;height:8px;border:2px solid #fff;border-radius:50% 50% 45% 45%;position:relative}.popupAnimalIcon i:before,.popupAnimalIcon i:after{content:"";position:absolute;width:5px;height:5px;border:2px solid #fff;border-radius:50%;top:-7px}.popupAnimalIcon i:before{left:-4px}.popupAnimalIcon i:after{right:-4px}.popupAnimalIcon--dog{background:var(--primary)}.popupAnimalIcon--cat{background:var(--accent)}.popupAnimalIcon--other{background:#65756f}.popupHeadline{display:block;margin:13px 0 12px;font-size:18px;letter-spacing:-.02em}.popupData{padding:10px 11px;border-radius:12px;background:var(--surface-soft);display:grid;gap:2px}.popupData span{color:var(--muted);font-size:10px}.popupData strong{font-size:12px;font-weight:700}.popupAction{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid var(--line);color:var(--primary-dark);font-size:12px;font-weight:740}
 
 .mapShell .leaflet-control-zoom,
 .pickerMap .leaflet-control-zoom {
@@ -580,7 +502,7 @@ textarea {
   height: 38px;
   line-height: 36px;
   border-color: rgba(31,45,41,.08) !important;
-  background: rgba(255,254,251,.96);
+  background: rgba(255,255,255,.97);
   color: var(--ink-soft);
 }
 .mapShell .leaflet-control-zoom a:first-child,
@@ -590,7 +512,7 @@ textarea {
 .mapShell .leaflet-control-attribution,
 .pickerMap .leaflet-control-attribution,
 .navigationMapCanvas .leaflet-control-attribution {
-  background: rgba(255,254,251,.74);
+  background: rgba(255,255,255,.76);
   color: #7b8984;
   font-size: 9px;
   backdrop-filter: blur(6px);
@@ -949,4 +871,23 @@ img { max-width: 100%; }
   .navDistanceSummary strong { font-size: 17px; }
   .navStartButton,
   .navSecondaryButton { font-size: 11px; }
+}
+
+/* map ui refinement phase 2 */
+.mapAnimalMarker--cat .mapAnimalGlyph::before,
+.mapAnimalMarker--cat .mapAnimalGlyph::after { border-radius: 2px 8px 5px 5px; transform: rotate(8deg); }
+.mapAnimalMarker--cat .mapAnimalGlyph::after { transform: rotate(-8deg); }
+.mapAnimalMarker--other .mapAnimalGlyph { border-radius: 50%; }
+.mapAnimalMarker--other .mapAnimalGlyph::before,
+.mapAnimalMarker--other .mapAnimalGlyph::after { width: 5px; height: 5px; border-radius: 50%; top: -6px; }
+.mapShell .leaflet-bottom .leaflet-control-zoom { margin-right: 20px; margin-bottom: 88px; }
+.pickerMap .leaflet-bottom .leaflet-control-zoom { margin-right: 12px; margin-bottom: 12px; }
+.mapShell .leaflet-control-zoom a,
+.pickerMap .leaflet-control-zoom a { width: 40px; height: 40px; line-height: 38px; font-size: 18px; }
+.mapShell .leaflet-control-zoom a:hover,
+.pickerMap .leaflet-control-zoom a:hover { background: var(--surface-soft); color: var(--primary-dark); }
+@media (max-width:700px) {
+  .mapShell .leaflet-bottom .leaflet-control-zoom { margin-right: 12px; margin-bottom: 78px; }
+  .mapAnimalMarker { transform: scale(.94); }
+  .mapAnimalMarker.isSelected { transform: translateY(-3px) scale(1.05); }
 }
