@@ -56,7 +56,27 @@ function LocateUser({ position }) {
   return <Marker position={position} icon={userIcon} zIndexOffset={900} interactive={false} />;
 }
 
-export default function PawMap({ points, onBoundsChange, userPosition }) {
+function SearchTargetController({ target }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!target) return;
+    if (target.bounds) {
+      map.fitBounds(target.bounds, {
+        animate: true,
+        maxZoom: 15,
+        paddingTopLeft: [42, 120],
+        paddingBottomRight: [42, 72],
+      });
+      return;
+    }
+    if (target.center) map.setView(target.center, 14, { animate: true });
+  }, [target, map]);
+
+  return null;
+}
+
+export default function PawMap({ points, onBoundsChange, userPosition, searchTarget }) {
   const [selectedId, setSelectedId] = useState(null);
 
   return (
@@ -78,6 +98,7 @@ export default function PawMap({ points, onBoundsChange, userPosition }) {
       <ZoomControl position="bottomright" />
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <LocateUser position={userPosition} />
+      <SearchTargetController target={searchTarget} />
       {points.map((point) => {
         const animal = ANIMALS[point.animalType] || ANIMALS.OTHER;
         const selected = selectedId === point.id;
