@@ -1,6 +1,6 @@
 import './globals.css';
-import './theme.css';
 import 'leaflet/dist/leaflet.css';
+import './theme.css';
 import { AuthProvider } from '../lib/auth-context';
 import NavBar from '../components/NavBar';
 
@@ -10,8 +10,11 @@ export const metadata = {
 };
 
 export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#171a1d',
-  colorScheme: 'light',
+  colorScheme: 'dark',
 };
 
 export default function RootLayout({ children }) {
