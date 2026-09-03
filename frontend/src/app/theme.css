@@ -891,3 +891,164 @@ img { max-width: 100%; }
   .mapAnimalMarker { transform: scale(.94); }
   .mapAnimalMarker.isSelected { transform: translateY(-3px) scale(1.05); }
 }
+
+/* map-first home ux phase 3 */
+.topbar.mapTopbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  height: 88px;
+  align-items: flex-start;
+  padding-top: max(14px, env(safe-area-inset-top));
+  border-bottom: 0;
+  background: linear-gradient(180deg, rgba(246,247,244,.96) 0%, rgba(246,247,244,.78) 62%, rgba(246,247,244,0) 100%);
+  box-shadow: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+.mapTopbar > * { pointer-events: auto; }
+.mapTopbar .brandMark { box-shadow: 0 4px 14px rgba(31,45,41,.12); }
+.mapTopbar .navActions { padding: 3px; border: 1px solid rgba(31,45,41,.07); border-radius: 16px; background: rgba(255,255,255,.78); box-shadow: var(--shadow-sm); backdrop-filter: blur(14px); }
+.mapTopbar .navLink { padding-inline: 11px; }
+.mapTopbar .button { min-height: 36px; }
+
+.mapShell { height: 100dvh; }
+.mapSummary {
+  position: absolute;
+  z-index: 510;
+  top: max(92px, calc(env(safe-area-inset-top) + 78px));
+  left: max(20px, env(safe-area-inset-left));
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid rgba(31,45,41,.07);
+  border-radius: 999px;
+  background: rgba(255,255,255,.9);
+  color: var(--muted);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  font-size: 11px;
+}
+.mapSummary strong { color: var(--ink); font-size: 14px; font-weight: 760; }
+.mapSummaryDot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+.mapStatus {
+  position: absolute;
+  z-index: 520;
+  top: max(92px, calc(env(safe-area-inset-top) + 78px));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(420px, calc(100% - 180px));
+  padding: 9px 13px;
+  border: 1px solid rgba(31,45,41,.07);
+  border-radius: 13px;
+  background: rgba(255,255,255,.94);
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(14px);
+  font-size: 11px;
+  font-weight: 620;
+}
+.mapStatusError { background: rgba(248,234,234,.96); color: #8e4444; border-color: #efd0d0; }
+
+.mapFloatButton {
+  position: absolute;
+  z-index: 515;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(31,45,41,.08);
+  border-radius: 15px;
+  background: rgba(255,255,255,.94);
+  color: var(--primary-dark);
+  box-shadow: 0 8px 22px rgba(31,45,41,.12);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+}
+.mapLocateButton {
+  top: max(92px, calc(env(safe-area-inset-top) + 78px));
+  right: max(20px, env(safe-area-inset-right));
+}
+.mapLocateGlyph {
+  position: relative;
+  width: 17px;
+  height: 17px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.mapLocateGlyph::before,
+.mapLocateGlyph::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+}
+.mapLocateGlyph::before { width: 2px; height: 23px; left: 5px; top: -5px; }
+.mapLocateGlyph::after { width: 23px; height: 2px; left: -5px; top: 5px; }
+.mapLocateGlyph { box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 7px currentColor; }
+
+.mapAdd {
+  position: absolute;
+  z-index: 515;
+  left: 50%;
+  right: auto;
+  bottom: max(22px, calc(12px + env(safe-area-inset-bottom)));
+  transform: translateX(-50%);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 8px 17px 8px 10px;
+  border: 1px solid rgba(31,45,41,.08);
+  border-radius: 17px;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(36,79,70,.22);
+  font-size: 13px;
+  font-weight: 720;
+  white-space: nowrap;
+}
+.mapAdd:hover { background: var(--primary-dark); transform: translateX(-50%) translateY(-1px); }
+.mapAddGlyph {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255,255,255,.14);
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1;
+}
+.mapShell .leaflet-bottom .leaflet-control-zoom { margin-bottom: 22px; }
+
+@media (max-width: 700px) {
+  .topbar.mapTopbar {
+    height: 76px;
+    min-height: 0;
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: 0;
+  }
+  .mapTopbar .navActions { border-radius: 14px; }
+  .mapSummary,
+  .mapStatus,
+  .mapLocateButton { top: max(76px, calc(env(safe-area-inset-top) + 64px)); }
+  .mapSummary { left: max(12px, env(safe-area-inset-left)); min-height: 34px; padding: 7px 10px; }
+  .mapStatus { max-width: calc(100% - 128px); font-size: 10px; }
+  .mapLocateButton { right: max(12px, env(safe-area-inset-right)); width: 42px; height: 42px; border-radius: 14px; }
+  .mapAdd { bottom: max(16px, calc(8px + env(safe-area-inset-bottom))); min-height: 46px; font-size: 12px; }
+  .mapShell .leaflet-bottom .leaflet-control-zoom { margin-right: 12px; margin-bottom: 14px; }
+}
+
+@media (max-width: 430px) {
+  .mapTopbar .brandMark { width: 34px; height: 34px; }
+  .mapTopbar .brand { font-size: 17px; }
+  .mapTopbar .navActions .navLink { display: none; }
+  .mapTopbar .navActions .button { min-height: 34px; }
+  .mapSummary span:last-child { display: none; }
+  .mapStatus { top: auto; bottom: max(80px, calc(72px + env(safe-area-inset-bottom))); left: 12px; transform: none; max-width: calc(100% - 24px); }
+  .mapAdd { padding-right: 14px; }
+}

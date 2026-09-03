@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/auth-context';
 
 export default function NavBar() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const mapHome = pathname === '/';
 
   async function handleLogout() {
     await logout();
@@ -15,7 +17,7 @@ export default function NavBar() {
   }
 
   return (
-    <header className="topbar">
+    <header className={`topbar${mapHome ? ' mapTopbar' : ''}`}>
       <Link className="brand" href="/">
         <span className="brandMark" aria-hidden="true"><span className="brandGlyph" /></span>
         <span>PawFeed<small>Community Care Map</small></span>
