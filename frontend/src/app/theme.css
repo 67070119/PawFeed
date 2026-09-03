@@ -1,34 +1,34 @@
 /* PawFeed visual system — Phase 1 */
 :root {
-  --background: #f6f7f4;
-  --surface: #ffffff;
-  --surface-soft: #f2f4f1;
-  --surface-muted: #edf1ee;
-  --primary: #2f6b5d;
-  --primary-dark: #244f46;
-  --primary-soft: #e5efeb;
-  --accent: #e38b5d;
-  --accent-soft: #f5e6dc;
-  --accent-ink: #98573b;
-  --ink: #1f2d29;
-  --ink-soft: #44534e;
-  --muted: #6f7d78;
-  --line: #dde3df;
-  --danger: #b85c5c;
-  --danger-soft: #f8eaea;
-  --warning: #8b6b37;
-  --warning-soft: #f7f0df;
-  --info: #52788a;
-  --info-soft: #eaf1f3;
-  --white: #ffffff;
+  --background: #17191b;
+  --surface: #202326;
+  --surface-soft: #272a2d;
+  --surface-muted: #2e3134;
+  --primary: #d59658;
+  --primary-dark: #f0b977;
+  --primary-soft: #3b3026;
+  --accent: #e2a160;
+  --accent-soft: #3a2c22;
+  --accent-ink: #f3bd80;
+  --ink: #f1eee8;
+  --ink-soft: #cbc6bd;
+  --muted: #918e88;
+  --line: #3a3d40;
+  --danger: #d4776e;
+  --danger-soft: #392625;
+  --warning: #d2a15f;
+  --warning-soft: #382f24;
+  --info: #b7b6b0;
+  --info-soft: #2b2d30;
+  --white: #f4f1eb;
   --green: var(--primary);
   --green-dark: var(--primary-dark);
   --green-soft: var(--primary-soft);
   --cream: var(--background);
   --sand: var(--accent-soft);
-  --shadow-sm: 0 2px 8px rgba(31, 45, 41, 0.05);
-  --shadow: 0 10px 28px rgba(31, 45, 41, 0.08);
-  --shadow-lg: 0 20px 48px rgba(31, 45, 41, 0.11);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.24);
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.34);
+  --shadow-lg: 0 22px 54px rgba(0, 0, 0, 0.46);
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
@@ -38,7 +38,7 @@
 
 html {
   background: var(--cream);
-  color-scheme: light;
+  color-scheme: dark;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -1052,3 +1052,92 @@ img { max-width: 100%; }
   .mapStatus { top: auto; bottom: max(80px, calc(72px + env(safe-area-inset-bottom))); left: 12px; transform: none; max-width: calc(100% - 24px); }
   .mapAdd { padding-right: 14px; }
 }
+
+/* whole ui consistency phase 4 */
+.authFieldGap { margin-top: 12px; }
+.authSubmit { margin-top: 18px; }
+.authSwitch { margin: 18px 0 0; text-align: center; color: var(--muted); font-size: 13px; }
+.authSwitchLink { color: var(--primary-dark); font-weight: 740; }
+.authSwitchLink:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.formGridSpaced { margin-top: 15px; }
+.detailCount { margin: 14px 0 0; }
+.detailNavigate { margin-top: 14px; }
+.formActionsStart { justify-content: flex-start; }
+.listDescription { margin: 4px 0; }
+
+.profileName { margin: 11px 0 2px; }
+.profileEmail { margin: 0 0 16px; font-size: 13px; overflow-wrap: anywhere; }
+.profileNav { display: grid; gap: 6px; }
+.profileNav .button { justify-content: flex-start; min-height: 40px; padding-inline: 12px; }
+.profileNav .button.soft { box-shadow: inset 3px 0 0 var(--accent); }
+
+.card > h3 { font-size: 17px; font-weight: 710; letter-spacing: -.015em; }
+.metaItem { background: var(--surface-soft); border-color: rgba(31,45,41,.07); }
+.historyItem { border-color: rgba(31,45,41,.07); }
+.empty { background: var(--surface-soft); border-color: var(--line); }
+.button.danger { background: var(--danger-soft); color: #944949; border-color: #edcccc; }
+.button.danger:hover:not(:disabled) { background: #f4dddd; border-color: #e5bcbc; }
+
+.navigationMapCanvas .leaflet-tooltip {
+  border: 1px solid rgba(31,45,41,.08);
+  border-radius: 9px;
+  background: rgba(255,255,255,.94);
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 650;
+}
+.navigationMapCanvas .leaflet-tooltip::before { opacity: .65; }
+
+@media (max-width: 560px) {
+  .authSwitch { font-size: 12px; }
+  .formActionsStart .button { flex: 1 1 180px; }
+  .profileNav { grid-template-columns: 1fr; }
+}
+
+/* dark tactical reference redesign */
+html,body{background:#17191b;color:var(--ink)}
+body{background:radial-gradient(circle at 50% -10%,#24272a 0,#17191b 38%,#131517 100%)}
+::selection{background:#6b4930;color:#fff7ed}
+:focus-visible{outline-color:rgba(226,161,96,.45)}
+.topbar{background:rgba(20,22,24,.94);border-bottom-color:#35383b;box-shadow:0 1px 0 rgba(255,255,255,.03)}
+.brandMark{background:#25282b;border:1px solid #44484b;color:#f0b977;box-shadow:none}
+.navLink{color:#aaa7a0}.navLink:hover{color:#f1eee8}
+.button{background:#24272a;border-color:#3b3e41;color:#ece8e1;box-shadow:none}
+.button:hover:not(:disabled){background:#2c2f32;border-color:#56514a;box-shadow:0 5px 18px rgba(0,0,0,.24)}
+.button.primary{background:#d59658;border-color:#d59658;color:#181512}.button.primary:hover:not(:disabled){background:#edb36f;border-color:#edb36f;color:#171411}
+.button.soft{background:#332b24;border-color:#554331;color:#efb979}.button.ghost{color:#aaa7a0}.button.danger{background:#392625;color:#e58d84;border-color:#573431}
+.card{background:#202326;border-color:#36393c;box-shadow:0 12px 30px rgba(0,0,0,.24)}
+.eyebrow{background:#332a22;color:#e8aa6b;border:1px solid #503b2b}
+.field label{color:#bbb7b0}.field input,.field select,.field textarea{background:#1b1e20;border-color:#3c3f42;color:#f1eee8}.field input:focus,.field select:focus,.field textarea:focus{border-color:#c98d52;box-shadow:0 0 0 3px rgba(213,150,88,.14)}
+.errorBox{background:#352322;color:#e39188;border-color:#5b3431}.successBox{background:#292a24;color:#d9c28a;border-color:#554830}.warningBox{background:#332b22;color:#dfb16f;border-color:#5a472e}
+.authShell{background:#17191b}.authVisual{background:linear-gradient(145deg,#27292b 0%,#1a1c1e 68%,#151719 100%);border:1px solid #383b3e;box-shadow:0 22px 54px rgba(0,0,0,.4)}.authBrandMark{background:#232629;border-color:#494c4f;color:#efb372}.authPanel{background:#17191b}
+.profileSide,.stat,.historyItem,.metaItem,.empty,.uploadBox{background:#222528;border-color:#383b3e}.listRow{background:#202326;border-color:#36393c}.listRow:hover{background:#26292c;border-color:#51483e}.listIcon{background:#2b2e31;color:#e1a363}.avatar{background:#292c2f;color:#efb372;border:1px solid #46494c}
+
+.mapShell,.pawMapCanvas,.mapPickerCanvas,.navigationMapCanvas{background:#151719}
+.pawMapCanvas .leaflet-tile,.mapPickerCanvas .leaflet-tile,.navigationMapCanvas .leaflet-tile{filter:grayscale(1) invert(.9) brightness(.34) contrast(1.28) sepia(.08)}
+.mapTopbar{background:linear-gradient(180deg,rgba(19,21,23,.96) 0%,rgba(19,21,23,.72) 58%,rgba(19,21,23,0) 100%)}
+.mapTopbar .navActions,.mapSummary,.mapStatus,.mapFloatButton{background:rgba(28,30,32,.88);border-color:#414448;color:#e9e5de;box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(14px)}
+.mapSummary{color:#aaa69f}.mapSummary strong{color:#f2eee7}.mapSummaryDot{background:#e2a160;box-shadow:0 0 0 4px rgba(226,161,96,.14)}
+.mapLocateButton{color:#e4ad72}.mapAdd{background:#d59658;border-color:#e4a465;color:#171411;box-shadow:0 0 0 1px rgba(255,208,155,.18),0 9px 28px rgba(213,150,88,.2)}.mapAdd:hover{background:#e6aa69}
+.mapMarkerHost{filter:none}.mapAnimalMarker{width:50px;height:58px;display:grid;justify-items:center;align-content:start}.mapAnimalLineIcon{width:44px;height:44px;display:grid;place-items:center;border:1px solid #595b5d;border-radius:8px;background:rgba(25,27,29,.94);color:#f0eee8;box-shadow:0 9px 24px rgba(0,0,0,.34)}.mapAnimalLineIcon svg{width:34px;height:34px}.mapAnimalMarker>b{width:8px;height:8px;margin-top:-4px;transform:rotate(45deg);background:#191b1d;border-right:1px solid #595b5d;border-bottom:1px solid #595b5d}.mapAnimalMarker--dog .mapAnimalLineIcon,.mapAnimalMarker--cat .mapAnimalLineIcon,.mapAnimalMarker--other .mapAnimalLineIcon{background:rgba(24,26,28,.96);color:#f0eee8}.mapAnimalMarker.isSelected{transform:translateY(-3px) scale(1.08);filter:drop-shadow(0 0 10px rgba(226,161,96,.32))}.mapAnimalMarker.isSelected .mapAnimalLineIcon{border-color:#e2a160;color:#f2b777;box-shadow:0 0 0 1px rgba(226,161,96,.2),0 0 22px rgba(226,161,96,.24)}.mapAnimalMarker.isSelected>b{border-color:#e2a160;background:#211d19}
+.mapUserMarkerPulse{background:rgba(226,161,96,.16)}.mapUserMarkerDot{background:#f0b977;border-color:#1d1f21;box-shadow:0 0 0 2px #e8e2d9,0 0 16px rgba(226,161,96,.28)}
+.mapPickerMarkerFace{background:#1c1e20;border-color:#e6e1d8;box-shadow:0 0 0 1px #5a5c5e,0 8px 22px rgba(0,0,0,.36)}.mapPickerMarker>i{background:#1c1e20;border-color:#e6e1d8}.mapPickerMarkerFace span{border-color:#e2a160}.mapPickerMarkerFace span:after{background:#e2a160}
+
+.pawPopup .leaflet-popup-content-wrapper{background:rgba(28,30,32,.97);border:1px solid #4a4d50;color:#f1eee8;box-shadow:0 18px 46px rgba(0,0,0,.48)}.pawPopup .leaflet-popup-tip{background:#1c1e20}.popupTypeRow{color:#aaa69f}.popupAnimalIcon{width:34px;height:34px;background:#24272a!important;border:1px solid #484b4e;color:#eee9e1}.popupAnimalIcon svg{width:28px;height:28px}.popupHeadline{color:#f1eee8}.popupData{background:#25282b;border:1px solid #36393c}.popupData span{color:#918e88}.popupData strong{color:#e6e1da}.popupAction{border-top-color:#3b3e41;color:#efb372}.popupAction:hover{color:#ffd09b}
+.mapShell .leaflet-control-zoom,.pickerMap .leaflet-control-zoom{box-shadow:0 10px 28px rgba(0,0,0,.34)!important}.mapShell .leaflet-control-zoom a,.pickerMap .leaflet-control-zoom a{background:rgba(27,29,31,.94);border-color:#414448!important;color:#d6d1c8}.mapShell .leaflet-control-zoom a:hover,.pickerMap .leaflet-control-zoom a:hover{background:#292c2f;color:#f0b977}.mapShell .leaflet-control-attribution,.pickerMap .leaflet-control-attribution,.navigationMapCanvas .leaflet-control-attribution{background:rgba(19,21,23,.76);color:#797873}.leaflet-control-attribution a{color:#a99886}
+.navigation-road-route path{filter:drop-shadow(0 0 3px rgba(226,161,96,.46))}
+.navigationMapCanvas .leaflet-tooltip{background:rgba(24,26,28,.94);border-color:#4a4d50;color:#e8e3db;box-shadow:0 8px 20px rgba(0,0,0,.34)}
+.navExperience{background:#151719}.navRoundButton,.navRouteCard,.navMapButton,.navBottomSheet{background:rgba(27,29,31,.96);border-color:#414448;color:#ece8e0;box-shadow:0 12px 34px rgba(0,0,0,.34)}.navRouteRow small,.navSheetHeader p,.navPrivacyNote,.navPhaseNote{color:#8f8c86}.navRouteRow strong,.navDistanceSummary strong,.navStatItem strong{color:#f0ece5}.navOriginDot{border-color:#e2a160}.navDestinationPin{color:#efb372}.navRouteConnector{border-left-color:#62503e}.navDistanceSummary,.navStatItem{background:#24272a;border-color:#383b3e}.navModeTabs{background:#1e2022;border:1px solid #35383b}.navModeTab{color:#908d87}.navModeTab.active{background:#2b2d30;color:#efb372;box-shadow:inset 0 0 0 1px #544331}.navStartButton{background:#d59658;color:#171411}.navStartButton:hover{background:#e5a868}.navSecondaryButton{background:#292c2f;color:#c8c3bb}.navSecondaryButton.active{background:#3a3027;color:#efb372}.navStopButton{background:#713f3b;color:#f0d8d4}
+
+.topbar.mapTopbar{background:linear-gradient(180deg,rgba(18,20,22,.97) 0%,rgba(18,20,22,.76) 62%,rgba(18,20,22,0) 100%);border-bottom:0}
+.mapTopbar .navActions{background:rgba(28,30,32,.9);border-color:#414448}.mapTopbar .brand small{color:#87857f}
+.navActiveTopBar{background:rgba(24,26,28,.97);border-color:#45484b;box-shadow:0 12px 36px rgba(0,0,0,.42)}
+.navManeuverIcon{background:#24272a;color:#efb372;border:1px solid #474a4d}.navManeuverIcon.arrived{background:#322b24;color:#f0b977}.navManeuverCopy small{color:#a19c94}.navManeuverCopy strong{color:#f4f0e9}.navManeuverCopy span{color:#96928b}
+.navRecenterNeeded{background:#d59658;color:#171411;box-shadow:0 0 0 5px rgba(213,150,88,.14),0 7px 22px rgba(0,0,0,.28)}.navPickHint{background:rgba(28,30,32,.96);border:1px solid #4a4d50;color:#efb372}
+.routeErrorNotice,.gpsErrorNotice{background:#352322;color:#e39188;border-color:#5b3431}.gpsAccuracyNotice,.navOffRouteNotice{background:#332b22;color:#dfb16f;border-color:#5a472e}.navRecoveryNotice{background:#292a24;color:#d8bd81;border-color:#50452f}.navFollowNotice{background:#292b2d;color:#b7b3ac;border-color:#44474a}.navInlineRetry{background:#24272a;border:1px solid #4a4d50}
+.imageFallback{background:linear-gradient(145deg,#24272a,#1b1d1f);color:#8f8c86;border:1px solid #36393c}.imageHero{background:#202326}.chip{background:#302a25;color:#e3a76b;border:1px solid #4d3b2c}
+.uploadBox:hover{background:#292725;border-color:#8d6847}.uploadSymbol{background:#342c24;color:#eeb477}
+.profileNav .button.soft{box-shadow:inset 3px 0 0 #d59658}.authSwitchLink{color:#efb372}

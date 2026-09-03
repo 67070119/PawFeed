@@ -1,6 +1,31 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../lib/auth-context';
 
-export default function ProfileNav(){const {user}=useAuth();return <aside className="card profileSide"><div className="avatar" aria-hidden="true">{(user?.name||'P').trim().charAt(0).toUpperCase()}</div><h3 style={{margin:'10px 0 2px'}}>{user?.name||'PawFeed User'}</h3><p className="muted" style={{fontSize:13}}>{user?.email}</p><div style={{display:'grid',gap:7}}><Link className="button soft" href="/profile">ภาพรวม</Link><Link className="button ghost" href="/profile/points">จุดที่ฉันสร้าง</Link><Link className="button ghost" href="/profile/feedings">ประวัติการให้อาหาร</Link></div></aside>}
+const ITEMS = [
+  { href: '/profile', label: 'ภาพรวม', exact: true },
+  { href: '/profile/points', label: 'จุดที่ฉันสร้าง' },
+  { href: '/profile/feedings', label: 'ประวัติการให้อาหาร' },
+];
+
+export default function ProfileNav() {
+  const { user } = useAuth();
+  const pathname = usePathname();
+  const name = user?.name || 'PawFeed User';
+
+  return (
+    <aside className="card profileSide">
+      <div className="avatar" aria-hidden="true">{name.trim().charAt(0).toUpperCase()}</div>
+      <h3 className="profileName">{name}</h3>
+      <p className="muted profileEmail">{user?.email}</p>
+      <nav className="profileNav" aria-label="เมนูโปรไฟล์">
+        {ITEMS.map((item) => {
+          const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
+          return <Link key={item.href} className={`button ${active ? 'soft' : 'ghost'}`} href={item.href} aria-current={active ? 'page' : undefined}>{item.label}</Link>;
+        })}
+      </nav>
+    </aside>
+  );
+}
