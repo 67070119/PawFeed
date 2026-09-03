@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap, useMapEvents } from 'react-leaflet';
+import { Circle, MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { relativeTime } from '../lib/api';
 
@@ -32,9 +32,11 @@ const userIcon = L.divIcon({
   iconAnchor: [18, 18],
 });
 
-function BoundsWatcher({ onBoundsChange }) {
+function BoundsWatcher({ onBoundsChange, enabled }) {
   const map = useMapEvents({ moveend: emit, zoomend: emit });
+
   function emit() {
+    if (!enabled) return;
     const bounds = map.getBounds();
     onBoundsChange({
       minLat: bounds.getSouth(),
@@ -43,7 +45,8 @@ function BoundsWatcher({ onBoundsChange }) {
       maxLng: bounds.getEast(),
     });
   }
-  useEffect(() => { emit(); }, []);
+
+  useEffect(() => { emit(); }, [enabled]);
   return null;
 }
 
@@ -56,27 +59,33 @@ function LocateUser({ position }) {
   return <Marker position={position} icon={userIcon} zIndexOffset={900} interactive={false} />;
 }
 
-function SearchTargetController({ target }) {
+function RadiusViewport({ center, radiusMeters }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!target) return;
-    if (target.bounds) {
-      map.fitBounds(target.bounds, {
-        animate: true,
-        maxZoom: 15,
-        paddingTopLeft: [42, 120],
-        paddingBottomRight: [42, 72],
-      });
-      return;
-    }
-    if (target.center) map.setView(target.center, 14, { animate: true });
-  }, [target, map]);
+    if (!center || !radiusMeters) return;
+    const [latitude, longitude] = center;
+    const radiusKm = radiusMeters / 1000;
+    const latDelta = radiusKm / 111.32;
+    const lngScale = Math.max(0.2, Math.cos((latitude * Math.PI) / 180));
+    const lngDelta = radiusKm / (111.32 * lngScale);
+    const bounds = [
+      [latitude - latDelta, longitude - lngDelta],
+      [latitude + latDelta, longitude + lngDelta],
+    ];
+    map.flyToBounds(bounds, {
+      animate: true,
+      duration: 0.42,
+      maxZoom: 16,
+      paddingTopLeft: [44, 110],
+      paddingBottomRight: [44, 110],
+    });
+  }, [center, radiusMeters, map]);
 
   return null;
 }
 
-export default function PawMap({ points, onBoundsChange, userPosition, searchTarget }) {
+export default function PawMap({ points, onBoundsChange, userPosition, radiusMeters, focusRadiusMeters }) {
   const [selectedId, setSelectedId] = useState(null);
 
   return (
@@ -96,9 +105,18 @@ export default function PawMap({ points, onBoundsChange, userPosition, searchTar
         noWrap
       />
       <ZoomControl position="bottomright" />
-      <BoundsWatcher onBoundsChange={onBoundsChange} />
+      <BoundsWatcher onBoundsChange={onBoundsChange} enabled={!userPosition} />
       <LocateUser position={userPosition} />
-      <SearchTargetController target={searchTarget} />
+      <RadiusViewport center={userPosition} radiusMeters={focusRadiusMeters} />
+      {userPosition && radiusMeters && (
+        <Circle
+          center={userPosition}
+          radius={radiusMeters}
+          interactive={false}
+          className="mapRadiusCircle"
+          pathOptions={{ color: '#d29a61', weight: 2, opacity: 0.72, fillColor: '#d29a61', fillOpacity: 0.07 }}
+        />
+      )}
       {points.map((point) => {
         const animal = ANIMALS[point.animalType] || ANIMALS.OTHER;
         const selected = selectedId === point.id;
