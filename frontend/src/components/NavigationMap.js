@@ -75,7 +75,7 @@ export default function NavigationMap({
       {routeGeometry.length > 1 && (
         <Pane name="route-preview" className="navigation-road-route" style={{ zIndex: 430 }}>
           <Polyline positions={routeGeometry} pathOptions={{ color: '#ffffff', weight: activeNavigation ? 11 : 10, opacity: 0.92 }} />
-          <Polyline positions={routeGeometry} pathOptions={{ color: '#16866f', weight: activeNavigation ? 7 : 6, opacity: 0.98 }} />
+          <Polyline positions={routeGeometry} pathOptions={{ color: '#356b5b', weight: activeNavigation ? 7 : 6, opacity: 0.98 }} />
         </Pane>
       )}
 
@@ -85,14 +85,14 @@ export default function NavigationMap({
         </Pane>
       )}
 
-      <CircleMarker center={destination} radius={12} pathOptions={{ color: '#9f3434', fillColor: '#c94747', fillOpacity: 0.95, weight: 3 }}>
+      <CircleMarker center={destination} radius={12} pathOptions={{ color: '#8a4545', fillColor: '#a75a5a', fillOpacity: 0.95, weight: 3 }}>
         <Tooltip permanent direction="top" offset={[0, -10]}>จุดสัตว์จรจัด</Tooltip>
       </CircleMarker>
 
       {userPosition && (
         <>
-          {accuracy && <Circle center={userPosition} radius={accuracy} pathOptions={{ color: '#2f80ed', fillColor: '#2f80ed', fillOpacity: 0.08, weight: 1 }} />}
-          <CircleMarker center={userPosition} radius={activeNavigation ? 11 : 10} pathOptions={{ color: '#ffffff', fillColor: '#2f80ed', fillOpacity: 1, weight: 4 }}>
+          {accuracy && <Circle center={userPosition} radius={accuracy} pathOptions={{ color: '#4e7890', fillColor: '#4e7890', fillOpacity: 0.08, weight: 1 }} />}
+          <CircleMarker center={userPosition} radius={activeNavigation ? 11 : 10} pathOptions={{ color: '#ffffff', fillColor: '#4e7890', fillOpacity: 1, weight: 4 }}>
             <Tooltip permanent={!activeNavigation} direction="top" offset={[0, -9]}>ตำแหน่งฉัน</Tooltip>
           </CircleMarker>
         </>

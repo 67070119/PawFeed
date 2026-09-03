@@ -7,16 +7,29 @@ import L from 'leaflet';
 import { relativeTime } from '../lib/api';
 
 const KMITL = [13.7291, 100.7789];
+const ANIMALS = {
+  DOG: { label: 'สุนัขจรจัด', code: 'D', tone: 'dog' },
+  CAT: { label: 'แมวจรจัด', code: 'C', tone: 'cat' },
+  OTHER: { label: 'สัตว์จรจัด', code: 'O', tone: 'other' },
+};
 
-function icon(animalType) {
-  const emoji = animalType === 'DOG' ? '🐶' : animalType === 'CAT' ? '🐱' : '🐾';
+function animalIcon(animalType) {
+  const item = ANIMALS[animalType] || ANIMALS.OTHER;
   return L.divIcon({
-    className: '',
-    html: `<div style="width:44px;height:44px;border-radius:15px 15px 15px 5px;transform:rotate(-45deg);background:white;border:2px solid rgba(22,134,111,.28);box-shadow:0 8px 20px rgba(22,64,54,.18);display:grid;place-items:center"><span style="transform:rotate(45deg);font-size:20px">${emoji}</span></div>`,
-    iconSize: [44, 44],
-    iconAnchor: [22, 44],
+    className: 'mapMarkerHost',
+    html: `<div class="mapAnimalMarker mapAnimalMarker--${item.tone}"><span>${item.code}</span></div>`,
+    iconSize: [42, 48],
+    iconAnchor: [21, 46],
+    popupAnchor: [0, -42],
   });
 }
+
+const userIcon = L.divIcon({
+  className: 'mapMarkerHost',
+  html: '<div class="mapUserMarker"><span></span></div>',
+  iconSize: [30, 30],
+  iconAnchor: [15, 15],
+});
 
 function BoundsWatcher({ onBoundsChange }) {
   const map = useMapEvents({ moveend: emit, zoomend: emit });
@@ -30,28 +43,32 @@ function BoundsWatcher({ onBoundsChange }) {
 
 function LocateUser({ position }) {
   const map = useMap();
-  useEffect(() => { if (position) map.setView(position, Math.max(map.getZoom(), 15)); }, [position, map]);
+  useEffect(() => { if (position) map.setView(position, Math.max(map.getZoom(), 15), { animate: true }); }, [position, map]);
   if (!position) return null;
-  return <Marker position={position} icon={L.divIcon({ className:'', html:'<div style="width:18px;height:18px;background:#2778df;border:4px solid #fff;border-radius:50%;box-shadow:0 0 0 3px rgba(39,120,223,.18)"></div>', iconSize:[18,18], iconAnchor:[9,9] })} />;
+  return <Marker position={position} icon={userIcon} zIndexOffset={900} />;
 }
 
 export default function PawMap({ points, onBoundsChange, userPosition }) {
   return (
-    <MapContainer center={KMITL} zoom={14} className="mapCanvas" scrollWheelZoom>
+    <MapContainer center={KMITL} zoom={14} className="mapCanvas pawMapCanvas" scrollWheelZoom>
       <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <BoundsWatcher onBoundsChange={onBoundsChange} />
       <LocateUser position={userPosition} />
-      {points.map((point) => (
-        <Marker key={point.id} position={[point.latitude, point.longitude]} icon={icon(point.animalType)}>
-          <Popup>
-            <div className="popupCard">
-              <strong>{point.animalType === 'DOG' ? '🐶 สุนัขจรจัด' : point.animalType === 'CAT' ? '🐱 แมวจรจัด' : '🐾 สัตว์จรจัด'}</strong>
-              <div className="popupMeta">ประมาณ {point.estimatedCount} ตัว · ให้อาหารล่าสุด {relativeTime(point.latestFeedingAt)}</div>
-              <Link className="button soft block" href={`/points/${point.id}`}>ดูรายละเอียด</Link>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {points.map((point) => {
+        const animal = ANIMALS[point.animalType] || ANIMALS.OTHER;
+        return (
+          <Marker key={point.id} position={[point.latitude, point.longitude]} icon={animalIcon(point.animalType)}>
+            <Popup className="pawPopup">
+              <div className="popupCard">
+                <div className="popupTitleRow"><span className={`popupAnimalCode popupAnimalCode--${animal.tone}`}>{animal.code}</span><strong>{animal.label}</strong></div>
+                <div className="popupMeta">ประมาณ {point.estimatedCount} ตัว</div>
+                <div className="popupMeta">ให้อาหารล่าสุด {relativeTime(point.latestFeedingAt)}</div>
+                <Link className="button soft block" href={`/points/${point.id}`}>ดูรายละเอียด</Link>
+              </div>
+            </Popup>
+          </Marker>
+        );
+      })}
     </MapContainer>
   );
 }

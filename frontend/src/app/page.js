@@ -36,10 +36,10 @@ export default function HomePage() {
     <main className="mapShell">
       <PawMap points={points} onBoundsChange={loadBounds} userPosition={userPosition} />
       <div className="mapOverlay">
-        <div className="mapInfo"><strong>จุดสัตว์จรจัดในพื้นที่</strong><span>{loading ? 'กำลังโหลด...' : `${points.length} จุดในบริเวณที่แสดง`}</span>{error && <div className="errorBox">{error}</div>}</div>
-        <button className="button" onClick={locate}>◎ ตำแหน่งฉัน</button>
+        <div className="mapInfo"><span className="mapInfoEyebrow">PAWFEED MAP</span><strong>จุดสัตว์จรจัดในพื้นที่</strong><span>{loading ? 'กำลังโหลด...' : `${points.length} จุดในบริเวณที่แสดง`}</span>{error && <div className="errorBox">{error}</div>}</div>
+        <button className="button mapLocateButton" onClick={locate}>ตำแหน่งของฉัน</button>
       </div>
-      <Link className="button primary mapAdd" href={user ? '/points/create' : '/login?next=/points/create'}>＋ เพิ่มจุดสัตว์จรจัด</Link>
+      <Link className="button primary mapAdd" href={user ? '/points/create' : '/login?next=/points/create'}>เพิ่มจุดสัตว์จรจัด</Link>
     </main>
   );
 }
