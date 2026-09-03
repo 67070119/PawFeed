@@ -52,7 +52,7 @@ export default function NavigationMap({
   followUser = false,
   onUserMapInteraction,
 }) {
-  const fallbackLine = userPosition && routeGeometry.length < 2 ? [userPosition, destination] : null;
+  const fallbackLine = null;
 
   return (
     <MapContainer center={destination} zoom={16} className={`navigationMapCanvas${manualPickEnabled ? ' manualPickActive' : ''}${activeNavigation ? ' activeNavigationMap' : ''}`} scrollWheelZoom zoomControl={false}>
@@ -74,24 +74,24 @@ export default function NavigationMap({
 
       {routeGeometry.length > 1 && (
         <Pane name="route-preview" className="navigation-road-route" style={{ zIndex: 430 }}>
-          <Polyline positions={routeGeometry} pathOptions={{ color: '#5a3c27', weight: activeNavigation ? 12 : 11, opacity: 0.78 }} />
-          <Polyline positions={routeGeometry} pathOptions={{ color: '#e2a160', weight: activeNavigation ? 6 : 5, opacity: 1 }} />
+          <Polyline positions={routeGeometry} pathOptions={{ color: '#49382c', weight: activeNavigation ? 12 : 11, opacity: 0.78 }} />
+          <Polyline positions={routeGeometry} pathOptions={{ color: '#c49363', weight: activeNavigation ? 6 : 5, opacity: 1 }} />
         </Pane>
       )}
 
       {fallbackLine && (
         <Pane name="direct-fallback" className="navigation-direct-fallback" style={{ zIndex: 420 }}>
-          <Polyline positions={fallbackLine} pathOptions={{ color: '#a48668', weight: 3, dashArray: '8 9', opacity: 0.72 }} />
+          <Polyline positions={fallbackLine} pathOptions={{ color: '#817a72', weight: 3, dashArray: '8 9', opacity: 0.72 }} />
         </Pane>
       )}
 
-      <CircleMarker center={destination} radius={12} pathOptions={{ color: '#f2eee7', fillColor: '#d59658', fillOpacity: 0.95, weight: 3 }}>
+      <CircleMarker center={destination} radius={12} pathOptions={{ color: '#f2eee7', fillColor: '#c49363', fillOpacity: 0.95, weight: 3 }}>
         <Tooltip permanent direction="top" offset={[0, -10]}>จุดสัตว์จรจัด</Tooltip>
       </CircleMarker>
 
       {userPosition && (
         <>
-          {accuracy && <Circle center={userPosition} radius={accuracy} pathOptions={{ color: '#d59658', fillColor: '#d59658', fillOpacity: 0.08, weight: 1 }} />}
+          {accuracy && <Circle center={userPosition} radius={accuracy} pathOptions={{ color: '#c49363', fillColor: '#c49363', fillOpacity: 0.08, weight: 1 }} />}
           <CircleMarker center={userPosition} radius={activeNavigation ? 11 : 10} pathOptions={{ color: '#17191b', fillColor: '#f1eee8', fillOpacity: 1, weight: 4 }}>
             <Tooltip permanent={!activeNavigation} direction="top" offset={[0, -9]}>ตำแหน่งฉัน</Tooltip>
           </CircleMarker>

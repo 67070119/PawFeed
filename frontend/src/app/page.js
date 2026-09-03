@@ -42,7 +42,7 @@ export default function HomePage() {
       </div>
       {(loading || error) && <div className={`mapStatus${error ? ' mapStatusError' : ''}`} role="status">{error || 'กำลังอัปเดตจุดในพื้นที่...'}</div>}
       <button className="mapFloatButton mapLocateButton" onClick={locate} aria-label="ตำแหน่งฉัน"><span className="mapLocateGlyph" aria-hidden="true" /></button>
-      <Link className="mapAdd" href={user ? '/points/create' : '/login?next=/points/create'}><span className="mapAddGlyph" aria-hidden="true">+</span><span>เพิ่มจุดสัตว์จรจัด</span></Link>
+      <Link className="mapAdd" href={user ? '/points/create' : '/login?next=/points/create'}><span>เพิ่มจุดสัตว์จรจัด</span></Link>
     </main>
   );
 }

@@ -9,9 +9,9 @@ import { api } from '../../../../lib/api';
 const NavigationMap = dynamic(() => import('../../../../components/NavigationMap'), { ssr: false });
 
 const MODE_OPTIONS = [
-  { value: 'DRIVING', label: 'รถ', detail: 'ทางถนน' },
-  { value: 'WALKING', label: 'เดิน', detail: 'ทางเดิน' },
-  { value: 'CYCLING', label: 'จักรยาน', detail: 'ทางจักรยาน' },
+  { value: 'DRIVING', label: 'รถ' },
+  { value: 'WALKING', label: 'เดิน' },
+  { value: 'CYCLING', label: 'จักรยาน' },
 ];
 
 const OFF_ROUTE_MIN_METERS = 60;
@@ -54,7 +54,7 @@ function distanceToRoute(geometry, position) {
 }
 
 function formatDistance(meters) {
-  if (meters == null || !Number.isFinite(meters)) return 'ยังไม่ทราบ';
+  if (meters == null || !Number.isFinite(meters)) return '—';
   if (meters < 1000) return `${Math.round(meters)} ม.`;
   return `${(meters / 1000).toFixed(meters < 10000 ? 1 : 0)} กม.`;
 }
@@ -70,9 +70,9 @@ function formatDuration(seconds) {
 }
 
 function routingErrorMessage(error) {
-  if (error?.code === 'NAVIGATION_ROUTE_NOT_FOUND') return 'ไม่พบเส้นทางที่เหมาะสมสำหรับโหมดนี้';
-  if (error?.code === 'ROUTING_TIMEOUT') return 'คำนวณเส้นทางใช้เวลานานเกินไป กรุณาลองใหม่';
-  return 'คำนวณเส้นทางตามถนนไม่ได้ในขณะนี้ จะแสดงระยะตรงชั่วคราว';
+  if (error?.code === 'NAVIGATION_ROUTE_NOT_FOUND') return 'ไม่พบเส้นทางสำหรับโหมดนี้';
+  if (error?.code === 'ROUTING_TIMEOUT') return 'คำนวณเส้นทางนานเกินไป กรุณาลองใหม่';
+  return 'ไม่สามารถคำนวณเส้นทางได้ในขณะนี้';
 }
 
 function gpsQuality(accuracy) {
@@ -83,10 +83,10 @@ function gpsQuality(accuracy) {
 }
 
 function geolocationErrorMessage(error) {
-  if (error?.code === 1) return 'ไม่ได้รับสิทธิ์ตำแหน่ง กรุณาอนุญาต Location แล้วลองอีกครั้ง';
-  if (error?.code === 2) return 'สัญญาณ GPS ไม่พร้อมในขณะนี้ กรุณาลองอีกครั้ง';
-  if (error?.code === 3) return 'ค้นหาตำแหน่งใช้เวลานานเกินไป กรุณาลองอีกครั้ง';
-  return 'ไม่สามารถเข้าถึงตำแหน่งได้ กรุณาลองอีกครั้ง';
+  if (error?.code === 1) return 'กรุณาอนุญาต Location เพื่อใช้การนำทาง';
+  if (error?.code === 2) return 'ไม่พบสัญญาณ GPS กรุณาลองอีกครั้ง';
+  if (error?.code === 3) return 'ค้นหาตำแหน่งนานเกินไป กรุณาลองอีกครั้ง';
+  return 'ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้';
 }
 
 function nearestGeometryIndex(geometry, position) {
@@ -153,7 +153,7 @@ function maneuverIcon(step) {
 
 function maneuverText(step) {
   if (!step) return 'ไปตามเส้นทาง';
-  if (step.maneuverType === 'arrive') return 'ไปถึงจุดหมาย';
+  if (step.maneuverType === 'arrive') return 'ถึงจุดหมาย';
   const road = step.name ? ` เข้าสู่ ${step.name}` : '';
   if (step.maneuverModifier?.includes('left')) return `เลี้ยวซ้าย${road}`;
   if (step.maneuverModifier?.includes('right')) return `เลี้ยวขวา${road}`;
@@ -167,7 +167,7 @@ export default function NavigatePointPage() {
   const [userPosition, setUserPosition] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
   const [tracking, setTracking] = useState(false);
-  const [manualPicking, setManualPicking] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [positionSource, setPositionSource] = useState(null);
   const [error, setError] = useState('');
   const [gpsError, setGpsError] = useState('');
@@ -181,11 +181,11 @@ export default function NavigatePointPage() {
   const [followUser, setFollowUser] = useState(true);
   const [rerouting, setRerouting] = useState(false);
   const [rerouteError, setRerouteError] = useState('');
-  const [routeDeviation, setRouteDeviation] = useState(null);
   const [offRoute, setOffRoute] = useState(false);
   const [recoveryNotice, setRecoveryNotice] = useState('');
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const watchRef = useRef(null);
+  const autoLocateRef = useRef(false);
   const routeRequestRef = useRef(0);
   const routeOriginRef = useRef(null);
   const routeModeRef = useRef(null);
@@ -194,10 +194,7 @@ export default function NavigatePointPage() {
   const activeNavigationRef = useRef(false);
   const recoveryTimerRef = useRef(null);
 
-  useEffect(() => {
-    activeNavigationRef.current = activeNavigation;
-  }, [activeNavigation]);
-
+  useEffect(() => { activeNavigationRef.current = activeNavigation; }, [activeNavigation]);
   useEffect(() => {
     if (gpsError || routeError || rerouteError || offRoute) setSheetCollapsed(false);
   }, [gpsError, routeError, rerouteError, offRoute]);
@@ -206,6 +203,7 @@ export default function NavigatePointPage() {
     if (watchRef.current != null && navigator.geolocation) navigator.geolocation.clearWatch(watchRef.current);
     watchRef.current = null;
     setTracking(false);
+    setLocating(false);
   }, []);
 
   useEffect(() => {
@@ -223,7 +221,7 @@ export default function NavigatePointPage() {
   const showRecoveryNotice = useCallback((message) => {
     setRecoveryNotice(message);
     if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
-    recoveryTimerRef.current = setTimeout(() => setRecoveryNotice(''), 4500);
+    recoveryTimerRef.current = setTimeout(() => setRecoveryNotice(''), 3500);
   }, []);
 
   const requestRoute = useCallback(async (origin, { reroute = false } = {}) => {
@@ -251,15 +249,14 @@ export default function NavigatePointPage() {
       setRoute(data);
       routeOriginRef.current = origin;
       routeModeRef.current = travelMode;
-      setRouteDeviation(0);
       setOffRoute(false);
       offRouteFixesRef.current = 0;
-      if (reroute) showRecoveryNotice('ปรับเส้นทางใหม่แล้ว');
+      if (reroute) showRecoveryNotice('ปรับเส้นทางแล้ว');
       return true;
     } catch (err) {
       if (routeRequestRef.current !== requestId) return false;
       if (reroute) {
-        setRerouteError('ปรับเส้นทางใหม่ไม่สำเร็จ ยังใช้เส้นทางเดิมอยู่');
+        setRerouteError('ปรับเส้นทางไม่สำเร็จ ยังใช้เส้นทางเดิมอยู่');
       } else {
         setRoute(null);
         setRouteError(routingErrorMessage(err));
@@ -286,7 +283,6 @@ export default function NavigatePointPage() {
       && routeModeRef.current === travelMode
       && distanceMeters(lastOrigin, userPosition) < 50;
     if (canReuse) return;
-
     requestRoute(userPosition);
   }, [point, userPosition, travelMode, activeNavigation, route, requestRoute]);
 
@@ -295,8 +291,6 @@ export default function NavigatePointPage() {
 
     const quality = gpsQuality(accuracy);
     const deviation = distanceToRoute(route.geometry, userPosition);
-    setRouteDeviation(Math.round(deviation));
-
     if (quality.id === 'poor') {
       offRouteFixesRef.current = 0;
       setOffRoute(false);
@@ -321,30 +315,29 @@ export default function NavigatePointPage() {
     requestRoute(userPosition, { reroute: true });
   }, [activeNavigation, route, userPosition, positionSource, tracking, accuracy, rerouting, requestRoute]);
 
-  function startTracking() {
+  const startTracking = useCallback(() => {
     if (watchRef.current != null) return;
+    setGpsError('');
+    setLocating(true);
+
     if (!window.isSecureContext) {
       stopTracking();
-      setManualPicking(true);
-      setError('ไม่สามารถใช้ GPS จากการเชื่อมต่อนี้ได้ เลือกตำแหน่งบนแผนที่แทน หรือเปิดผ่าน HTTPS เพื่อใช้ GPS');
+      setGpsError('การนำทางด้วยตำแหน่งปัจจุบันต้องเปิดผ่าน HTTPS หรือ localhost');
       return;
     }
-
     if (!navigator.geolocation) {
-      setManualPicking(true);
-      setError('อุปกรณ์นี้ไม่รองรับ GPS กรุณาเลือกตำแหน่งของคุณบนแผนที่');
+      setLocating(false);
+      setGpsError('อุปกรณ์นี้ไม่รองรับการระบุตำแหน่ง');
       return;
     }
 
-    setManualPicking(false);
-    setError('');
-    setGpsError('');
     watchRef.current = navigator.geolocation.watchPosition(
       ({ coords }) => {
         setUserPosition([coords.latitude, coords.longitude]);
         setAccuracy(Math.round(coords.accuracy));
         setPositionSource('gps');
         setTracking(true);
+        setLocating(false);
         setGpsError('');
       },
       (geoError) => {
@@ -353,34 +346,21 @@ export default function NavigatePointPage() {
         setGpsError(geolocationErrorMessage(geoError));
         setFollowUser(false);
         if (!wasActive) {
-          setManualPicking(true);
-          setError('ไม่สามารถเข้าถึงตำแหน่งได้ เลือกตำแหน่งของคุณบนแผนที่แทน');
+          setUserPosition(null);
+          setAccuracy(null);
+          setPositionSource(null);
+          setRoute(null);
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
-    setTracking(true);
-  }
+  }, [stopTracking]);
 
-  function pickManualPosition(position) {
-    stopTracking();
-    setActiveNavigation(false);
-    routeOriginRef.current = null;
-    setUserPosition(position);
-    setAccuracy(null);
-    setPositionSource('manual');
-    setManualPicking(false);
-    setError('');
-    setGpsError('');
-    setRecenterKey((value) => value + 1);
-  }
-
-  function beginManualPick() {
-    stopTracking();
-    setActiveNavigation(false);
-    setManualPicking(true);
-    setError('แตะตำแหน่งของคุณบนแผนที่');
-  }
+  useEffect(() => {
+    if (!point || autoLocateRef.current) return;
+    autoLocateRef.current = true;
+    startTracking();
+  }, [point, startTracking]);
 
   function selectTravelMode(mode) {
     if (mode === travelMode || activeNavigation) return;
@@ -403,7 +383,6 @@ export default function NavigatePointPage() {
     setFollowUser(true);
     setOffRoute(false);
     setRerouteError('');
-    setRouteDeviation(null);
     offRouteFixesRef.current = 0;
     setRecenterKey((value) => value + 1);
   }
@@ -414,7 +393,7 @@ export default function NavigatePointPage() {
   }
 
   function retryCurrentRoute() {
-    if (!userPosition) return;
+    if (!userPosition) return startTracking();
     routeOriginRef.current = null;
     requestRoute(userPosition);
   }
@@ -431,18 +410,14 @@ export default function NavigatePointPage() {
   const destination = [point.latitude, point.longitude];
   const directDistance = userPosition ? distanceMeters(userPosition, destination) : null;
   const activeMetrics = activeNavigation ? remainingMetrics(route, userPosition, destination) : null;
-  const displayDistance = activeMetrics?.distanceMeters ?? route?.distanceMeters ?? directDistance;
+  const displayDistance = activeMetrics?.distanceMeters ?? route?.distanceMeters ?? null;
   const displayDuration = activeMetrics?.durationSeconds ?? route?.durationSeconds ?? null;
-  const currentManeuver = activeNavigation
-    ? nextManeuver(route, userPosition, activeMetrics?.geometryIndex ?? 0)
-    : null;
+  const currentManeuver = activeNavigation ? nextManeuver(route, userPosition, activeMetrics?.geometryIndex ?? 0) : null;
   const arrived = activeNavigation && directDistance != null && directDistance <= 20;
-  const originLabel = userPosition
-    ? positionSource === 'manual' ? 'ตำแหน่งที่เลือกบนแผนที่' : 'ตำแหน่งของคุณ'
-    : 'ยังไม่ได้ระบุตำแหน่ง';
   const quality = gpsQuality(accuracy);
   const activeInstruction = arrived ? 'ถึงจุดหมายแล้ว' : maneuverText(currentManeuver);
   const activeInstructionDistance = arrived ? '0 ม.' : formatDistance(currentManeuver?.distanceToManeuver);
+  const previewTitle = locating ? 'กำลังหาตำแหน่ง...' : routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : gpsError ? 'ใช้ตำแหน่งไม่ได้' : 'กำลังเตรียมเส้นทาง...';
 
   return (
     <main className={`navExperience${activeNavigation ? ' navActiveExperience' : ''}`}>
@@ -453,8 +428,6 @@ export default function NavigatePointPage() {
           accuracy={accuracy}
           routeGeometry={route?.geometry ?? []}
           recenterKey={recenterKey}
-          manualPickEnabled={manualPicking}
-          onManualPick={pickManualPosition}
           activeNavigation={activeNavigation}
           followUser={followUser}
           onUserMapInteraction={() => setFollowUser(false)}
@@ -465,51 +438,37 @@ export default function NavigatePointPage() {
             <div className={`navManeuverIcon${arrived ? ' arrived' : ''}`}>{arrived ? 'ถึง' : maneuverIcon(currentManeuver)}</div>
             <div className="navManeuverCopy">
               <small>{arrived ? 'จุดหมาย' : activeInstructionDistance}</small>
-              <strong>{rerouting ? 'กำลังปรับเส้นทางใหม่...' : activeInstruction}</strong>
-              {!arrived && !rerouting && currentManeuver?.name && <span>{currentManeuver.name}</span>}
+              <strong>{rerouting ? 'กำลังปรับเส้นทาง...' : activeInstruction}</strong>
             </div>
           </div>
         ) : (
-          <div className="navTopBar">
+          <div className="navTopBar navTopBarSimple">
             <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">←</Link>
-            <div className="navRouteCard">
-              <div className="navRouteRow">
-                <span className="navOriginDot" />
-                <div><small>ตำแหน่งเริ่มต้น</small><strong>{originLabel}</strong></div>
-              </div>
-              <span className="navRouteConnector" />
-              <div className="navRouteRow">
-                <span className="navDestinationPin">●</span>
-                <div><small>จุดหมาย</small><strong>{point.description}</strong></div>
-              </div>
-            </div>
+            <div className="navDestinationCompact"><span>จุดหมาย</span><strong>{point.description}</strong></div>
           </div>
         )}
-
-        {manualPicking && <div className="navPickHint">แตะบนแผนที่เพื่อเลือกตำแหน่งของคุณ</div>}
 
         <div className="navMapControls">
           <button
             className={`navMapButton${activeNavigation && !followUser ? ' navRecenterNeeded' : ''}`}
-            onClick={recenter}
-            aria-label={activeNavigation ? 'กลับมาติดตามตำแหน่งฉัน' : 'จัดแผนที่ให้อยู่กึ่งกลาง'}
+            onClick={userPosition ? recenter : startTracking}
+            aria-label={userPosition ? 'กลับมาติดตามตำแหน่งฉัน' : 'ค้นหาตำแหน่งปัจจุบัน'}
+            disabled={locating}
           ><span className="navRecenterIcon" aria-hidden="true" /></button>
         </div>
       </section>
 
-      <section className={`navBottomSheet${activeNavigation ? ' navActiveSheet' : ''}${sheetCollapsed ? ' navSheetCollapsed' : ''}`} aria-label="ข้อมูลการนำทาง">
+      <section className={`navBottomSheet navBottomSheetSimple${activeNavigation ? ' navActiveSheet' : ''}${sheetCollapsed ? ' navSheetCollapsed' : ''}`} aria-label="ข้อมูลการนำทาง">
         <button
           type="button"
           className="navSheetHandleButton"
           aria-label={sheetCollapsed ? 'ขยายแผงข้อมูล' : 'ย่อแผงข้อมูล'}
           aria-expanded={!sheetCollapsed}
           onClick={() => setSheetCollapsed((value) => !value)}
-        >
-          <span className="navSheetHandle" />
-        </button>
+        ><span className="navSheetHandle" /></button>
 
         {!activeNavigation && (
-          <div className="navModeTabs" aria-label="เลือกโหมดเดินทาง">
+          <div className="navModeTabs navModeTabsSimple" aria-label="เลือกโหมดเดินทาง">
             {MODE_OPTIONS.map((option) => (
               <button
                 key={option.value}
@@ -517,77 +476,50 @@ export default function NavigatePointPage() {
                 className={`navModeTab ${travelMode === option.value ? 'active' : ''}`}
                 onClick={() => selectTravelMode(option.value)}
                 aria-pressed={travelMode === option.value}
-              >
-                <span className="navModeLabel">{option.label}</span><small>{option.detail}</small>
-              </button>
+              ><span className="navModeLabel">{option.label}</span></button>
             ))}
           </div>
         )}
 
-        <div className="navSheetHeader">
+        <div className="navSheetHeader navSheetHeaderSimple">
           <div>
-            <span className="eyebrow">{activeNavigation ? 'กำลังนำทาง' : 'ตัวอย่างเส้นทาง'}</span>
-            <h1>{activeNavigation ? formatDuration(displayDuration) : routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : 'เลือกตำแหน่งเริ่มต้น'}</h1>
-            <p>{activeNavigation ? `${formatDistance(displayDistance)} ถึงจุดหมาย` : route ? `เส้นทางตามถนน · ${route.provider}` : 'ระบุตำแหน่งเพื่อคำนวณเส้นทางตามถนน'}</p>
+            <span className="eyebrow">{activeNavigation ? 'กำลังนำทาง' : 'เส้นทาง'}</span>
+            <h1>{activeNavigation ? formatDuration(displayDuration) : previewTitle}</h1>
+            {!activeNavigation && !route && <p>{gpsError ? 'อนุญาตตำแหน่งแล้วกดลองอีกครั้ง' : locating ? 'กำลังอ่านตำแหน่งปัจจุบัน' : 'กำลังเตรียมเส้นทางจากตำแหน่งปัจจุบัน'}</p>}
           </div>
-          <div className="navDistanceSummary">
-            <strong>{formatDistance(displayDistance)}</strong>
-            <span>{activeNavigation ? 'เหลือ' : route ? 'ตามเส้นทาง' : 'ระยะตรง'}</span>
-          </div>
+          {(route || activeNavigation) && (
+            <div className="navDistanceSummary"><strong>{formatDistance(displayDistance)}</strong><span>{activeNavigation ? 'เหลือ' : 'ระยะทาง'}</span></div>
+          )}
         </div>
 
         {error && <div className="navInlineNotice" role="status">{error}</div>}
         {gpsError && <div className="navInlineNotice gpsErrorNotice" role="status">{gpsError}</div>}
-        {quality.id === 'poor' && positionSource === 'gps' && <div className="navInlineNotice gpsAccuracyNotice" role="status">GPS ความแม่นยำต่ำ (±{accuracy} ม.) ระบบจะรอข้อมูลที่แม่นยำขึ้นก่อนปรับเส้นทางอัตโนมัติ</div>}
         {routeError && !activeNavigation && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}<button type="button" className="navInlineRetry" onClick={retryCurrentRoute}>ลองอีกครั้ง</button></div>}
-        {activeNavigation && !followUser && !gpsError && <div className="navInlineNotice navFollowNotice" role="status">คุณเลื่อนแผนที่แล้ว กดปุ่มจัดกึ่งกลางเพื่อกลับมาติดตามตำแหน่ง</div>}
-        {activeNavigation && offRoute && !rerouting && !rerouteError && <div className="navInlineNotice navOffRouteNotice" role="status">ตรวจพบว่าคุณออกจากเส้นทาง กำลังเตรียมปรับเส้นทางใหม่</div>}
-        {rerouteError && <div className="navInlineNotice routeErrorNotice" role="status">{rerouteError}<button type="button" className="navInlineRetry" onClick={retryReroute}>ลองปรับเส้นทางอีกครั้ง</button></div>}
+        {activeNavigation && offRoute && !rerouting && !rerouteError && <div className="navInlineNotice navOffRouteNotice" role="status">ออกจากเส้นทาง กำลังปรับเส้นทางใหม่</div>}
+        {rerouteError && <div className="navInlineNotice routeErrorNotice" role="status">{rerouteError}<button type="button" className="navInlineRetry" onClick={retryReroute}>ลองอีกครั้ง</button></div>}
         {recoveryNotice && <div className="navInlineNotice navRecoveryNotice" role="status">{recoveryNotice}</div>}
 
-        <div className="navCompactStats">
-          <div className="navStatItem">
-            <small>{activeNavigation ? 'เวลาที่เหลือ' : 'เวลาโดยประมาณ'}</small>
-            <strong>{routeLoading ? 'กำลังคำนวณ' : formatDuration(displayDuration)}</strong>
-          </div>
-          <div className={`navStatItem ${quality.className}`}>
-            <small>{positionSource === 'manual' ? 'ตำแหน่ง' : 'คุณภาพ GPS'}</small>
-            <strong>{positionSource === 'manual' ? 'เลือกบนแผนที่' : accuracy ? `${quality.label} · ±${accuracy} ม.` : quality.label}</strong>
-          </div>
-          {activeNavigation && routeDeviation != null && (
-            <div className="navStatItem navDeviationStat">
-              <small>ห่างจากเส้นทาง</small>
-              <strong>{formatDistance(routeDeviation)}</strong>
-            </div>
-          )}
-        </div>
+        {!sheetCollapsed && positionSource === 'gps' && accuracy != null && (
+          <div className={`navGpsPill ${quality.className}`}><span>GPS {quality.label}</span><strong>±{accuracy} ม.</strong></div>
+        )}
 
-        <div className="navPrimaryActions">
+        <div className="navPrimaryActions navPrimaryActionsSimple">
           {activeNavigation ? (
             tracking ? (
               <button className="navStartButton navStopButton" onClick={stopActiveNavigation}>สิ้นสุดการนำทาง</button>
             ) : (
               <>
                 <button className="navStartButton" onClick={startTracking}>ลอง GPS อีกครั้ง</button>
-                <button className="navSecondaryButton" onClick={stopActiveNavigation}>สิ้นสุดการนำทาง</button>
+                <button className="navSecondaryButton" onClick={stopActiveNavigation}>สิ้นสุด</button>
               </>
             )
           ) : route && positionSource === 'gps' && tracking ? (
             <button className="navStartButton" onClick={startActiveNavigation}>เริ่มนำทาง</button>
+          ) : gpsError ? (
+            <button className="navStartButton" onClick={startTracking}>ลองตำแหน่งอีกครั้ง</button>
           ) : (
-            <button className="navStartButton" onClick={startTracking}>ใช้ตำแหน่งฉัน</button>
+            <button className="navStartButton" disabled>{locating ? 'กำลังหาตำแหน่ง...' : routeLoading ? 'กำลังคำนวณเส้นทาง...' : 'กำลังเตรียมเส้นทาง...'}</button>
           )}
-          {!activeNavigation && (
-            <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>เลือกบนแผนที่</button>
-          )}
-        </div>
-
-        <div className="navPrivacyNote">ตำแหน่งใช้เฉพาะระหว่างนำทางและไม่เก็บเป็นประวัติ</div>
-
-        <div className="navPhaseNote">
-          {activeNavigation
-            ? 'PawFeed ตรวจระยะห่างจาก route และปรับเส้นทางใหม่อัตโนมัติเมื่อ GPS แม่นยำพอ หาก provider ล้มเหลวจะคง route เดิมและให้ลองใหม่'
-            : 'เส้นสีเขียวคือเส้นทางตามถนนจาก Routing Engine; ใช้ GPS เพื่อเริ่ม Active Navigation'}
         </div>
       </section>
     </main>
