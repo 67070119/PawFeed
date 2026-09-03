@@ -9,9 +9,9 @@ import { api } from '../../../../lib/api';
 const NavigationMap = dynamic(() => import('../../../../components/NavigationMap'), { ssr: false });
 
 const MODE_OPTIONS = [
-  { value: 'DRIVING', icon: '🚗', label: 'รถ' },
-  { value: 'WALKING', icon: '🚶', label: 'เดิน' },
-  { value: 'CYCLING', icon: '🚲', label: 'จักรยาน' },
+  { value: 'DRIVING', label: 'รถ', detail: 'ทางถนน' },
+  { value: 'WALKING', label: 'เดิน', detail: 'ทางเดิน' },
+  { value: 'CYCLING', label: 'จักรยาน', detail: 'ทางจักรยาน' },
 ];
 
 const OFF_ROUTE_MIN_METERS = 60;
@@ -462,7 +462,7 @@ export default function NavigatePointPage() {
 
         {activeNavigation ? (
           <div className="navActiveTopBar" aria-label="คำแนะนำการนำทาง">
-            <div className="navManeuverIcon">{arrived ? '✓' : maneuverIcon(currentManeuver)}</div>
+            <div className={`navManeuverIcon${arrived ? ' arrived' : ''}`}>{arrived ? 'ถึง' : maneuverIcon(currentManeuver)}</div>
             <div className="navManeuverCopy">
               <small>{arrived ? 'จุดหมาย' : activeInstructionDistance}</small>
               <strong>{rerouting ? 'กำลังปรับเส้นทางใหม่...' : activeInstruction}</strong>
@@ -493,7 +493,7 @@ export default function NavigatePointPage() {
             className={`navMapButton${activeNavigation && !followUser ? ' navRecenterNeeded' : ''}`}
             onClick={recenter}
             aria-label={activeNavigation ? 'กลับมาติดตามตำแหน่งฉัน' : 'จัดแผนที่ให้อยู่กึ่งกลาง'}
-          >⌖</button>
+          ><span className="navRecenterIcon" aria-hidden="true" /></button>
         </div>
       </section>
 
@@ -518,7 +518,7 @@ export default function NavigatePointPage() {
                 onClick={() => selectTravelMode(option.value)}
                 aria-pressed={travelMode === option.value}
               >
-                <span>{option.icon}</span>{option.label}
+                <span className="navModeLabel">{option.label}</span><small>{option.detail}</small>
               </button>
             ))}
           </div>
@@ -526,7 +526,7 @@ export default function NavigatePointPage() {
 
         <div className="navSheetHeader">
           <div>
-            <span className="eyebrow">{activeNavigation ? 'กำลังนำทาง' : 'Route Preview'}</span>
+            <span className="eyebrow">{activeNavigation ? 'กำลังนำทาง' : 'ตัวอย่างเส้นทาง'}</span>
             <h1>{activeNavigation ? formatDuration(displayDuration) : routeLoading ? 'กำลังหาเส้นทาง...' : route ? formatDuration(route.durationSeconds) : 'เลือกตำแหน่งเริ่มต้น'}</h1>
             <p>{activeNavigation ? `${formatDistance(displayDistance)} ถึงจุดหมาย` : route ? `เส้นทางตามถนน · ${route.provider}` : 'ระบุตำแหน่งเพื่อคำนวณเส้นทางตามถนน'}</p>
           </div>
@@ -540,7 +540,7 @@ export default function NavigatePointPage() {
         {gpsError && <div className="navInlineNotice gpsErrorNotice" role="status">{gpsError}</div>}
         {quality.id === 'poor' && positionSource === 'gps' && <div className="navInlineNotice gpsAccuracyNotice" role="status">GPS ความแม่นยำต่ำ (±{accuracy} ม.) ระบบจะรอข้อมูลที่แม่นยำขึ้นก่อนปรับเส้นทางอัตโนมัติ</div>}
         {routeError && !activeNavigation && <div className="navInlineNotice routeErrorNotice" role="status">{routeError}<button type="button" className="navInlineRetry" onClick={retryCurrentRoute}>ลองอีกครั้ง</button></div>}
-        {activeNavigation && !followUser && !gpsError && <div className="navInlineNotice navFollowNotice" role="status">คุณเลื่อนแผนที่แล้ว กดปุ่ม ⌖ เพื่อกลับมาติดตามตำแหน่ง</div>}
+        {activeNavigation && !followUser && !gpsError && <div className="navInlineNotice navFollowNotice" role="status">คุณเลื่อนแผนที่แล้ว กดปุ่มจัดกึ่งกลางเพื่อกลับมาติดตามตำแหน่ง</div>}
         {activeNavigation && offRoute && !rerouting && !rerouteError && <div className="navInlineNotice navOffRouteNotice" role="status">ตรวจพบว่าคุณออกจากเส้นทาง กำลังเตรียมปรับเส้นทางใหม่</div>}
         {rerouteError && <div className="navInlineNotice routeErrorNotice" role="status">{rerouteError}<button type="button" className="navInlineRetry" onClick={retryReroute}>ลองปรับเส้นทางอีกครั้ง</button></div>}
         {recoveryNotice && <div className="navInlineNotice navRecoveryNotice" role="status">{recoveryNotice}</div>}
@@ -565,20 +565,20 @@ export default function NavigatePointPage() {
         <div className="navPrimaryActions">
           {activeNavigation ? (
             tracking ? (
-              <button className="navStartButton navStopButton" onClick={stopActiveNavigation}>■ สิ้นสุดการนำทาง</button>
+              <button className="navStartButton navStopButton" onClick={stopActiveNavigation}>สิ้นสุดการนำทาง</button>
             ) : (
               <>
-                <button className="navStartButton" onClick={startTracking}>◎ ลอง GPS อีกครั้ง</button>
+                <button className="navStartButton" onClick={startTracking}>ลอง GPS อีกครั้ง</button>
                 <button className="navSecondaryButton" onClick={stopActiveNavigation}>สิ้นสุดการนำทาง</button>
               </>
             )
           ) : route && positionSource === 'gps' && tracking ? (
-            <button className="navStartButton" onClick={startActiveNavigation}>▶ เริ่มนำทาง</button>
+            <button className="navStartButton" onClick={startActiveNavigation}>เริ่มนำทาง</button>
           ) : (
-            <button className="navStartButton" onClick={startTracking}>◎ ใช้ตำแหน่งฉัน</button>
+            <button className="navStartButton" onClick={startTracking}>ใช้ตำแหน่งฉัน</button>
           )}
           {!activeNavigation && (
-            <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>📍 เลือกบนแผนที่</button>
+            <button className={`navSecondaryButton ${manualPicking ? 'active' : ''}`} onClick={beginManualPick}>เลือกบนแผนที่</button>
           )}
         </div>
 
