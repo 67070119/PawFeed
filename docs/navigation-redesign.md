@@ -50,13 +50,13 @@ Implemented:
 ## Phase 5 — Verification & Polish — COMPLETED
 
 Verified and finalized:
-- Playwright navigation regression expanded to 16/16 tests
+- current working-tree Playwright regression passes **21/21**, including 7 active-navigation tests and 4 responsive visual guards
 - route provider failure, reroute retry, GPS loss/recovery, poor-GPS guard and Start/Stop flows verified
-- mobile portrait layout guards at 375×667, 390×844 and 430×932
+- portrait responsive guards cover narrow/mobile viewports down to 320×568; low-height landscape navigation is verified at 667×375, 844×390 and 932×430
 - live configured routing provider smoke passed for DRIVING, WALKING and CYCLING
-- Full Course Container `tuchsanai/devtools:2569_1` with E2E passed with exit code 0
-- lint/build/audit/integration/smoke/persistence gates remain green
-- requirements, acceptance criteria, traceability, architecture, evidence and README synchronized to the final navigation behavior
+- archived Full Course Container `tuchsanai/devtools:2569_1` evidence passed with exit code 0 and Playwright 16/16 on that revision; current 21-test suite should be rerun before replacing submission evidence
+- lint/build/unit/integration/smoke gates remain green on the current working tree
+- requirements, acceptance criteria, traceability, architecture and current verification docs are synchronized to the approved runtime behavior
 
 ## Design boundary
 

@@ -59,12 +59,17 @@ flowchart TD
 
     H --> I{ต้องการไปที่จุดหรือไม่?}
     I -->|ใช่| J[กด นำทาง]
-    J --> K[แสดงจุดหมายบน Map ภายใน PawFeed]
-    K --> K2{อนุญาต Location หรือไม่?}
-    K2 -->|อนุญาต| K3[แสดงตำแหน่งฉัน + ระยะตรงโดยประมาณ]
-    K2 -->|ไม่อนุญาต| K4[ดูจุดหมายต่อได้โดยไม่ใช้ตำแหน่ง]
-    K3 --> L[ใช้แผนที่ช่วยเดินทางไปยังจุด]
-    K4 --> L
+    J --> K[เปิด Navigation ภายใน PawFeed]
+    K --> K2{ใช้ตำแหน่งเริ่มต้นแบบใด?}
+    K2 -->|อนุญาต GPS| K3[ใช้ตำแหน่งปัจจุบันและติดตาม live GPS]
+    K2 -->|GPS ใช้ไม่ได้/ไม่อนุญาต| K4[เลือกตำแหน่งเริ่มต้นบน Map]
+    K3 --> K5[ขอ Road Route Preview]
+    K4 --> K5
+    K5 --> K6[แสดง Road Route + Distance + ETA]
+    K6 --> K7{มี live GPS หรือไม่?}
+    K7 -->|มี| K8[Start Active Navigation: Maneuver / Remaining / Follow / Recenter / Auto-reroute]
+    K7 -->|ไม่มี| L[ใช้ Route Preview ช่วยเดินทาง]
+    K8 --> L
 
     L --> M{ให้อาหารแล้วหรือยัง?}
     M -->|ใช่| N{Login แล้วหรือยัง?}
@@ -74,7 +79,7 @@ flowchart TD
     N -->|แล้ว| P[กด ให้อาหารแล้ว]
     O --> P
 
-    P --> Q[เพิ่ม Note / รูป Optional]
+    P --> Q[เพิ่ม Note ได้ถ้าต้องการ]
     Q --> R[บันทึก Feeding History]
     R --> S[อัปเดตเวลาที่ให้อาหารล่าสุด]
     S --> T[แสดง เช่น มีคนให้อาหารแล้วเมื่อ 2 ชั่วโมงก่อน]
@@ -180,11 +185,14 @@ stateDiagram-v2
 
     ACTIVE --> ACTIVE: STILL_HERE
     ACTIVE --> ACTIVE: มีการให้อาหาร
-    ACTIVE --> INACTIVE: ไม่พบสัตว์ต่อเนื่อง / ถูกปิดตามเงื่อนไข
+    ACTIVE --> ACTIVE: NOT_FOUND (บันทึก Report เท่านั้น)
 
-    INACTIVE --> ACTIVE: ยืนยันว่ากลับมาพบสัตว์อีกครั้ง
-    INACTIVE --> [*]: ยุติการใช้งานจุด
+    note right of ACTIVE
+      v1 ไม่เปลี่ยนเป็น INACTIVE อัตโนมัติจาก NOT_FOUND
+    end note
 ```
+
+`INACTIVE` ยังมีอยู่ใน data model สำหรับควบคุม visibility แต่ automatic transition/policy จากรายงานชุมชนยังเป็น Future Scope และไม่ใช่ runtime flow ของ v1
 
 ---
 
@@ -197,13 +205,11 @@ flowchart LR
     B --> D[เชื่อม Stray Point]
     B --> E[บันทึก fedAt]
     B --> F[Note Optional]
-    B --> G[Image Optional]
 
     C --> H[Feeding History]
     D --> H
     E --> H
     F --> H
-    G --> H
 
     H --> I[คำนวณเวลาที่ให้อาหารล่าสุด]
     I --> J[แสดงบน Point Detail]
@@ -225,7 +231,9 @@ flowchart LR
     F --> G[Marker ปรากฏบน Map]
     G --> H[เปิด Point Detail]
     H --> I[กด Navigate]
-    I --> J[กลับมาบันทึก ให้อาหารแล้ว]
+    I --> I2[ดู Road Route Preview / ETA ภายใน PawFeed]
+    I2 --> I3[Start / Stop Active Navigation เมื่อมี GPS]
+    I3 --> J[กลับมาบันทึก ให้อาหารแล้ว]
     J --> K[Feeding History อัปเดต]
     K --> L[Restart Containers]
     L --> M[ตรวจว่าข้อมูลและรูปยัง Persist]

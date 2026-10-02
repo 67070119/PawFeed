@@ -2,7 +2,7 @@
 
 เอกสารนี้เชื่อม Proposal/Requirement → Acceptance Criteria → Implementation → Verification → Evidence
 
-Phase 8 reconcile สถานะจาก implementation, automated/runtime verification และ inspection จริง โดย `REQ-NFR-DEVOPS-003/004` คงเป็น `IMPLEMENTED` จนกว่าจะมี Jenkins job run จริงตาม Evidence Register
+สถานะในตาราง reconcile จาก implementation, automated/runtime verification และ inspection จริง: `REQ-NFR-DEVOPS-003/004` คงเป็น `IMPLEMENTED` จนกว่าจะมี Jenkins job run จริง และ `REQ-NFR-DEVOPS-005` คงเป็น `IMPLEMENTED` จนกว่าจะ rerun current revision ใน Course Container
 
 ## Status Legend
 
@@ -40,7 +40,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-IMG-004 Safe Filename | AC-IMG-003 | Server filename generator | T-IMAGE-FILENAME | EV-TEST-IMAGE | VERIFIED |
 | REQ-IMG-005 Image Persistence | AC-IMG-004 | Persistent upload volume | T-PERSIST-IMAGE | EV-PERSISTENCE | VERIFIED |
 | REQ-DETAIL-001 Public Point Detail | AC-DETAIL-001 | Point Detail API + page | E2E-POINT-DETAIL-GUEST | EV-E2E-MAIN | VERIFIED |
-| REQ-DETAIL-002 Detail Data | AC-DETAIL-001 | Point detail query including image/feedings | T-POINT-DETAIL, E2E-POINT-DETAIL | EV-TEST-POINT, EV-E2E-MAIN | VERIFIED |
+| REQ-DETAIL-002 Detail Data | AC-DETAIL-001 | Point detail API + runtime presentation for image/meta/status/reports/feedings | `critical-flow.spec.js` + runtime visual/interaction validation | EV-TEST-POINT, EV-E2E-MAIN | VERIFIED |
 | REQ-DETAIL-003 Missing Point | AC-DETAIL-002 | 404 domain error + Not Found UI | T-POINT-NOT-FOUND | EV-TEST-POINT | VERIFIED |
 | REQ-FEED-001 Create Feeding | AC-FEED-001, AC-FEED-004 | Feeding API/service + UI | T-FEED-CREATE, E2E-FEEDING | EV-TEST-FEED, EV-E2E-MAIN | VERIFIED |
 | REQ-FEED-002 Feeding Relation | AC-FEED-001 | Prisma relation Point/User/Feeding | T-FEED-RELATION | EV-TEST-FEED | VERIFIED |
@@ -60,7 +60,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-NAV-006 Follow & Recenter | AC-NAV-006 | NavigationMap follow state + drag pause + recenter | Playwright active-navigation drag/recenter flow | EV-E2E-ACTIVE-NAV | VERIFIED |
 | REQ-NAV-007 Off-route Detection & Automatic Rerouting | AC-NAV-007 | Route-deviation threshold + consecutive-fix debounce + reroute | Playwright off-route auto-reroute/retry flow | EV-E2E-NAV-RECOVERY | VERIFIED |
 | REQ-NAV-008 GPS Quality & Recovery | AC-NAV-008 | GPS quality tiers + poor-accuracy guard + retry tracking | Playwright poor-GPS and GPS-loss recovery flows | EV-E2E-NAV-RECOVERY | VERIFIED |
-| REQ-NAV-009 Mobile Navigation Sheet | AC-NAV-009 | Collapsible navigation bottom sheet | Playwright 390x844 collapse/expand flow | EV-E2E-NAV-RECOVERY | VERIFIED |
+| REQ-NAV-009 Responsive Navigation Panel | AC-NAV-009 | Collapsible portrait bottom sheet + low-height landscape side panel | `active-navigation.spec.js` collapse/expand + `responsive-guards.spec.js` portrait/landscape CTA checks | EV-E2E-NAV-RECOVERY | VERIFIED |
 | REQ-PROFILE-001 Authenticated Profile | AC-PROFILE-001 | Protected Profile route/API | E2E-PROFILE-GATE | EV-E2E-PROFILE | VERIFIED |
 | REQ-PROFILE-002 User Points | AC-PROFILE-002 | User Point query + Profile UI | T-PROFILE-POINTS | EV-TEST-PROFILE | VERIFIED |
 | REQ-PROFILE-003 User Feedings | AC-PROFILE-003 | User Feeding query + Profile UI | T-PROFILE-FEEDINGS | EV-TEST-PROFILE | VERIFIED |
@@ -87,7 +87,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | REQ-NFR-DEVOPS-002 Repeatable Stop/Start | AC-DEVOPS-002 | Compose lifecycle + volumes | stop/start + persistence verification | EV-PERSISTENCE | VERIFIED |
 | REQ-NFR-DEVOPS-003 Jenkins Verification | AC-DEVOPS-003 | Jenkinsfile | Successful pipeline run | EV-CI | IMPLEMENTED |
 | REQ-NFR-DEVOPS-004 Fail Stops Delivery | AC-DEVOPS-004 | Jenkins stage dependencies | Intentional failing test/build run | EV-CI-FAILURE | IMPLEMENTED |
-| REQ-NFR-DEVOPS-005 Course Container Compatibility | AC-DEVOPS-005 | Course verification script/docs | Clean run in `tuchsanai/devtools:2569_1` | EV-COURSE-CONTAINER | VERIFIED |
+| REQ-NFR-DEVOPS-005 Course Container Compatibility | AC-DEVOPS-005 | Course verification script/docs | Archived clean run in `tuchsanai/devtools:2569_1`; current 21-test suite rerun pending | EV-COURSE-CONTAINER | IMPLEMENTED |
 
 ---
 
@@ -100,8 +100,8 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 | 3. Create Point | REQ-POINT-001..005 / AC-POINT-001 | Form → API → Database |
 | 4. Upload รูป | REQ-IMG-001..005 | File ถูก Validate/Store |
 | 5. Marker ใหม่ขึ้น Map | REQ-POINT-006 / AC-POINT-006 | Marker จาก API หลัง Create |
-| 6. Point Detail | REQ-DETAIL-001..002 | ข้อมูลที่สร้างแสดงครบ |
-| 7. Navigate | REQ-NAV-001..009 / AC-NAV-001..009 | Navigation Mode ภายใน PawFeed แสดง Route Preview, Active Navigation, Maneuver, Follow/Recenter, GPS Quality และ Off-route Auto-reroute |
+| 6. Point Detail | REQ-DETAIL-001..002 | แสดงรูป/ผู้รายงาน/ข้อมูลสัตว์/สถานะ/Last Seen/Latest Feeding/Recent Reports/Feeding History ตาม runtime v1 |
+| 7. Navigate | REQ-NAV-001..009 / AC-NAV-001..009 | Navigation ภายใน PawFeed แสดง Road Route Preview, Active Navigation, Maneuver, Follow/Recenter, GPS Quality, Off-route Auto-reroute และ responsive panel |
 | 8. Feeding | REQ-FEED-001..005 | Feeding Record ถูกบันทึก |
 | 9. Feeding History เปลี่ยน | AC-FEED-003 | Latest/History ก่อน-หลัง |
 | 10. STILL_HERE | REQ-REPORT-001..003 | Report + Last Seen เปลี่ยน |
@@ -119,7 +119,7 @@ Phase 8 reconcile สถานะจาก implementation, automated/runtime ver
 
 ---
 
-## 5. Evidence Locations Planned for Phase 8
+## 5. Evidence Locations
 
 ```text
 docs/evidence/
@@ -142,4 +142,4 @@ Evidence ต้องมาจากรุ่น Source Code ที่ส่ง�
 3. ทุก Feature ที่กล่าวใน Slide, Report หรือ Demo ต้องมี Requirement ID หรือถูกระบุว่าเป็น Future/Optional อย่างชัดเจน
 4. เมื่อ Implementation เริ่ม ให้แทน Implementation ด้วย Path/Module จริง
 5. เมื่อ Test ถูกสร้าง ให้แทน Verification ด้วยชื่อ Test File/Test Case จริง
-6. Phase 8 ต้องเปลี่ยน Status ตามผลจริงเป็น VERIFIED / DEFECT / LIMITATION ห้ามตั้ง VERIFIED จากคำอธิบายอย่างเดียว
+6. Status ต้องอัปเดตตามผล Verification จริงเป็น VERIFIED / DEFECT / LIMITATION และห้ามตั้ง VERIFIED จากคำอธิบายอย่างเดียว

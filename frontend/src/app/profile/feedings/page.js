@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Protected from '../../../components/Protected';
 import ProfileNav from '../../../components/ProfileNav';
 import { api, assetUrl, relativeTime } from '../../../lib/api';
@@ -9,7 +9,7 @@ import { api, assetUrl, relativeTime } from '../../../lib/api';
 const ANIMAL = {
   DOG: { emoji: '🐕', label: 'สุนัข' },
   CAT: { emoji: '🐈', label: 'แมว' },
-  OTHER: { emoji: '🦄', label: 'สัตว์อื่น ๆ' },
+  OTHER: { emoji: '🐾', label: 'สัตว์อื่น ๆ' },
 };
 
 function groupLabel(value) {
@@ -41,12 +41,19 @@ export default function ProfileFeedingsPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api('/api/profile/feedings')
-      .then(setItems)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      setItems(await api('/api/profile/feedings'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => { load(); }, [load]);
 
   const groups = useMemo(() => {
     const grouped = [];
@@ -64,12 +71,12 @@ export default function ProfileFeedingsPage() {
 
   return (
     <Protected>
-      <main className="page feedingPage">
-        <div className="pageTitle feedingPageTitle">
+      <main className="page feedingPage profilePage">
+        <div className="pageTitle feedingPageTitle profilePageTitle">
           <div>
             <span className="eyebrow">บัญชีของฉัน</span>
             <h1>ประวัติการให้อาหาร</h1>
-            <p>จุดที่คุณเคยไปช่วยให้อาหารสัตว์</p>
+            <p>ย้อนดูจุดที่คุณเคยช่วยให้อาหารสัตว์และกลับไปดูข้อมูลของจุดนั้นได้</p>
           </div>
           {!loading && !error && items.length > 0 && (
             <div className="feedingCount" aria-label={`ทั้งหมด ${items.length} ครั้ง`}>
@@ -79,14 +86,19 @@ export default function ProfileFeedingsPage() {
           )}
         </div>
 
-        {error && <div className="errorBox">{error}</div>}
+        {error && (
+          <div className="profileErrorBox errorBox" role="alert">
+            <span>{error}</span>
+            <button type="button" className="button" onClick={load}>ลองอีกครั้ง</button>
+          </div>
+        )}
 
         <div className="profileGrid feedingProfileGrid">
           <ProfileNav />
 
-          <section className="feedingHistoryPanel" aria-label="รายการประวัติการให้อาหาร">
+          <section className={`feedingHistoryPanel${error ? ' isUnavailable' : ''}`} aria-label="รายการประวัติการให้อาหาร" aria-busy={loading}>
             {loading && (
-              <div className="feedingSkeletonList" aria-label="กำลังโหลดประวัติการให้อาหาร">
+              <div className="feedingSkeletonList" role="status" aria-label="กำลังโหลดประวัติการให้อาหาร">
                 <FeedingSkeleton />
                 <FeedingSkeleton />
                 <FeedingSkeleton />
@@ -94,10 +106,10 @@ export default function ProfileFeedingsPage() {
             )}
 
             {!loading && !error && groups.map((group) => (
-              <section className="feedingGroup" key={group.label}>
+              <section className="feedingGroup" key={group.label} aria-labelledby={`feeding-group-${group.label}`}>
                 <div className="feedingGroupTitle">
                   <span className="feedingTimelineDot" aria-hidden="true" />
-                  <h2>{group.label}</h2>
+                  <h2 id={`feeding-group-${group.label}`}>{group.label}</h2>
                 </div>
 
                 <div className="feedingList">
@@ -131,7 +143,7 @@ export default function ProfileFeedingsPage() {
 
                           {feeding.point?.id && (
                             <Link className="feedingPointLink" href={`/points/${feeding.point.id}`}>
-                              ดูจุดบนแผนที่ <span aria-hidden="true">→</span>
+                              ดูรายละเอียดจุด <span aria-hidden="true">→</span>
                             </Link>
                           )}
                         </div>

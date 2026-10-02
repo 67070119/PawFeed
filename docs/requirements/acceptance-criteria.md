@@ -172,7 +172,7 @@
 
 - Given: Point มีอยู่
 - When: Guest เปิด `/points/:id`
-- Then: แสดงข้อมูล Point จาก Backend รวมรูป, ประเภท, จำนวน, คำอธิบาย, Location, เวลา, Latest Feeding และ Feeding History ตามข้อมูลที่มี
+- Then: แสดงข้อมูล Point จาก Backend ตาม runtime v1 ได้แก่รูป, ผู้รายงาน, ประเภท, จำนวน, คำอธิบาย, ช่วงเวลาที่มักพบ, Point Status, Last Seen, Latest Feeding, รายงานสถานะล่าสุด และ Feeding History ตามข้อมูลที่มี; raw coordinates/embedded map ไม่ใช่ข้อมูลบังคับบน Point Detail
 
 ### AC-DETAIL-002 — Point Not Found
 **Requirement:** REQ-DETAIL-003
@@ -267,10 +267,10 @@
 **Requirement:** REQ-NAV-002
 
 - Given: ผู้ใช้อยู่ใน Navigation Mode
-- When: ผู้ใช้ไม่อนุญาต Location
-- Then: จุดหมายยังดูได้และระบบมีทางเลือกให้กำหนดตำแหน่งบนแผนที่
-- When: ผู้ใช้อนุญาต Location
-- Then: ระบบแสดงตำแหน่งผู้ใช้และอัปเดตตำแหน่งระหว่างเปิดหน้า โดยไม่ Persist ตำแหน่งผู้ใช้ลง Database
+- When: ผู้ใช้ไม่อนุญาต Location หรือ GPS ใช้ไม่ได้
+- Then: จุดหมายยังดูได้และผู้ใช้สามารถเลือกตำแหน่งเริ่มต้นบนแผนที่เพื่อขอ Road Route Preview ได้ แต่ยังไม่เริ่ม Active Navigation จาก manual origin
+- When: ผู้ใช้อนุญาต Location และ Browser Geolocation ใช้งานได้
+- Then: ระบบแสดง/อัปเดตตำแหน่งผู้ใช้, สามารถเริ่ม Active Navigation เมื่อมี Road Route Preview และไม่ Persist ตำแหน่งผู้ใช้ลง Database
 
 ### AC-NAV-003 — Road Route Preview
 **Requirement:** REQ-NAV-003
@@ -326,14 +326,16 @@
 - When: Browser Geolocation ส่ง Error
 - Then: Route เดิมและ Active Navigation Context ยังอยู่, UI แสดง Recovery Action และผู้ใช้สามารถลอง GPS ใหม่ได้
 
-### AC-NAV-009 — Mobile Bottom Sheet
+### AC-NAV-009 — Responsive Navigation Panel
 **Requirement:** REQ-NAV-009
 
-- Given: Navigation เปิดบน Mobile Viewport
+- Given: Navigation เปิดบน Mobile Portrait Viewport
 - When: ผู้ใช้ย่อ Bottom Sheet
-- Then: รายละเอียดรองถูกซ่อนแต่ Primary Action ยังเข้าถึงได้
+- Then: รายละเอียดรองถูกซ่อนแต่ Primary Action ยังเข้าถึงได้และไม่ถูก viewport/overlay บัง
 - When: ผู้ใช้ขยาย Bottom Sheet
 - Then: ข้อมูล Route/GPS/Recovery กลับมาแสดงครบ
+- Given: Navigation เปิดบน Low-height Landscape Viewport
+- Then: Navigation Controls ใช้ Side Panel เพื่อคงพื้นที่แผนที่ และ Primary Action ยังอยู่ใน viewport
 
 ### AC-PROFILE-001 — Profile ต้อง Login
 **Requirement:** REQ-PROFILE-001

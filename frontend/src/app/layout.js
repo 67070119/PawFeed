@@ -22,8 +22,11 @@ export default function RootLayout({ children }) {
     <html lang="th">
       <body>
         <AuthProvider>
+          <a className="skipLink" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
           <NavBar />
-          {children}
+          <div id="main-content" tabIndex="-1">
+            {children}
+          </div>
         </AuthProvider>
       </body>
     </html>

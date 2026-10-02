@@ -27,7 +27,7 @@ function radiusFromPosition(position) {
   return Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, snapRadius(raw)));
 }
 
-export default function RadiusFilter({ value, onChange, disabled = false, locating = false }) {
+export default function RadiusFilter({ value, onChange, disabled = false, locating = false, onLocate }) {
   const [dragging, setDragging] = useState(false);
   const progress = sliderPosition(value);
 
@@ -36,33 +36,44 @@ export default function RadiusFilter({ value, onChange, disabled = false, locati
       <div className="radiusFilterHeader">
         <div>
           <strong>จุดใกล้ฉัน</strong>
-          <span>{disabled ? (locating ? 'กำลังหาตำแหน่ง...' : 'เปิดตำแหน่งเพื่อค้นหาใกล้คุณ') : 'ปรับระยะที่ต้องการดู'}</span>
+          <span>{disabled ? (locating ? 'กำลังหาตำแหน่ง...' : 'ใช้ตำแหน่งของคุณเพื่อค้นหาจุดใกล้เคียง') : 'ปรับระยะที่ต้องการดู'}</span>
         </div>
-        <output className="radiusFilterValue" aria-live="polite">{formatRadius(value)}</output>
+        {!disabled && <output className="radiusFilterValue" aria-live="polite">{formatRadius(value)}</output>}
       </div>
 
-      <div className="radiusSliderWrap" style={{ '--radius-progress': `${progress}%` }}>
-        <input
-          className="radiusSlider"
-          type="range"
-          min="0"
-          max={SLIDER_MAX}
-          step="0.25"
-          value={progress}
-          disabled={disabled}
-          aria-label="รัศมีค้นหา"
-          aria-valuemin={MIN_RADIUS}
-          aria-valuemax={MAX_RADIUS}
-          aria-valuenow={value}
-          aria-valuetext={formatRadius(value)}
-          onChange={(event) => onChange(radiusFromPosition(Number(event.target.value)))}
-          onPointerDown={() => setDragging(true)}
-          onPointerUp={() => setDragging(false)}
-          onPointerCancel={() => setDragging(false)}
-          onBlur={() => setDragging(false)}
-        />
-        <div className="radiusSliderLabels" aria-hidden="true"><span>500 ม.</span><span>500 กม.</span></div>
-      </div>
+      {disabled ? (
+        <button
+          type="button"
+          className="radiusEnableButton"
+          onClick={onLocate}
+          disabled={locating}
+        >
+          <span className="radiusEnableIcon" aria-hidden="true">⌖</span>
+          {locating ? 'กำลังหาตำแหน่ง...' : 'ใช้ตำแหน่งของฉัน'}
+        </button>
+      ) : (
+        <div className="radiusSliderWrap" style={{ '--radius-progress': `${progress}%` }}>
+          <input
+            className="radiusSlider"
+            type="range"
+            min="0"
+            max={SLIDER_MAX}
+            step="0.25"
+            value={progress}
+            aria-label="รัศมีค้นหา"
+            aria-valuemin={MIN_RADIUS}
+            aria-valuemax={MAX_RADIUS}
+            aria-valuenow={value}
+            aria-valuetext={formatRadius(value)}
+            onChange={(event) => onChange(radiusFromPosition(Number(event.target.value)))}
+            onPointerDown={() => setDragging(true)}
+            onPointerUp={() => setDragging(false)}
+            onPointerCancel={() => setDragging(false)}
+            onBlur={() => setDragging(false)}
+          />
+          <div className="radiusSliderLabels" aria-hidden="true"><span>500 ม.</span><span>500 กม.</span></div>
+        </div>
+      )}
     </section>
   );
 }

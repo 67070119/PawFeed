@@ -10,7 +10,7 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 Development Plan **8/8 Phase เสร็จแล้ว**
 
-Final verification ล่าสุดผ่าน Unit 15/15, Integration 7/7, Playwright E2E 16/16, Live Routing Smoke ครบ DRIVING/WALKING/CYCLING และ Full Course Container `tuchsanai/devtools:2569_1` ด้วย exit code 0. Navigation Redesign เสร็จ 5/5 Phase แล้ว; submission blockers ภายนอก repository ยังมี Jenkins job run จริง, รายชื่อทีมจริง และการจัดทำ final Slide/Report/Video
+Current working-tree verification ผ่าน Unit **46/46**, Integration **7/7**, Playwright E2E **21/21**, responsive visual/interaction validation และ Live Routing Smoke ครบ DRIVING/WALKING/CYCLING. Archived Full Course Container `tuchsanai/devtools:2569_1` evidence ยังเป็น PASS / exit code 0 พร้อม E2E **16/16** จาก evidence revision ก่อนหน้า จึงควรรัน current 21-test suite ใน Course Container อีกครั้งก่อนแทนที่ final submission evidence. Navigation Redesign เสร็จ 5/5 Phase แล้ว; blockers ที่เหลือคือ Jenkins job run จริง, Course Container evidence refresh, รายชื่อทีมจริง และ final Slide/Report/Video
 
 ## Core MVP
 

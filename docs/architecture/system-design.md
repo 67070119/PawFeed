@@ -41,7 +41,7 @@ Responsibilities:
 - Profile / personal history
 - แสดง Validation และ Failure State ต่อผู้ใช้
 - ขอ Geolocation Permission เฉพาะเมื่อผู้ใช้เลือกใช้ตำแหน่งปัจจุบัน
-- Navigation Mode ภายในเว็บ แสดงจุดหมาย ตำแหน่งผู้ใช้ และระยะตรงโดยประมาณ
+- Navigation Mode ภายในเว็บ แสดงจุดหมาย ตำแหน่งผู้ใช้/Manual Origin, Road Route Preview, Distance/ETA และ Active Navigation พร้อม Maneuver/Follow/Recenter เมื่อมี live GPS
 
 Frontend ไม่ถือ Business Rule สำคัญเป็น Source of Truth การตรวจ Auth, Validation และสิทธิ์ต้องเกิดที่ Backend ด้วยเสมอ
 

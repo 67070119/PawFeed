@@ -19,7 +19,7 @@ backend/tests/unit/
 └── validation.test.js
 ```
 
-Result: **4 suites / 15 tests / PASS**
+Current working-tree result: **4 suites / 46 tests / PASS**
 
 ## Integration Tests
 
@@ -42,6 +42,7 @@ tests/e2e/
 ├── active-navigation.spec.js
 ├── critical-flow.spec.js
 ├── failure-cases.spec.js
+├── responsive-guards.spec.js
 ├── helpers.js
 └── playwright.config.js
 ```
@@ -54,9 +55,9 @@ Runner:
 
 ใช้ official image `mcr.microsoft.com/playwright:v1.62.1-noble` จึงไม่พึ่ง Chromium ของเครื่องสมาชิก
 
-Result: **16 tests / PASS** ทั้ง Docker environment ปกติและ Full Course Container
+Current working-tree result: **21/21 Playwright tests PASS** on the production runtime used for Visual QA. This is separate from the archived Course Container evidence below.
 
-Navigation coverage includes:
+Navigation/responsive coverage includes:
 - Road Route Preview + DRIVING/WALKING/CYCLING
 - Active Navigation Start/Stop
 - next maneuver + remaining distance/ETA + arrival
@@ -65,10 +66,11 @@ Navigation coverage includes:
 - poor GPS accuracy guard
 - reroute failure + manual retry recovery
 - GPS loss + retry recovery
-- collapsible mobile bottom sheet
-- portrait layout verification at `375×667`, `390×844`, `430×932`
+- collapsible mobile portrait bottom sheet with primary action retained
+- low-height landscape side-panel layout
+- responsive CTA/no-horizontal-overflow guards at `320×568`, `390×500`, `390×844`, `667×375`, `844×390` and `932×430`
 
-Critical/failure coverage also includes marker interaction, guest gate, invalid login, upload failures, API/network no-false-success behavior, geolocation denied fallback and insecure-LAN manual-position fallback.
+Critical/failure coverage also includes marker interaction, guest gate, invalid login, safe post-login redirect, upload failures, API/network no-false-success behavior, geolocation denied/manual-origin fallback and routing-provider failure.
 
 ## Runtime Verification
 
@@ -86,9 +88,9 @@ Critical/failure coverage also includes marker interaction, guest gate, invalid 
 COURSE_RUN_E2E=1 ./scripts/course-container-test.sh
 ```
 
-Latest final result: **PASS / exit code 0**, including Playwright **16/16 PASS**.
+Latest archived Course Container evidence: **PASS / exit code 0**, including Playwright **16/16 PASS** on that evidence revision.
 
-Course Container E2E uses an internal deterministic routing mock so CI reproducibility does not depend on public routing availability; live provider verification remains a separate runtime smoke gate.
+Current working-tree Playwright suite has expanded to 21 tests and has not yet been rerun in the Course Container after this UX/UI repair. Course Container E2E still uses an internal deterministic routing mock so CI reproducibility does not depend on public routing availability; live provider verification remains a separate runtime smoke gate.
 
 ## Regression Rule
 

@@ -12,7 +12,7 @@ PawFeed v1 เป็น Web Application สำหรับแชร์ตำแ�
 2. ผู้ใช้สมัครสมาชิก / Login ได้
 3. ผู้ใช้ที่ Login แล้วสร้างจุดพร้อมตำแหน่ง รูป และรายละเอียดได้
 4. จุดใหม่ถูกบันทึกและแสดงบน Map
-5. ผู้ใช้เปิด Point Detail และใช้ Navigation Mode ภายใน PawFeed พร้อม Route Preview ตามถนนได้
+5. ผู้ใช้เปิด Point Detail และใช้ Navigation Mode ภายใน PawFeed พร้อม Road Route Preview และ Active Navigation เมื่อมี live GPS ได้
 6. ผู้ใช้ที่ Login แล้วบันทึกการให้อาหารได้
 7. Point Detail แสดง Feeding History และเวลาที่ให้อาหารล่าสุด
 8. ผู้ใช้ที่ Login แล้วรายงาน STILL_HERE / NOT_FOUND ได้
@@ -108,7 +108,7 @@ Backend ต้องสร้างชื่อไฟล์ใหม่ที่
 Guest และ Authenticated User ต้องเปิดรายละเอียด Stray Point ได้
 
 #### REQ-DETAIL-002 — Detail Data
-Point Detail ต้องแสดงอย่างน้อย รูป, Animal Type, Estimated Count, Description, Coordinates/Map Location, Usual Time (ถ้ามี), Created At, Last Seen At, Latest Feeding Time และ Feeding History
+Point Detail ต้องแสดงข้อมูลจาก Backend อย่างน้อย รูป, ผู้รายงาน, Animal Type, Estimated Count, Description, Usual Time (ถ้ามี), Point Status, Last Seen At, Latest Feeding Time, รายงานสถานะล่าสุด และ Feeding History ตามข้อมูลที่มี พิกัดของ Point ยังคงใช้เป็น Map/Navigation destination แต่ runtime v1 ไม่บังคับแสดง raw coordinates หรือ embedded map บน Point Detail
 
 #### REQ-DETAIL-003 — Missing Point
 เมื่อเปิด Point ID ที่ไม่มีอยู่ ระบบต้องแสดง Not Found ที่เข้าใจได้และไม่ Crash
@@ -163,7 +163,7 @@ Point Report ต้องเชื่อมกับ Point, User, Report Type �
 ผู้ใช้ต้องสามารถกด Navigate จาก Point Detail แล้วเปิด Navigation Mode ภายใน PawFeed โดยแสดง Latitude/Longitude ของ Point เป็นจุดหมายและไม่บังคับเปิด Google Maps หรือแอปแผนที่ภายนอก
 
 #### REQ-NAV-002 — Location-assisted Navigation
-Navigation Mode ต้องยังใช้งานดูจุดหมายได้โดยไม่ให้สิทธิ์ Location และเมื่อผู้ใช้อนุญาต ต้องแสดงตำแหน่งปัจจุบันและอัปเดตตำแหน่งระหว่างเปิดหน้า โดยตำแหน่งผู้ใช้ต้องไม่ถูก Persist ลง Database
+Navigation Mode ต้องยังดูจุดหมายได้เมื่อไม่อนุญาต Location และต้องให้ผู้ใช้เลือกตำแหน่งเริ่มต้นบน Map เพื่อขอ Route Preview ได้; เมื่อผู้ใช้อนุญาต Location ระบบต้องแสดง/อัปเดตตำแหน่งปัจจุบันระหว่างเปิดหน้า โดยตำแหน่งผู้ใช้ไม่ถูก Persist ลง Database และ Active Navigation ต้องใช้ live GPS
 
 #### REQ-NAV-003 — Road Route Preview
 เมื่อทราบตำแหน่งเริ่มต้น ระบบต้องสามารถขอเส้นทางตามถนนจาก Routing Backend และแสดง Route Polyline, ระยะทางตามเส้นทาง และเวลาเดินทางโดยประมาณ หาก Routing Provider ใช้งานไม่ได้ต้องแสดง Error/Fallback โดยไม่สร้าง Road Route ปลอม
@@ -183,8 +183,8 @@ Route Preview ต้องรองรับการสลับโหมด DR
 #### REQ-NAV-008 — GPS Quality & Recovery
 Navigation ต้องแสดงคุณภาพ/ความแม่นยำ GPS ที่เข้าใจได้ หาก Accuracy ต่ำมากระบบต้องไม่ Auto-reroute และต้องแจ้งผู้ใช้ หาก GPS ขาดหายระหว่าง Active Navigation ต้องคง Route/Navigation Context เดิมไว้และให้ผู้ใช้ลองเชื่อม GPS ใหม่ได้
 
-#### REQ-NAV-009 — Mobile Navigation Sheet
-Bottom Sheet ของ Navigation ต้องย่อ/ขยายได้บน Mobile โดย Primary Navigation Action ต้องยังเข้าถึงได้ และ Error/Recovery State สำคัญต้องสามารถขยายกลับมาให้ผู้ใช้เห็นได้
+#### REQ-NAV-009 — Responsive Navigation Panel
+Navigation controls ต้องปรับตาม viewport: Mobile Portrait ใช้ Bottom Sheet ที่ย่อ/ขยายได้โดย Primary Navigation Action ยังเข้าถึงได้; Low-height Landscape ใช้ Side Panel เพื่อคงพื้นที่แผนที่ และ Error/Recovery State สำคัญต้องยังเข้าถึงได้
 
 ---
 

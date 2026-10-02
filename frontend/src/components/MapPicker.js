@@ -11,6 +11,10 @@ const pickerIcon = L.divIcon({
   iconAnchor: [24, 52],
 });
 
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
 function Picker({ value, onChange, interactive }) {
   useMapEvents({
     click(event) {
@@ -29,8 +33,15 @@ function PositionController({ value, interactive }) {
     const latitude = Number(value.latitude);
     const longitude = Number(value.longitude);
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
-    if (interactive) map.flyTo([latitude, longitude], Math.max(map.getZoom(), 16), { animate: true, duration: 0.7 });
-    else map.setView([latitude, longitude], 16, { animate: false });
+    if (interactive) {
+      const reduceMotion = prefersReducedMotion();
+      map.flyTo([latitude, longitude], Math.max(map.getZoom(), 16), {
+        animate: !reduceMotion,
+        duration: reduceMotion ? 0 : 0.7,
+      });
+    } else {
+      map.setView([latitude, longitude], 16, { animate: false });
+    }
   }, [map, value.latitude, value.longitude, interactive]);
   return null;
 }

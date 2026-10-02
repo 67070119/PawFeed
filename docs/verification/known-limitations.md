@@ -13,7 +13,8 @@
 - Upload ใช้ local persistent volume เหมาะกับ MVP single-node; production scale ควรใช้ object storage
 - Auth รุ่นนี้เป็น access cookie แบบง่าย ไม่มี refresh-token/session-management ขั้นสูง
 - Geolocation permission denied, insecure-LAN fallback, poor GPS, GPS loss และ reroute recovery มี automated browser coverage แล้ว
-- Jenkinsfile ถูก implement แล้ว แต่ ณ Phase 8 ยังไม่มี Jenkins server/job run จริงใน evidence; `REQ-NFR-DEVOPS-003/004` จึงยังไม่ควรถูกนับ VERIFIED จนกว่าจะรัน successful และ intentional-failure pipeline บน Jenkins จริง
+- Jenkinsfile ถูก implement แล้ว แต่ยังไม่มี Jenkins server/job run จริงใน evidence; `REQ-NFR-DEVOPS-003/004` จึงยังไม่ควรถูกนับ VERIFIED จนกว่าจะรัน successful และ intentional-failure pipeline บน Jenkins จริง
+- Course Container เคยผ่านบน evidence revision ก่อนหน้า แต่ current working tree เพิ่ม UX/UI fixes และ Playwright เป็น 21 tests; `REQ-NFR-DEVOPS-005` จึงรอ rerun current revision ก่อนกลับเป็น VERIFIED
 - รายชื่อสมาชิกทีมจริงยังต้องกรอกในเอกสารก่อนส่ง
 
 ข้อจำกัดเหล่านี้ห้ามถูกนำไปกล่าวใน Slide/Report ว่าเป็น capability ที่ทำเสร็จแล้ว

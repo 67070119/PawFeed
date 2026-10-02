@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import RadiusFilter from '../components/RadiusFilter';
 import { api } from '../lib/api';
 
@@ -35,22 +35,27 @@ function radiusBounds(position, radiusKm) {
 
 export default function HomePage() {
   const [points, setPoints] = useState([]);
-  const [error, setError] = useState('');
+  const [dataError, setDataError] = useState('');
+  const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [locating, setLocating] = useState(false);
   const [userPosition, setUserPosition] = useState(null);
   const [radiusKm, setRadiusKm] = useState(DEFAULT_RADIUS_KM);
   const [appliedRadiusKm, setAppliedRadiusKm] = useState(DEFAULT_RADIUS_KM);
+  const lastBoundsRef = useRef(null);
 
   const loadBounds = useCallback(async (bounds) => {
     if (userPosition) return;
+    lastBoundsRef.current = bounds;
     setLoading(true);
-    setError('');
+    setDataError('');
     const query = new URLSearchParams(Object.fromEntries(Object.entries(bounds).map(([key, value]) => [key, String(value)])));
     try {
       setPoints(await api(`/api/points?${query}`));
+      setHasLoaded(true);
     } catch (err) {
-      setError(err.message);
+      setDataError(err.message);
     } finally {
       setLoading(false);
     }
@@ -60,13 +65,14 @@ export default function HomePage() {
     const bounds = radiusBounds(position, radius);
     const query = new URLSearchParams(Object.fromEntries(Object.entries(bounds).map(([key, value]) => [key, String(value)])));
     setLoading(true);
-    setError('');
+    setDataError('');
     try {
       const candidates = await api(`/api/points?${query}`);
       const maxDistance = radius * 1000;
       setPoints(candidates.filter((point) => distanceMeters(position, [Number(point.latitude), Number(point.longitude)]) <= maxDistance));
+      setHasLoaded(true);
     } catch (err) {
-      setError(err.message);
+      setDataError(err.message);
     } finally {
       setLoading(false);
     }
@@ -74,11 +80,11 @@ export default function HomePage() {
 
   const locate = useCallback(() => {
     if (!navigator.geolocation) {
-      setError('Browser นี้ไม่รองรับการอ่านตำแหน่ง');
+      setLocationError('เบราว์เซอร์นี้ไม่รองรับการอ่านตำแหน่ง คุณยังสามารถเลื่อนแผนที่เพื่อค้นหาได้');
       return;
     }
     setLocating(true);
-    setError('');
+    setLocationError('');
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
         setUserPosition([coords.latitude, coords.longitude]);
@@ -86,11 +92,19 @@ export default function HomePage() {
       },
       () => {
         setLocating(false);
-        setError('ไม่ได้รับสิทธิ์ตำแหน่ง คุณยังสามารถเลื่อนแผนที่เองได้');
+        setLocationError('ยังใช้ตำแหน่งปัจจุบันไม่ได้ คุณสามารถเลื่อนแผนที่เองหรือลองอนุญาตตำแหน่งอีกครั้ง');
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
   }, []);
+
+  const retryData = useCallback(() => {
+    if (userPosition) {
+      loadRadius(userPosition, appliedRadiusKm);
+      return;
+    }
+    if (lastBoundsRef.current) loadBounds(lastBoundsRef.current);
+  }, [userPosition, appliedRadiusKm, loadRadius, loadBounds]);
 
   useEffect(() => { locate(); }, [locate]);
 
@@ -103,8 +117,13 @@ export default function HomePage() {
     if (userPosition) loadRadius(userPosition, appliedRadiusKm);
   }, [userPosition, appliedRadiusKm, loadRadius]);
 
+  const emptyMessage = hasLoaded && !loading && !dataError && points.length === 0
+    ? (userPosition ? 'ยังไม่พบจุดในรัศมีนี้ ลองเพิ่มระยะค้นหา' : 'ยังไม่พบจุดในบริเวณนี้ ลองเลื่อนหรือซูมแผนที่')
+    : '';
+
   return (
-    <main className="mapShell">
+    <main className="mapShell" aria-label="แผนที่จุดสัตว์จรจัด">
+      <h1 className="visuallyHidden">แผนที่จุดสัตว์จรจัด PawFeed</h1>
       <PawMap
         points={points}
         onBoundsChange={loadBounds}
@@ -112,14 +131,58 @@ export default function HomePage() {
         radiusMeters={userPosition ? radiusKm * 1000 : null}
         focusRadiusMeters={userPosition ? appliedRadiusKm * 1000 : null}
       />
+
       <div className="mapSummary" aria-live="polite">
         <span className="mapSummaryDot" aria-hidden="true" />
         <strong>{points.length}</strong>
         <span>{userPosition ? 'จุดในรัศมี' : 'จุดในบริเวณนี้'}</span>
       </div>
-      {(loading || error) && <div className={`mapStatus${error ? ' mapStatusError' : ''}`} role="status">{error || 'กำลังอัปเดตจุดในพื้นที่...'}</div>}
-      <button className="mapFloatButton mapLocateButton" onClick={locate} aria-label="ตำแหน่งฉัน" disabled={locating}><span className="mapLocateGlyph" aria-hidden="true" /></button>
-      <RadiusFilter value={radiusKm} onChange={setRadiusKm} disabled={!userPosition} locating={locating} />
+
+      <div className="mapStatusStack" aria-live="polite">
+        {loading && (
+          <div className="mapStatus mapStatusLoading" role="status">
+            <span className="mapStatusSpinner" aria-hidden="true" />
+            <span>กำลังอัปเดตจุดในพื้นที่...</span>
+          </div>
+        )}
+
+        {!loading && dataError && (
+          <div className="mapStatus mapStatusError" role="alert">
+            <span>{dataError}</span>
+            <button type="button" className="mapStatusAction" onClick={retryData}>ลองอีกครั้ง</button>
+          </div>
+        )}
+
+        {!loading && !dataError && locationError && (
+          <div className="mapStatus mapStatusWarning" role="status">
+            <span>{locationError}</span>
+            <button type="button" className="mapStatusAction" onClick={locate}>ลองตำแหน่งอีกครั้ง</button>
+          </div>
+        )}
+
+        {emptyMessage && !locationError && (
+          <div className="mapStatus mapStatusEmpty" role="status">{emptyMessage}</div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className={`mapFloatButton mapLocateButton${userPosition ? ' isLocated' : ''}`}
+        onClick={locate}
+        aria-label={userPosition ? 'อัปเดตตำแหน่งปัจจุบัน' : 'ใช้ตำแหน่งปัจจุบัน'}
+        title={userPosition ? 'อัปเดตตำแหน่งปัจจุบัน' : 'ใช้ตำแหน่งปัจจุบัน'}
+        disabled={locating}
+      >
+        <span className="mapLocateGlyph" aria-hidden="true" />
+      </button>
+
+      <RadiusFilter
+        value={radiusKm}
+        onChange={setRadiusKm}
+        disabled={!userPosition}
+        locating={locating}
+        onLocate={locate}
+      />
     </main>
   );
 }

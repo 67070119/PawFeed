@@ -19,6 +19,38 @@ export async function registerAndLogin(page, label = 'e2e') {
   return { email, password };
 }
 
+export async function selectCreatePointLocation(page) {
+  await page.getByRole('button', { name: /เลือกตำแหน่งบนแผนที่|เปลี่ยนตำแหน่งบนแผนที่/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'เลือกตำแหน่งที่พบสัตว์' });
+  await dialog.waitFor({ state: 'visible' });
+
+  const map = dialog.locator('.mapPickerCanvas');
+  await map.waitFor({ state: 'visible' });
+  const box = await map.boundingBox();
+  if (!box) throw new Error('Create-point map picker has no bounding box');
+
+  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.45);
+  await page.getByRole('button', { name: 'ยืนยันตำแหน่งนี้' }).click();
+  await page.getByText('เลือกตำแหน่งแล้ว').waitFor({ state: 'visible' });
+}
+
+export async function fillCreatePointForm(page, {
+  description,
+  count = '1',
+  animalType = 'DOG',
+  image = pngFile,
+  startTime,
+  endTime,
+} = {}) {
+  await selectCreatePointLocation(page);
+  await page.getByLabel(/จำนวนโดยประมาณ/).fill(String(count));
+  await page.getByLabel(/ประเภทสัตว์/).selectOption(animalType);
+  if (description != null) await page.getByLabel(/คำอธิบาย/).fill(description);
+  if (startTime != null) await page.getByLabel('เริ่ม').fill(startTime);
+  if (endTime != null) await page.getByLabel('ถึง').fill(endTime);
+  if (image) await page.locator('input[type="file"]').setInputFiles(image);
+}
+
 export const pngFile = {
   name: 'pawfeed-e2e.png',
   mimeType: 'image/png',

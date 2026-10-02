@@ -14,6 +14,10 @@ const ANIMALS = {
   OTHER: { label: 'สัตว์จรจัด', tone: 'other', emoji: '🦄' },
 };
 
+function prefersReducedMotion() {
+  return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
 function animalIcon(type, selected = false) {
   const item = ANIMALS[type] || ANIMALS.OTHER;
   return L.divIcon({
@@ -53,7 +57,8 @@ function BoundsWatcher({ onBoundsChange, enabled }) {
 function LocateUser({ position }) {
   const map = useMap();
   useEffect(() => {
-    if (position) map.setView(position, Math.max(map.getZoom(), 15), { animate: true });
+    if (!position) return;
+    map.setView(position, Math.max(map.getZoom(), 15), { animate: !prefersReducedMotion() });
   }, [position, map]);
   if (!position) return null;
   return <Marker position={position} icon={userIcon} zIndexOffset={900} interactive={false} />;
@@ -73,9 +78,10 @@ function RadiusViewport({ center, radiusMeters }) {
       [latitude - latDelta, longitude - lngDelta],
       [latitude + latDelta, longitude + lngDelta],
     ];
+    const reduceMotion = prefersReducedMotion();
     map.flyToBounds(bounds, {
-      animate: true,
-      duration: 0.42,
+      animate: !reduceMotion,
+      duration: reduceMotion ? 0 : 0.42,
       maxZoom: 16,
       paddingTopLeft: [44, 110],
       paddingBottomRight: [44, 110],
@@ -104,10 +110,10 @@ export default function PawMap({ points, onBoundsChange, userPosition, radiusMet
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         noWrap
       />
-      <ZoomControl position="bottomright" />
       <BoundsWatcher onBoundsChange={onBoundsChange} enabled={!userPosition} />
       <LocateUser position={userPosition} />
       <RadiusViewport center={userPosition} radiusMeters={focusRadiusMeters} />
+      {!selectedId && <ZoomControl position="bottomright" />}
       {userPosition && radiusMeters && (
         <Circle
           center={userPosition}
@@ -120,20 +126,39 @@ export default function PawMap({ points, onBoundsChange, userPosition, radiusMet
       {points.map((point) => {
         const animal = ANIMALS[point.animalType] || ANIMALS.OTHER;
         const selected = selectedId === point.id;
+        const markerLabel = `${animal.label} ประมาณ ${point.estimatedCount} ตัว`;
         return (
           <Marker
             key={point.id}
             position={[point.latitude, point.longitude]}
             icon={animalIcon(point.animalType, selected)}
             zIndexOffset={selected ? 500 : 0}
+            keyboard
+            title={markerLabel}
             eventHandlers={{ click: () => setSelectedId(point.id), popupclose: () => setSelectedId(null) }}
           >
-            <Popup className="pawPopup" closeButton={false} minWidth={238}>
+            <Popup
+              className="pawPopup"
+              closeButton
+              minWidth={200}
+              keepInView
+              autoPanPaddingTopLeft={[16, 96]}
+              autoPanPaddingBottomRight={[16, 156]}
+            >
               <div className="popupCard">
-                <div className="popupTypeRow"><span className={`popupAnimalIcon popupAnimalIcon--${animal.tone}`} aria-hidden="true">{animal.emoji}</span><span>{animal.label}</span></div>
+                <div className="popupTypeRow">
+                  <span className={`popupAnimalIcon popupAnimalIcon--${animal.tone}`} aria-hidden="true">{animal.emoji}</span>
+                  <span>{animal.label}</span>
+                </div>
                 <strong className="popupHeadline">ประมาณ {point.estimatedCount} ตัว</strong>
-                <div className="popupData"><span>ให้อาหารล่าสุด</span><strong>{relativeTime(point.latestFeedingAt)}</strong></div>
-                <Link className="popupAction" href={`/points/${point.id}`}>ดูรายละเอียด <span aria-hidden="true">→</span></Link>
+                {point.description && <p className="popupDescription">{point.description}</p>}
+                <div className="popupMetaGrid">
+                  <div className="popupData"><span>พบล่าสุด</span><strong>{relativeTime(point.lastSeenAt)}</strong></div>
+                  <div className="popupData"><span>ให้อาหารล่าสุด</span><strong>{relativeTime(point.latestFeedingAt)}</strong></div>
+                </div>
+                <Link className="popupAction" href={`/points/${point.id}`} aria-label={`ดูรายละเอียด ${markerLabel}`}>
+                  ดูรายละเอียด <span aria-hidden="true">→</span>
+                </Link>
               </div>
             </Popup>
           </Marker>
