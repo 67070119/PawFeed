@@ -26,12 +26,11 @@ until curl -fsS "http://127.0.0.1:${FRONTEND_PORT}/backend-health/ready" >/dev/n
   sleep 1
 done
 
-docker run --rm \
+tar -C "$ROOT/tests/e2e" -cf - . | docker run -i --rm \
   --network "${PROJECT}_default" \
   -e E2E_BASE_URL="http://frontend:3000" \
-  -v "$ROOT/tests/e2e:/src:ro" \
   -w /work \
   "$PLAYWRIGHT_IMAGE" \
-  sh -lc 'cp -R /src/. /work/ && npm ci --no-audit --no-fund && npx playwright test'
+  sh -lc 'tar -xf - && npm ci --no-audit --no-fund && npx playwright test'
 
 echo "PawFeed Playwright E2E verification passed."
