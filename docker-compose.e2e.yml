@@ -1,10 +1,7 @@
 services:
   routing-mock:
-    image: node:22-alpine
-    working_dir: /mock
-    command: ["node", "server.js"]
-    volumes:
-      - ./tests/routing-mock:/mock:ro
+    build:
+      context: ./tests/routing-mock
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
       interval: 2s
