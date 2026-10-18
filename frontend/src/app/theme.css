@@ -3127,6 +3127,82 @@ textarea:disabled {
   color:#a8ada9;
   line-height:1.65;
 }
+
+/* Auth Visual Media Showcase */
+.authVisualMedia {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: clamp(16px, 2.5vh, 28px) 0;
+  width: 100%;
+}
+
+.authVisualImageWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  height: clamp(220px, 34vh, 320px);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #1e2022;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42), 0 2px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.authVisualImageWrapper:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 26px 56px rgba(0, 0, 0, 0.52), 0 0 28px rgba(226, 161, 96, 0.18);
+  border-color: rgba(226, 161, 96, 0.35);
+}
+
+.authVisualImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.authVisualImageWrapper:hover .authVisualImage {
+  transform: scale(1.04);
+}
+
+.authVisualImageOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(20, 22, 24, 0.1) 50%, rgba(18, 20, 22, 0.72) 100%);
+}
+
+.authVisualFloatingBadge {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(24, 26, 29, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f1eee8;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.authVisualBadgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #48bb78;
+  box-shadow: 0 0 10px #48bb78;
+}
 .authCard {
   padding-block:12px;
 }

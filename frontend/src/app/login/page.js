@@ -78,6 +78,22 @@ export default function LoginPage() {
     <main className="authShell">
       <section className="authVisual" aria-label="เกี่ยวกับ PawFeed">
         <div className="authBrandMark" aria-hidden="true"><span className="brandGlyph" /></div>
+
+        <div className="authVisualMedia">
+          <div className="authVisualImageWrapper">
+            <img
+              src="/images/auth-dog.jpg"
+              alt="น้องหมาในชุมชน PawFeed"
+              className="authVisualImage"
+            />
+            <div className="authVisualImageOverlay" />
+            <div className="authVisualFloatingBadge">
+              <span className="authVisualBadgeDot" />
+              <span>เพื่อนสี่ขาในชุมชน PawFeed</span>
+            </div>
+          </div>
+        </div>
+
         <div>
           <span className="authVisualEyebrow">PawFeed Community</span>
           <h2>ช่วยกันดูแลสัตว์จรจัดในพื้นที่ของเรา</h2>
