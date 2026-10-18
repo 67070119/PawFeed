@@ -3,7 +3,10 @@
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { ArrowLeftOutlined, CloseOutlined } from '@ant-design/icons';
 import Protected from '../../../components/Protected';
+import TimeRangePicker from '../../../components/TimeRangePicker';
+import AnimalTypePicker from '../../../components/AnimalTypePicker';
 import { api } from '../../../lib/api';
 
 const MapPicker = dynamic(() => import('../../../components/MapPicker'), { ssr: false });
@@ -19,6 +22,7 @@ export default function CreatePointPage() {
     latitude: null,
     longitude: null,
   });
+  const [customAnimal, setCustomAnimal] = useState('');
   const [usualStart, setUsualStart] = useState('');
   const [usualEnd, setUsualEnd] = useState('');
   const [draftPosition, setDraftPosition] = useState(DEFAULT_CENTER);
@@ -178,6 +182,7 @@ export default function CreatePointPage() {
     if (!form.description.trim()) next.description = 'กรุณาใส่คำอธิบายเพื่อช่วยให้หาจุดนี้เจอ';
     const estimatedCount = Number(form.estimatedCount);
     if (!Number.isInteger(estimatedCount) || estimatedCount < 1 || estimatedCount > 1000) next.estimatedCount = 'จำนวนต้องเป็นเลขจำนวนเต็มระหว่าง 1–1,000 ตัว';
+    if (form.animalType === 'OTHER' && !customAnimal.trim()) next.customAnimal = 'กรุณาระบุชนิดสัตว์ เช่น กระต่าย, นก, ลิง';
     if ((usualStart && !usualEnd) || (!usualStart && usualEnd)) next.usualTime = 'กรุณาเลือกเวลาเริ่มและเวลาสิ้นสุดให้ครบ หรือเว้นว่างทั้งคู่';
     setFieldErrors(next);
     return Object.keys(next).length === 0;
@@ -195,7 +200,15 @@ export default function CreatePointPage() {
     try {
       const body = new FormData();
       Object.entries(form).forEach(([key, value]) => {
-        if (value !== '' && value != null) body.append(key, String(value));
+        if (key === 'description') {
+          let desc = form.description.trim();
+          if (form.animalType === 'OTHER' && customAnimal.trim()) {
+            desc = `[ชนิดสัตว์: ${customAnimal.trim()}]\n\n${desc}`;
+          }
+          body.append('description', desc);
+        } else if (value !== '' && value != null) {
+          body.append(key, String(value));
+        }
       });
       if (usualStart && usualEnd) body.append('usualTime', `${usualStart} - ${usualEnd}`);
       body.append('image', image);
@@ -332,35 +345,65 @@ export default function CreatePointPage() {
             </div>
 
             <div className="formGrid">
-              <div className="field">
-                <label htmlFor="animal-type">ประเภทสัตว์ <span aria-hidden="true">*</span></label>
-                <select
-                  id="animal-type"
+              <div className="field full">
+                <label>ประเภทสัตว์ <span aria-hidden="true">*</span></label>
+                <AnimalTypePicker
                   value={form.animalType}
-                  onChange={(event) => setForm({ ...form, animalType: event.target.value })}
-                >
-                  <option value="DOG">สุนัข</option>
-                  <option value="CAT">แมว</option>
-                  <option value="OTHER">อื่น ๆ</option>
-                </select>
-              </div>
-
-              <div className="field">
-                <label htmlFor="estimated-count">จำนวนโดยประมาณ <span aria-hidden="true">*</span></label>
-                <input
-                  id="estimated-count"
-                  type="number"
-                  inputMode="numeric"
-                  min="1"
-                  max="1000"
-                  value={form.estimatedCount}
-                  aria-invalid={fieldErrors.estimatedCount ? 'true' : undefined}
-                  aria-describedby={fieldErrors.estimatedCount ? 'estimated-count-error' : undefined}
-                  onChange={(event) => {
-                    setForm({ ...form, estimatedCount: event.target.value });
-                    clearFieldError('estimatedCount');
+                  customValue={customAnimal}
+                  error={fieldErrors.animalType}
+                  customError={fieldErrors.customAnimal}
+                  onChange={(type) => {
+                    setForm({ ...form, animalType: type });
+                    clearFieldError('animalType');
+                    if (type !== 'OTHER') clearFieldError('customAnimal');
+                  }}
+                  onCustomChange={(val) => {
+                    setCustomAnimal(val);
+                    clearFieldError('customAnimal');
                   }}
                 />
+              </div>
+
+              <div className="field full">
+                <label htmlFor="estimated-count">จำนวนโดยประมาณ <span aria-hidden="true">*</span></label>
+                <div className="estimatedCountWrapper">
+                  <div className="estimatedCountRow">
+                    <input
+                      id="estimated-count"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="1000"
+                      value={form.estimatedCount}
+                      className="estimatedCountInput"
+                      aria-invalid={fieldErrors.estimatedCount ? 'true' : undefined}
+                      aria-describedby={fieldErrors.estimatedCount ? 'estimated-count-error' : undefined}
+                      onChange={(event) => {
+                        setForm({ ...form, estimatedCount: event.target.value });
+                        clearFieldError('estimatedCount');
+                      }}
+                    />
+                    <span className="estimatedCountUnit">ตัว</span>
+                    <div className="estimatedCountChips" role="group" aria-label="เลือกจำนวนด่วน">
+                      {['1', '2', '3', '5', '10'].map((cnt) => {
+                        const isMatch = String(form.estimatedCount) === cnt;
+                        return (
+                          <button
+                            key={cnt}
+                            type="button"
+                            className={`estimatedCountChip ${isMatch ? 'active' : ''}`}
+                            onClick={() => {
+                              setForm({ ...form, estimatedCount: cnt });
+                              clearFieldError('estimatedCount');
+                            }}
+                          >
+                            {cnt} ตัว
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
                 {fieldErrors.estimatedCount && <small id="estimated-count-error" className="fieldError" role="alert">{fieldErrors.estimatedCount}</small>}
               </div>
 
@@ -391,12 +434,16 @@ export default function CreatePointPage() {
                   <label>ช่วงเวลาที่มักพบ</label>
                   <span>ไม่บังคับ</span>
                 </div>
-                <div className="timeRangeFields">
-                  <label className="timeRangeField" htmlFor="usual-start"><span>เริ่ม</span><input id="usual-start" type="time" value={usualStart} aria-invalid={fieldErrors.usualTime ? 'true' : undefined} onChange={(event) => { setUsualStart(event.target.value); clearFieldError('usualTime'); }} /></label>
-                  <span className="timeRangeDivider" aria-hidden="true">—</span>
-                  <label className="timeRangeField" htmlFor="usual-end"><span>ถึง</span><input id="usual-end" type="time" value={usualEnd} aria-invalid={fieldErrors.usualTime ? 'true' : undefined} onChange={(event) => { setUsualEnd(event.target.value); clearFieldError('usualTime'); }} /></label>
-                </div>
-                {fieldErrors.usualTime && <small className="fieldError" role="alert">{fieldErrors.usualTime}</small>}
+                <TimeRangePicker
+                  startTime={usualStart}
+                  endTime={usualEnd}
+                  error={fieldErrors.usualTime}
+                  onChange={({ startTime: s, endTime: e }) => {
+                    setUsualStart(s);
+                    setUsualEnd(e);
+                    clearFieldError('usualTime');
+                  }}
+                />
               </div>
             </div>
           </section>
@@ -418,7 +465,8 @@ export default function CreatePointPage() {
         >
           <div className="locationPickerTopbar">
             <button ref={mapBackRef} type="button" className="locationPickerBack" onClick={closeMap} aria-label="กลับไปหน้าสร้างจุด">
-              <span aria-hidden="true">←</span><span>กลับ</span>
+              <ArrowLeftOutlined aria-hidden="true" />
+              <span>กลับ</span>
             </button>
             <div>
               <strong id="location-picker-title">เลือกตำแหน่งที่พบสัตว์</strong>
@@ -432,7 +480,9 @@ export default function CreatePointPage() {
           {mapError && (
             <div className="locationPickerNotice" role="alert">
               <span>{mapError}</span>
-              <button type="button" onClick={() => setMapError('')} aria-label="ปิดข้อความ">×</button>
+              <button type="button" onClick={() => setMapError('')} aria-label="ปิดข้อความ">
+                <CloseOutlined aria-hidden="true" />
+              </button>
             </div>
           )}
 

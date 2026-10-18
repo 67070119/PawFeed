@@ -33,6 +33,11 @@ services:
       ROUTING_BASE_URL: ${ROUTING_BASE_URL:-https://routing.openstreetmap.de}
       ROUTING_TIMEOUT_MS: ${ROUTING_TIMEOUT_MS:-8000}
       ROUTING_RETRIES: ${ROUTING_RETRIES:-1}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     volumes:
       - pawfeed-uploads:/app/uploads
     ports:

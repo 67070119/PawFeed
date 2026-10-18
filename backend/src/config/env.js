@@ -25,6 +25,11 @@ export const env = {
   routingBaseUrl: process.env.ROUTING_BASE_URL ?? 'https://routing.openstreetmap.de',
   routingTimeoutMs: int(process.env.ROUTING_TIMEOUT_MS, 8000),
   routingRetries: int(process.env.ROUTING_RETRIES, 1),
+  smtpHost: process.env.SMTP_HOST ?? 'smtp.gmail.com',
+  smtpPort: int(process.env.SMTP_PORT, 465),
+  smtpUser: process.env.SMTP_USER ?? '',
+  smtpPass: process.env.SMTP_PASS ?? '',
+  smtpFrom: process.env.SMTP_FROM || (process.env.SMTP_USER ? `"PawFeed" <${process.env.SMTP_USER}>` : '"PawFeed" <no-reply@pawfeed.local>'),
 };
 
 if (env.nodeEnv === 'production' && (env.jwtAccessSecret === 'change-me' || env.jwtAccessSecret.length < 32)) {

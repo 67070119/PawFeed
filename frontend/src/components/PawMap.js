@@ -4,14 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Circle, MapContainer, Marker, Popup, TileLayer, ZoomControl, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
+import { ArrowRightOutlined } from '@ant-design/icons';
+import AnimalIcon, { getAnimalSvgString } from './AnimalIcon';
 import { relativeTime } from '../lib/api';
 
 const KMITL = [13.7291, 100.7789];
 const WORLD_BOUNDS = [[-85, -180], [85, 180]];
 const ANIMALS = {
-  DOG: { label: 'สุนัขจรจัด', tone: 'dog', emoji: '🐕' },
-  CAT: { label: 'แมวจรจัด', tone: 'cat', emoji: '🐈' },
-  OTHER: { label: 'สัตว์จรจัด', tone: 'other', emoji: '🦄' },
+  DOG: { label: 'สุนัขจรจัด', tone: 'dog' },
+  CAT: { label: 'แมวจรจัด', tone: 'cat' },
+  OTHER: { label: 'สัตว์จรจัด', tone: 'other' },
 };
 
 function prefersReducedMotion() {
@@ -20,9 +22,10 @@ function prefersReducedMotion() {
 
 function animalIcon(type, selected = false) {
   const item = ANIMALS[type] || ANIMALS.OTHER;
+  const svgHtml = getAnimalSvgString(type);
   return L.divIcon({
     className: 'mapMarkerHost',
-    html: `<div class="mapAnimalMarker mapAnimalMarker--${item.tone}${selected ? ' isSelected' : ''}"><span class="mapAnimalEmoji" aria-hidden="true">${item.emoji}</span><b></b></div>`,
+    html: `<div class="mapAnimalMarker mapAnimalMarker--${item.tone}${selected ? ' isSelected' : ''}"><span class="mapAnimalIconWrap" aria-hidden="true">${svgHtml}</span><b></b></div>`,
     iconSize: [50, 58],
     iconAnchor: [25, 53],
     popupAnchor: [0, -50],
@@ -124,7 +127,17 @@ export default function PawMap({ points, onBoundsChange, userPosition, radiusMet
         />
       )}
       {points.map((point) => {
-        const animal = ANIMALS[point.animalType] || ANIMALS.OTHER;
+        const animalBase = ANIMALS[point.animalType] || ANIMALS.OTHER;
+        let animalLabel = animalBase.label;
+        let cleanDesc = point.description || '';
+        if (point.animalType === 'OTHER' && cleanDesc) {
+          const match = cleanDesc.match(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/);
+          if (match) {
+            animalLabel = match[1].trim();
+            cleanDesc = cleanDesc.replace(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/, '');
+          }
+        }
+        const animal = { ...animalBase, label: animalLabel };
         const selected = selectedId === point.id;
         const markerLabel = `${animal.label} ประมาณ ${point.estimatedCount} ตัว`;
         return (
@@ -147,17 +160,20 @@ export default function PawMap({ points, onBoundsChange, userPosition, radiusMet
             >
               <div className="popupCard">
                 <div className="popupTypeRow">
-                  <span className={`popupAnimalIcon popupAnimalIcon--${animal.tone}`} aria-hidden="true">{animal.emoji}</span>
+                  <span className={`popupAnimalIcon popupAnimalIcon--${animal.tone}`} aria-hidden="true">
+                    <AnimalIcon type={point.animalType} size={18} />
+                  </span>
                   <span>{animal.label}</span>
                 </div>
                 <strong className="popupHeadline">ประมาณ {point.estimatedCount} ตัว</strong>
-                {point.description && <p className="popupDescription">{point.description}</p>}
+                {cleanDesc && <p className="popupDescription">{cleanDesc}</p>}
                 <div className="popupMetaGrid">
                   <div className="popupData"><span>พบล่าสุด</span><strong>{relativeTime(point.lastSeenAt)}</strong></div>
                   <div className="popupData"><span>ให้อาหารล่าสุด</span><strong>{relativeTime(point.latestFeedingAt)}</strong></div>
                 </div>
                 <Link className="popupAction" href={`/points/${point.id}`} aria-label={`ดูรายละเอียด ${markerLabel}`}>
-                  ดูรายละเอียด <span aria-hidden="true">→</span>
+                  <span>ดูรายละเอียด</span>
+                  <ArrowRightOutlined aria-hidden="true" />
                 </Link>
               </div>
             </Popup>

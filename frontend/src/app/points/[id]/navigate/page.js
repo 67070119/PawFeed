@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { api } from '../../../../lib/api';
 
 const NavigationMap = dynamic(() => import('../../../../components/NavigationMap'), { ssr: false });
@@ -435,7 +436,7 @@ export default function NavigatePointPage() {
   }
 
   if (loading) return <main className="centerState" role="status">กำลังเปิดโหมดนำทาง...</main>;
-  if (!point) return <main className="page narrow"><div className="errorBox" role="alert">{error || 'ไม่พบจุดนี้'}</div><Link href="/" className="button">← กลับแผนที่</Link></main>;
+  if (!point) return <main className="page narrow"><div className="errorBox" role="alert">{error || 'ไม่พบจุดนี้'}</div><Link href="/" className="button" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><ArrowLeftOutlined aria-hidden="true" /> <span>กลับแผนที่</span></Link></main>;
 
   const destination = [point.latitude, point.longitude];
   const directDistance = userPosition ? distanceMeters(userPosition, destination) : null;
@@ -503,7 +504,9 @@ export default function NavigatePointPage() {
           </div>
         ) : (
           <div className="navTopBar navTopBarSimple">
-            <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">←</Link>
+            <Link href={`/points/${id}`} className="navRoundButton" aria-label="กลับรายละเอียดจุด">
+              <ArrowLeftOutlined aria-hidden="true" />
+            </Link>
             <div className="navDestinationCompact"><span>จุดหมาย</span><strong>{point.description}</strong></div>
           </div>
         )}

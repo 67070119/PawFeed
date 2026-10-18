@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { EditOutlined, ArrowLeftOutlined, ArrowRightOutlined, CheckOutlined, MinusOutlined, CloseOutlined } from '@ant-design/icons';
 import { api, assetUrl, relativeTime } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 
@@ -134,7 +135,10 @@ export default function PointDetailPage() {
         <div className="errorBox" role="alert">{error}</div>
         <div className="pointLoadErrorActions">
           <button type="button" className="button primary" onClick={() => load()}>ลองอีกครั้ง</button>
-          <Link href="/" className="button">← กลับแผนที่</Link>
+          <Link href="/" className="button">
+            <ArrowLeftOutlined aria-hidden="true" />
+            <span>กลับแผนที่</span>
+          </Link>
         </div>
       </main>
     );
@@ -142,20 +146,48 @@ export default function PointDetailPage() {
   if (!point) return null;
 
   const photo = assetUrl(point.images?.[0]?.imageUrl);
-  const animal = ANIMAL_LABELS[point.animalType] || ANIMAL_LABELS.OTHER;
+  let customAnimalName = '';
+  let displayDescription = point.description || '';
+  if (point.animalType === 'OTHER' && displayDescription) {
+    const match = displayDescription.match(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/);
+    if (match) {
+      customAnimalName = match[1].trim();
+      displayDescription = displayDescription.replace(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/, '');
+    }
+  }
+  const animal = customAnimalName ? `${customAnimalName} (สัตว์อื่น ๆ)` : (ANIMAL_LABELS[point.animalType] || ANIMAL_LABELS.OTHER);
   const status = STATUS_LABELS[point.status] || point.status || 'ไม่ระบุ';
   const inactive = point.status && point.status !== 'ACTIVE';
   const actionBusy = Boolean(busy);
+  const isOwner = Boolean(user && (user.id === point.createdByUserId || user.id === point.createdBy?.id));
 
   return (
     <main className="page pointDetailPage">
       <header className="pointDetailHeader">
         <div>
-          <span className="eyebrow">รายละเอียดจุด</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+            <span className="eyebrow">รายละเอียดจุด</span>
+            {isOwner && (
+              <span className="chip" style={{ background: '#e0f2fe', color: '#0369a1', fontWeight: 'bold' }}>
+                จุดที่คุณรายงาน
+              </span>
+            )}
+          </div>
           <h1>{animal}จรจัด</h1>
           <p>รายงานโดย {point.createdBy?.name || 'ผู้ใช้ PawFeed'} · พบล่าสุด {relativeTime(point.lastSeenAt)}</p>
         </div>
-        <Link href="/" className="button pointBackButton">← กลับแผนที่</Link>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {isOwner && (
+            <Link href={`/points/${id}/edit`} className="button soft" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <EditOutlined aria-hidden="true" />
+              <span>แก้ไขจุดนี้</span>
+            </Link>
+          )}
+          <Link href="/" className="button pointBackButton" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <ArrowLeftOutlined aria-hidden="true" />
+            <span>กลับแผนที่</span>
+          </Link>
+        </div>
       </header>
 
       <div className="pointFeedback" aria-live="polite">
@@ -165,7 +197,7 @@ export default function PointDetailPage() {
 
       <Link href={`/points/${id}/navigate`} className="button primary block pointMobileNavigate">
         <span>นำทางไปจุดนี้</span>
-        <span aria-hidden="true">→</span>
+        <ArrowRightOutlined aria-hidden="true" />
       </Link>
 
       <section className="card pointHeroCard" aria-labelledby="point-summary-heading">
@@ -184,9 +216,15 @@ export default function PointDetailPage() {
           <div className="pointHeroTopline">
             <span className="pointSeenBadge">พบล่าสุด {relativeTime(point.lastSeenAt)}</span>
             <span className={`pointStatusBadge${inactive ? ' isInactive' : ' isActive'}`}>{status}</span>
+            {isOwner && (
+              <Link href={`/points/${id}/edit`} className="button soft" style={{ padding: '4px 10px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <EditOutlined aria-hidden="true" />
+                <span>แก้ไขข้อมูลจุด</span>
+              </Link>
+            )}
           </div>
           <h2 id="point-summary-heading">ประมาณ {point.estimatedCount} ตัว</h2>
-          <p className="pointDescription">{point.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+          <p className="pointDescription">{displayDescription || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
 
           <div className="pointMetaGrid">
             <div className="pointMetaItem"><span>ประเภท</span><strong>{animal}</strong></div>
@@ -196,7 +234,7 @@ export default function PointDetailPage() {
 
           <Link href={`/points/${id}/navigate`} className="button primary block pointNavigateButton">
             <span>นำทางไปจุดนี้</span>
-            <span aria-hidden="true">→</span>
+            <ArrowRightOutlined aria-hidden="true" />
           </Link>
         </div>
       </section>
@@ -260,7 +298,9 @@ export default function PointDetailPage() {
                   const stillHere = item.type === 'STILL_HERE';
                   return (
                     <div className={`pointReportHistoryRow${stillHere ? ' isPresent' : ' isMissing'}`} key={item.id}>
-                      <span className="pointReportHistoryIcon" aria-hidden="true">{stillHere ? '✓' : '–'}</span>
+                      <span className="pointReportHistoryIcon" aria-hidden="true">
+                        {stillHere ? <CheckOutlined /> : <MinusOutlined />}
+                      </span>
                       <strong>{stillHere ? 'ยังพบสัตว์อยู่' : 'ไม่พบแล้ว'}</strong>
                       <span>{relativeTime(item.createdAt)}</span>
                     </div>
@@ -306,17 +346,18 @@ export default function PointDetailPage() {
           aria-label="รูปสัตว์แบบเต็มจอ"
           onMouseDown={(event) => { if (event.target === event.currentTarget) setPhotoOpen(false); }}
         >
-          <button
-            ref={lightboxCloseRef}
-            type="button"
-            className="pointLightboxClose"
-            onClick={() => setPhotoOpen(false)}
-            aria-label="ปิดรูป"
-          >
-            <span className="pointLightboxCloseIcon" aria-hidden="true" />
-            <span>ปิด</span>
-          </button>
-          <img src={photo} alt={`รูปเต็มของ${animal}จรจัดประมาณ ${point.estimatedCount} ตัว`} />
+          <div className="pointLightboxFrame">
+            <button
+              ref={lightboxCloseRef}
+              type="button"
+              className="pointLightboxClose outOfBoundsClose"
+              onClick={() => setPhotoOpen(false)}
+              aria-label="ปิดรูป"
+            >
+              <CloseOutlined aria-hidden="true" />
+            </button>
+            <img src={photo} alt={`รูปเต็มของ${animal}จรจัดประมาณ ${point.estimatedCount} ตัว`} />
+          </div>
         </div>
       )}
     </main>

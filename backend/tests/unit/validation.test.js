@@ -3,11 +3,13 @@ import {
   animalTypeSchema,
   boundingBoxSchema,
   createPointSchema,
+  forgotPasswordSchema,
   loginSchema,
   navigationRouteSchema,
   parse,
   registerSchema,
   reportSchema,
+  resetPasswordSchema,
   updatePointSchema,
 } from '../../src/utils/validation.js';
 
@@ -87,6 +89,39 @@ describe('validation schema and parser tests', () => {
     });
   });
 
+  describe('forgotPasswordSchema', () => {
+    test('accepts valid email', () => {
+      const result = forgotPasswordSchema.safeParse({ email: 'test@kmitl.ac.th' });
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.email).toBe('test@kmitl.ac.th');
+    });
+
+    test('rejects invalid email', () => {
+      expect(forgotPasswordSchema.safeParse({ email: 'not-an-email' }).success).toBe(false);
+      expect(forgotPasswordSchema.safeParse({ email: '' }).success).toBe(false);
+    });
+  });
+
+  describe('resetPasswordSchema', () => {
+    test('accepts valid token and strong password', () => {
+      const result = resetPasswordSchema.safeParse({
+        token: 'abcdef1234567890',
+        password: 'NewPassword123',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    test('rejects weak password without numbers or letters', () => {
+      expect(resetPasswordSchema.safeParse({ token: 'abc', password: 'onlyletters' }).success).toBe(false);
+      expect(resetPasswordSchema.safeParse({ token: 'abc', password: '12345678' }).success).toBe(false);
+      expect(resetPasswordSchema.safeParse({ token: 'abc', password: 'Sh1' }).success).toBe(false);
+    });
+
+    test('rejects empty token', () => {
+      expect(resetPasswordSchema.safeParse({ token: '', password: 'NewPassword123' }).success).toBe(false);
+    });
+  });
+
   describe('animalTypeSchema', () => {
     test('accepts supported animal types', () => {
       expect(animalTypeSchema.safeParse('DOG').success).toBe(true);
@@ -159,6 +194,8 @@ describe('validation schema and parser tests', () => {
       expect(updatePointSchema.safeParse({ description: 'อัปเดตข้อมูล' }).success).toBe(true);
       expect(updatePointSchema.safeParse({ estimatedCount: 3 }).success).toBe(true);
       expect(updatePointSchema.safeParse({ usualTime: null }).success).toBe(true);
+      expect(updatePointSchema.safeParse({ animalType: 'CAT' }).success).toBe(true);
+      expect(updatePointSchema.safeParse({ status: 'INACTIVE' }).success).toBe(true);
     });
 
     test('rejects empty update object', () => {

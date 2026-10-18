@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { useAuth } from '../../lib/auth-context';
 
 function validEmail(value) {
@@ -115,7 +116,12 @@ export default function LoginPage() {
           </div>
 
           <div className="field authFieldGap">
-            <label htmlFor="login-password">รหัสผ่าน</label>
+            <div className="authLabelRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label htmlFor="login-password">รหัสผ่าน</label>
+              <Link href="/forgot-password" className="authForgotPasswordLink" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--green)' }}>
+                ลืมรหัสผ่าน?
+              </Link>
+            </div>
             <div className="authPasswordControl">
               <input
                 id="login-password"
@@ -136,9 +142,10 @@ export default function LoginPage() {
                 className="authPasswordToggle"
                 aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                 aria-pressed={showPassword}
+                title={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                 onClick={() => setShowPassword((value) => !value)}
               >
-                {showPassword ? 'ซ่อน' : 'แสดง'}
+                {showPassword ? <EyeInvisibleOutlined aria-hidden="true" /> : <EyeOutlined aria-hidden="true" />}
               </button>
             </div>
             {fieldErrors.password && <small id="login-password-error" className="fieldError" role="alert">{fieldErrors.password}</small>}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { api } from '../../lib/api';
 
 function validEmail(value) {
@@ -169,9 +170,10 @@ export default function RegisterPage() {
                 className="authPasswordToggle"
                 aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                 aria-pressed={showPassword}
+                title={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
                 onClick={() => setShowPassword((value) => !value)}
               >
-                {showPassword ? 'ซ่อน' : 'แสดง'}
+                {showPassword ? <EyeInvisibleOutlined aria-hidden="true" /> : <EyeOutlined aria-hidden="true" />}
               </button>
             </div>
 
@@ -206,9 +208,10 @@ export default function RegisterPage() {
                 className="authPasswordToggle"
                 aria-label={showConfirm ? 'ซ่อนรหัสผ่านยืนยัน' : 'แสดงรหัสผ่านยืนยัน'}
                 aria-pressed={showConfirm}
+                title={showConfirm ? 'ซ่อนรหัสผ่านยืนยัน' : 'แสดงรหัสผ่านยืนยัน'}
                 onClick={() => setShowConfirm((value) => !value)}
               >
-                {showConfirm ? 'ซ่อน' : 'แสดง'}
+                {showConfirm ? <EyeInvisibleOutlined aria-hidden="true" /> : <EyeOutlined aria-hidden="true" />}
               </button>
             </div>
             {fieldErrors.confirm && <small id="register-confirm-error" className="fieldError" role="alert">{fieldErrors.confirm}</small>}

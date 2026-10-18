@@ -33,6 +33,7 @@ model User {
   points       StrayPoint[]
   feedings     Feeding[]
   reports      PointReport[]
+  resetTokens  PasswordResetToken[]
 }
 
 model StrayPoint {
@@ -95,4 +96,18 @@ model PointReport {
 
   @@index([pointId, createdAt(sort: Desc)])
   @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
 }

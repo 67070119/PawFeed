@@ -74,4 +74,25 @@ describe('HTTP baseline without database dependency', () => {
     expect(response.status).toBe(400);
     expect(response.body.error.code).toBe('IMAGE_REQUIRED');
   });
+
+  test('POST /api/auth/forgot-password validates email', async () => {
+    const response = await request(app).post('/api/auth/forgot-password').send({ email: 'invalid-email' });
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  test('GET /api/auth/verify-reset-token requires a token', async () => {
+    const response = await request(app).get('/api/auth/verify-reset-token');
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('INVALID_TOKEN');
+  });
+
+  test('POST /api/auth/reset-password validates password complexity', async () => {
+    const response = await request(app).post('/api/auth/reset-password').send({
+      token: 'some-token',
+      password: 'weak',
+    });
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
 });

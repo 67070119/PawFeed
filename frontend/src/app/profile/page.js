@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { PlusOutlined, ArrowRightOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import Protected from '../../components/Protected';
 import ProfileNav from '../../components/ProfileNav';
+import AnimalIcon from '../../components/AnimalIcon';
 import { api, assetUrl, relativeTime } from '../../lib/api';
 
 const ANIMAL = {
-  DOG: { label: 'สุนัข', emoji: '🐕' },
-  CAT: { label: 'แมว', emoji: '🐈' },
-  OTHER: { label: 'สัตว์อื่น ๆ', emoji: '🐾' },
+  DOG: { label: 'สุนัข' },
+  CAT: { label: 'แมว' },
+  OTHER: { label: 'สัตว์อื่น ๆ' },
 };
 
 const STATUS = {
@@ -61,7 +63,10 @@ export default function ProfilePage() {
             <p>ดูภาพรวมจุดที่คุณสร้างและกิจกรรมการช่วยเหลือล่าสุด</p>
           </div>
           {!loading && !error && (
-            <Link className="button primary" href="/points/create">+ เพิ่มจุดใหม่</Link>
+            <Link className="button primary" href="/points/create">
+              <PlusOutlined aria-hidden="true" />
+              <span>เพิ่มจุดใหม่</span>
+            </Link>
           )}
         </div>
 
@@ -101,7 +106,11 @@ export default function ProfilePage() {
                   <span>ล่าสุด</span>
                   <h2 id="recent-points-heading">จุดที่ฉันสร้าง</h2>
                 </div>
-                {!loading && points.length > 0 && <Link href="/profile/points">ดูทั้งหมด →</Link>}
+                {!loading && points.length > 0 && (
+                  <Link href="/profile/points">
+                    <span>ดูทั้งหมด</span> <ArrowRightOutlined aria-hidden="true" />
+                  </Link>
+                )}
               </div>
 
               {loading ? (
@@ -111,15 +120,25 @@ export default function ProfilePage() {
               ) : points.length > 0 ? (
                 <div className="profileRecentList">
                   {points.slice(0, 3).map((point) => {
-                    const animal = ANIMAL[point.animalType] || ANIMAL.OTHER;
+                    const animalBase = ANIMAL[point.animalType] || ANIMAL.OTHER;
+                    let animalLabel = animalBase.label;
+                    let cleanDesc = point.description || '';
+                    if (point.animalType === 'OTHER' && cleanDesc) {
+                      const match = cleanDesc.match(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/);
+                      if (match) {
+                        animalLabel = match[1].trim();
+                        cleanDesc = cleanDesc.replace(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/, '');
+                      }
+                    }
+                    const animal = { ...animalBase, label: animalLabel };
                     const image = assetUrl(point.imageUrl);
                     return (
                       <article className="profilePointRow" key={point.id}>
                         <div className="profilePointMedia">
-                          {image ? <img src={image} alt="" /> : <span aria-hidden="true">{animal.emoji}</span>}
+                          {image ? <img src={image} alt="" /> : <AnimalIcon type={point.animalType} size={24} />}
                         </div>
                         <div className="profilePointCopy">
-                          <strong>{point.description || `${animal.label}จรจัดประมาณ ${point.estimatedCount} ตัว`}</strong>
+                          <strong>{cleanDesc || `${animal.label}จรจัดประมาณ ${point.estimatedCount} ตัว`}</strong>
                           <div className="profileMetaChips">
                             <span>{animal.label}</span>
                             <span className={point.status === 'ACTIVE' ? 'isActive' : ''}>{STATUS[point.status] || point.status}</span>
@@ -133,7 +152,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="profileEmptyState">
-                  <span className="profileEmptyIcon" aria-hidden="true">⌖</span>
+                  <span className="profileEmptyIcon" aria-hidden="true"><EnvironmentOutlined /></span>
                   <strong>ยังไม่มีจุดที่คุณสร้าง</strong>
                   <p>เพิ่มจุดสัตว์จรจัดที่พบเพื่อให้คนในพื้นที่ช่วยกันดูแล</p>
                   <Link className="button soft" href="/points/create">เพิ่มจุดแรก</Link>
@@ -147,7 +166,11 @@ export default function ProfilePage() {
                   <span>ล่าสุด</span>
                   <h2 id="recent-feedings-heading">การให้อาหาร</h2>
                 </div>
-                {!loading && feedings.length > 0 && <Link href="/profile/feedings">ดูทั้งหมด →</Link>}
+                {!loading && feedings.length > 0 && (
+                  <Link href="/profile/feedings">
+                    <span>ดูทั้งหมด</span> <ArrowRightOutlined aria-hidden="true" />
+                  </Link>
+                )}
               </div>
 
               {loading ? (
@@ -160,19 +183,25 @@ export default function ProfilePage() {
                     const animal = ANIMAL[feeding.point?.animalType] || ANIMAL.OTHER;
                     return (
                       <article className="profileFeedingRow" key={feeding.id}>
-                        <span className="profileFeedingIcon" aria-hidden="true">{animal.emoji}</span>
+                        <span className="profileFeedingIcon" aria-hidden="true">
+                          <AnimalIcon type={feeding.point?.animalType} size={18} />
+                        </span>
                         <div>
                           <strong>{feeding.note?.trim() || 'ให้อาหารแล้ว'}</strong>
                           <small>{animal.label} · {relativeTime(feeding.fedAt)}</small>
                         </div>
-                        {feeding.point?.id && <Link href={`/points/${feeding.point.id}`}>ดูจุด →</Link>}
+                        {feeding.point?.id && (
+                          <Link href={`/points/${feeding.point.id}`}>
+                            <span>ดูจุด</span> <ArrowRightOutlined aria-hidden="true" />
+                          </Link>
+                        )}
                       </article>
                     );
                   })}
                 </div>
               ) : (
                 <div className="profileEmptyState">
-                  <span className="profileEmptyIcon" aria-hidden="true">🐾</span>
+                  <span className="profileEmptyIcon" aria-hidden="true"><AnimalIcon type="PAW" size={28} /></span>
                   <strong>ยังไม่มีประวัติการให้อาหาร</strong>
                   <p>เปิดแผนที่เพื่อค้นหาจุดที่ต้องการความช่วยเหลือใกล้คุณ</p>
                   <Link className="button soft" href="/">ดูแผนที่</Link>

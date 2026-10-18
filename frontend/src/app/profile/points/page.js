@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { PlusOutlined, EditOutlined, ArrowRightOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import Protected from '../../../components/Protected';
 import ProfileNav from '../../../components/ProfileNav';
+import AnimalIcon from '../../../components/AnimalIcon';
 import { api, assetUrl, relativeTime } from '../../../lib/api';
 
 const ANIMAL = {
-  DOG: { label: 'สุนัข', emoji: '🐕' },
-  CAT: { label: 'แมว', emoji: '🐈' },
-  OTHER: { label: 'สัตว์อื่น ๆ', emoji: '🐾' },
+  DOG: { label: 'สุนัข' },
+  CAT: { label: 'แมว' },
+  OTHER: { label: 'สัตว์อื่น ๆ' },
 };
 
 const STATUS = {
@@ -57,7 +59,10 @@ export default function ProfilePointsPage() {
           {!loading && !error && (
             <div className="profileTitleActions">
               <span className="profileTotalCount" aria-label={`ทั้งหมด ${items.length} จุด`}><strong>{items.length}</strong><small>จุด</small></span>
-              <Link className="button primary" href="/points/create">+ เพิ่มจุด</Link>
+              <Link className="button primary" href="/points/create">
+                <PlusOutlined aria-hidden="true" />
+                <span>เพิ่มจุด</span>
+              </Link>
             </div>
           )}
         </div>
@@ -87,7 +92,13 @@ export default function ProfilePointsPage() {
             ) : items.length > 0 ? (
               <div className="profilePointList">
                 {items.map((point) => {
-                  const animal = ANIMAL[point.animalType] || ANIMAL.OTHER;
+                  const animalBase = ANIMAL[point.animalType] || ANIMAL.OTHER;
+                  let animalLabel = animalBase.label;
+                  if (point.animalType === 'OTHER' && point.description) {
+                    const match = point.description.match(/^\[ชนิดสัตว์:\s*([^\]]+)\]\s*\n*/);
+                    if (match) animalLabel = match[1].trim();
+                  }
+                  const animal = { ...animalBase, label: animalLabel };
                   const image = assetUrl(point.imageUrl);
                   return (
                     <article className="profilePointCard" key={point.id}>
@@ -95,7 +106,7 @@ export default function ProfilePointsPage() {
                         {image ? (
                           <img src={image} alt={`รูปจุด${animal.label}จรจัด`} />
                         ) : (
-                          <span aria-hidden="true">{animal.emoji}</span>
+                          <AnimalIcon type={point.animalType} size={32} />
                         )}
                       </div>
 
@@ -114,9 +125,16 @@ export default function ProfilePointsPage() {
                           <span><small>ให้อาหารล่าสุด</small><strong>{relativeTime(point.latestFeedingAt)}</strong></span>
                         </div>
 
-                        <Link className="button profilePointCardAction" href={`/points/${point.id}`}>
-                          ดูรายละเอียด <span aria-hidden="true">→</span>
-                        </Link>
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                          <Link className="button profilePointCardAction" href={`/points/${point.id}`}>
+                            <span>ดูรายละเอียด</span>
+                            <ArrowRightOutlined aria-hidden="true" />
+                          </Link>
+                          <Link className="button soft" href={`/points/${point.id}/edit`} style={{ padding: '8px 12px', fontSize: '13px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <EditOutlined aria-hidden="true" />
+                            <span>แก้ไข</span>
+                          </Link>
+                        </div>
                       </div>
                     </article>
                   );
@@ -124,7 +142,7 @@ export default function ProfilePointsPage() {
               </div>
             ) : (
               <div className="profileEmptyState profileEmptyLarge">
-                <span className="profileEmptyIcon" aria-hidden="true">⌖</span>
+                <span className="profileEmptyIcon" aria-hidden="true"><EnvironmentOutlined /></span>
                 <strong>ยังไม่มีจุดที่คุณสร้าง</strong>
                 <p>เมื่อพบสัตว์จรจัด คุณสามารถเพิ่มตำแหน่งและรายละเอียดเพื่อให้ชุมชนช่วยกันดูแลได้</p>
                 <Link className="button primary" href="/points/create">เพิ่มจุดแรก</Link>

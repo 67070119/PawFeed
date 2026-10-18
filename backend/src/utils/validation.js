@@ -24,6 +24,15 @@ export const loginSchema = z.object({
   password: z.string().min(1).max(128),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().email('รูปแบบอีเมลไม่ถูกต้อง').max(254),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().trim().min(1, 'Token ไม่ถูกต้อง'),
+  password: z.string().min(8, 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร').max(128).regex(/[A-Za-z]/, 'รหัสผ่านต้องมีตัวอักษรภาษาอังกฤษ').regex(/[0-9]/, 'รหัสผ่านต้องมีตัวเลข'),
+});
+
 export const createPointSchema = z.object({
   animalType: animalTypeSchema,
   estimatedCount: z.coerce.number().int().min(1).max(1000),
@@ -33,10 +42,14 @@ export const createPointSchema = z.object({
   usualTime: z.string().trim().max(100).optional().transform((v) => v || null),
 });
 
+export const pointStatusSchema = z.enum(['ACTIVE', 'INACTIVE']);
+
 export const updatePointSchema = z.object({
+  animalType: animalTypeSchema.optional(),
   estimatedCount: z.coerce.number().int().min(1).max(1000).optional(),
   description: z.string().trim().min(1).max(2000).optional(),
   usualTime: z.string().trim().max(100).nullable().optional(),
+  status: pointStatusSchema.optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, { message: 'ต้องระบุข้อมูลที่ต้องการแก้ไขอย่างน้อย 1 field' });
 
 export const feedingSchema = z.object({

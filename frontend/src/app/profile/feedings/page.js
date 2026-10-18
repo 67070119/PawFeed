@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowRightOutlined } from '@ant-design/icons';
 import Protected from '../../../components/Protected';
 import ProfileNav from '../../../components/ProfileNav';
+import AnimalIcon from '../../../components/AnimalIcon';
 import { api, assetUrl, relativeTime } from '../../../lib/api';
 
 const ANIMAL = {
-  DOG: { emoji: '🐕', label: 'สุนัข' },
-  CAT: { emoji: '🐈', label: 'แมว' },
-  OTHER: { emoji: '🐾', label: 'สัตว์อื่น ๆ' },
+  DOG: { label: 'สุนัข' },
+  CAT: { label: 'แมว' },
+  OTHER: { label: 'สัตว์อื่น ๆ' },
 };
 
 function groupLabel(value) {
@@ -125,14 +127,18 @@ export default function ProfileFeedingsPage() {
                           {image ? (
                             <img src={image} alt={`รูปจุดที่พบ${animal.label}`} />
                           ) : (
-                            <div className="feedingMediaFallback" aria-hidden="true">{animal.emoji}</div>
+                            <div className="feedingMediaFallback" aria-hidden="true">
+                              <AnimalIcon type={feeding.point?.animalType} size={28} />
+                            </div>
                           )}
                         </div>
 
                         <div className="feedingCardBody">
                           <div className="feedingCardTopline">
                             <div className="feedingAnimal">
-                              <span aria-hidden="true">{animal.emoji}</span>
+                              <span aria-hidden="true">
+                                <AnimalIcon type={feeding.point?.animalType} size={18} />
+                              </span>
                               <strong>{animal.label}</strong>
                             </div>
                             <time dateTime={feeding.fedAt}>{relativeTime(feeding.fedAt)}</time>
@@ -143,7 +149,8 @@ export default function ProfileFeedingsPage() {
 
                           {feeding.point?.id && (
                             <Link className="feedingPointLink" href={`/points/${feeding.point.id}`}>
-                              ดูรายละเอียดจุด <span aria-hidden="true">→</span>
+                              <span>ดูรายละเอียดจุด</span>
+                              <ArrowRightOutlined aria-hidden="true" />
                             </Link>
                           )}
                         </div>
@@ -156,7 +163,9 @@ export default function ProfileFeedingsPage() {
 
             {!loading && !error && items.length === 0 && (
               <div className="feedingEmpty">
-                <div className="feedingEmptyIcon" aria-hidden="true">🐾</div>
+                <div className="feedingEmptyIcon" aria-hidden="true">
+                  <AnimalIcon type="PAW" size={36} />
+                </div>
                 <h2>ยังไม่มีประวัติการให้อาหาร</h2>
                 <p>เมื่อคุณช่วยให้อาหารสัตว์ ประวัติจะมาแสดงที่นี่</p>
                 <Link className="button soft" href="/">กลับไปดูแผนที่</Link>
