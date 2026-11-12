@@ -1,88 +1,25 @@
 # PawFeed — Course Container Verification
 
-## Formal Environment
+คู่มือปัจจุบัน: [handoff.md](handoff.md)
 
-Target image:
+Formal image: `tuchsanai/devtools:2569_1`
 
-```text
-tuchsanai/devtools:2569_1
+Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1
 ```
 
-Phase 7 ตรวจจริงแล้วพบ Node.js `v22.23.1`, npm `12.0.1`, Docker `29.6.2`, Docker Compose `v5.3.1`, Git `2.54.0` และ curl `8.5.0` โดย image ใช้ `/workspace` และรองรับ Docker-in-Docker เมื่อรันแบบ privileged
-
-## Verification
-
-Core:
+Linux/macOS/WSL:
 
 ```bash
-./scripts/course-container-test.sh
+sh scripts/course-container-test.sh
 ```
 
-Full รวม Browser E2E:
+รวม E2E โดย default ใช้ source bundle ที่ไม่พึ่ง `.env`, `.git`, node_modules, uploads หรือ build outputs จากเครื่องสมาชิก สร้าง config ทดสอบเองภายใน Course Container และส่งต่อ exit code ที่ล้มเหลวจริง
 
-```bash
-COURSE_RUN_E2E=1 ./scripts/course-container-test.sh
-```
+ผลล่าสุดของแต่ละรอบอยู่ที่ `.ci/results/` มี source SHA, clean/dirty state, image identity, logs, test reports และ summary ผลรอบก่อนถูกย้ายเป็น `.ci/results-.../`
 
-Flow:
+Jenkins ใช้การตรวจชุดเดียวกันและเก็บ artifacts ก่อนลบกล่อง CI ส่วนกล่อง `pawfeed-course-demo` เป็น deployment แยกที่เก็บข้อมูลไว้ได้ข้าม build
 
-```text
-clean source copy
-→ npm ci
-→ explicit Prisma generate
-→ lint
-→ unit tests
-→ build
-→ npm audit
-→ integration + PostgreSQL
-→ Docker Compose build/up
-→ smoke
-→ persistence after restart
-→ Playwright E2E
-→ cleanup
-```
-
-## Clean-source Rule
-
-Repository ถูก mount read-only ที่ `/source` แล้ว copy ไป `/workspace/PawFeed` โดย exclude `.git`, `node_modules`, `.next` และ Playwright result folders จึงไม่พึ่ง runtime/build state จาก Mac mini
-
-## npm 12 Compatibility
-
-Course image ใช้ npm 12 จึงสั่ง `npx prisma generate` แบบ explicit หลัง `npm ci` ทั้ง Course script และ Jenkins pipeline
-
-## Docker-in-Docker
-
-```text
-Host Docker
-└── Course Container (privileged)
-    └── dockerd
-        ├── PawFeed Frontend
-        ├── PawFeed Backend
-        ├── PostgreSQL
-        └── Playwright runner
-```
-
-## Latest Final Result
-
-Full run `COURSE_RUN_E2E=1` ผ่านจริง:
-
-- Backend lint: PASS
-- Unit: `15/15` PASS
-- Backend build: PASS
-- Backend audit: `0` high vulnerabilities
-- Frontend lint: PASS
-- Frontend build: PASS
-- Frontend audit: `0` high vulnerabilities
-- Integration: `7/7` PASS
-- Compose build/up: PASS
-- Smoke: PASS
-- Persistence: PASS
-- Playwright E2E: `16/16` PASS
-- Cleanup: PASS
-- Final exit code: `0`
-
-Latest Navigation Redesign Phase 5 full run ใช้ source revision ปัจจุบันและผ่านด้วย exit code 0
-
-## Port Conflict
-
-Host ports override ได้ผ่าน `FRONTEND_PORT` และ `BACKEND_PORT` ห้าม hard-code ค่าเฉพาะเครื่องสมาชิกเพื่อให้ verification ผ่าน
+งานปรับ DevOps รอบนี้ยังไม่ประกาศว่าผ่านทั้งชุด ผู้ใช้ขอหยุดการทดสอบและจะทดสอบเอง ผลเก่าที่เคยระบุ 16/16 หรือ 21/21 ไม่ยืนยัน source รุ่นที่ปรับครั้งนี้ ต้องรัน final committed revision ใหม่ก่อนส่ง

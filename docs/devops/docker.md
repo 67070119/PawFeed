@@ -2,13 +2,14 @@
 
 ## 1. Runtime Services
 
-PawFeed ใช้ Docker Compose 3 services เท่านั้นใน MVP:
+PawFeed ใช้ Docker Compose 4 services ใน Demo ปัจจุบัน ดูขั้นตอน Windows/Linux และการตั้งค่าครบใน [handoff.md](handoff.md)
 
 | Service | Image/Build | Port | หน้าที่ |
 |---|---|---:|---|
 | frontend | `./frontend/Dockerfile` | 3000 | Next.js UI และ same-origin proxy ไป Backend |
 | backend | `./backend/Dockerfile` | 3001 | Express API, Auth, Upload, Health, Prisma migration |
 | postgres | `postgres:17-alpine` | internal 5432 | Source of truth สำหรับข้อมูลหลัก |
+| mailpit | `axllent/mailpit:v1.27` | localhost 8025, internal SMTP 1025 | รับอีเมลรีเซ็ตรหัสผ่านใน Demo |
 
 ## 2. Startup Dependency
 
@@ -59,6 +60,7 @@ Named volumes:
 ```text
 postgres-data
 pawfeed-uploads
+mailpit-data
 ```
 
 `postgres-data` เก็บ PostgreSQL data directory
@@ -96,6 +98,7 @@ Start + build + smoke test:
 หรือ:
 
 ```bash
+sh scripts/setup.sh
 docker compose up -d --build
 ./scripts/smoke-test.sh
 ```
@@ -165,7 +168,7 @@ docker compose down
 
 ค่าตัวอย่างอยู่ใน `.env.example`
 
-สำหรับ Docker Compose มี development/demo defaults ที่ไม่ใช่ production secrets ผู้ใช้สามารถ override ผ่าน `.env` ได้
+ให้รัน `sh scripts/setup.sh` ก่อนใช้ Compose โดยตรง หรือใช้ `scripts/start.ps1` บน Windows / `sh scripts/start.sh` บน Linux เพื่อสร้าง config และสุ่ม secrets อัตโนมัติ `.env.example` มี placeholders ที่ต้องแทนค่า ห้ามใช้ template เป็น production config โดยไม่ผ่าน setup
 
 Production deployment ต้องเปลี่ยนอย่างน้อย:
 - `JWT_ACCESS_SECRET`

@@ -10,7 +10,7 @@ export default defineConfig({
   retries: 0,
   timeout: 30_000,
   expect: { timeout: 8_000 },
-  reporter: [['line']],
+  reporter: [['line'], ['junit', { outputFile: 'test-results/e2e.xml' }]],
   use: {
     baseURL,
     headless: true,

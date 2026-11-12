@@ -1,60 +1,27 @@
-# PawFeed — Jenkins CI/CD Pipeline
+# PawFeed — Jenkins CI/CD
 
-## Purpose
+ขั้นตอนตั้ง Jenkins, GitHub SCM, node label, Docker Hub credentials, ports, delivery และ failure demo อยู่ใน [handoff.md](handoff.md)
 
-`Jenkinsfile` เป็น Pipeline as Code หลักของ PawFeed ทุก gate ต้องผ่านก่อน stage ถัดไป หากคำสั่งบังคับคืน exit code != 0 pipeline ต้อง fail และไม่ถือว่า delivery สำเร็จ
+## Infrastructure
 
-## Agent Requirements
+`jenkins/docker-compose.yml` สร้าง Jenkins พร้อม Docker CLI/Compose และ plugins จาก source ใช้ named volume เก็บ Jenkins home ผูก UI กับ localhost:8080 และใช้ Docker socket สำหรับสร้าง Course Containers ตัวอย่างนี้สำหรับ trusted local coursework เท่านั้น
 
-- Node.js 22.x + npm
-- Docker Engine + Docker Compose
-- Git, `sh`, `curl`
-- สิทธิ์ใช้ Docker daemon
-- Internet access สำหรับ npm/Docker/Playwright images
+ตั้ง node label `pawfeed-docker` และสร้าง Pipeline script from SCM โดยใช้ `Jenkinsfile` ที่ root ไม่ต้องลง Node/npm บน controller เพราะงาน application verification รันใน Course image
 
-Course Container `tuchsanai/devtools:2569_1` ถูกตรวจจริงใน Phase 7 และรองรับ Node.js 22 + Docker-in-Docker
+## Pipeline
 
-## Pipeline Stages
+Checkout → Docker Preflight → Course Container Verification → Publish Tested Images → Deploy and Verify in Course Container → Archive/Cleanup
 
-1. Checkout
-2. Install: backend/frontend `npm ci` + explicit `prisma generate`
-3. Lint: Backend + Frontend ESLint
-4. Unit Test: Jest
-5. Integration Test: PostgreSQL 17 จริง + Prisma migration
-6. Application Build: Backend check + Next.js production build
-7. Security Audit: `npm audit --audit-level=high`
-8. Docker Compose Verification: config/build/up + smoke
-9. Persistence Verification: DB + Upload หลัง restart
-10. Browser E2E: Playwright Chromium + failure UI
+Course gate ครอบคลุม install, explicit Prisma generate, lint, unit/integration, build, audit, Compose, smoke, persistence และ Browser E2E หาก gate ใด fail จะไม่เข้า Publish/Deploy
 
-## Fail Gate
+`DELIVER=false` ตรวจอย่างเดียว ส่วน `DELIVER=true` ต้องตั้ง Docker Hub namespace และ Jenkins Username/Password credential ID `dockerhub-pawfeed` (ใช้ access token เป็น password)
 
-Declarative Pipeline ใช้ `sh` โดยตรง ดังนั้น failure จะหยุด pipeline เช่น:
+Publish ใช้ images ที่ถูกทดสอบแล้วและ tag ด้วย full commit SHA ไม่ rebuild หลัง test Deploy ดึง images รุ่นนั้นเข้ากล่องรายวิชาแบบ persistent และใช้ `up --no-build` แล้วตรวจ health/proxy จริง
 
-```text
-Integration Test FAIL
-→ Pipeline FAIL
-→ Build/Compose/Persistence/E2E ไม่ถูกนับว่าสำเร็จ
-```
+`FAILURE_DEMO=true` เพิ่ม failing unit test เฉพาะ source copy ชั่วคราว เพื่อแสดงว่า pipeline fail และข้าม Publish/Deploy โดยไม่แก้ repository หรือ Demo เดิม
 
-Phase 8 จะเก็บ Jenkins run จริงทั้ง successful run และ intentional failure run เป็น evidence ของ `REQ-NFR-DEVOPS-003/004`
+## Cleanup and evidence
 
-## Cleanup
+`post` ลบเฉพาะ verification container ที่มี label ตรงกัน ไม่สั่ง down -v กับ Demo เก็บ `.ci/results/` เป็น Jenkins artifacts และอ่าน E2E XML ด้วย junit Git polling ทุกประมาณ 5 นาที ไม่ต้องเปิด localhost webhook จาก Internet
 
-`post { always { ... } }` cleanup main Compose, integration project และ E2E project แม้ pipeline fail โดย CI volumes เป็น disposable และถูกลบด้วย `down -v`
-
-## Security
-
-Production secret ต้องมาจาก Jenkins Credentials/Environment ห้ามเก็บใน `Jenkinsfile` และ log ห้ามพิมพ์ Password/JWT/Cookie
-
-## Related Files
-
-```text
-Jenkinsfile
-jenkins/README.md
-scripts/test-integration.sh
-scripts/test-e2e.sh
-scripts/smoke-test.sh
-scripts/verify-persistence.sh
-scripts/course-container-test.sh
-```
+ผู้ใช้จะรันและเก็บหลักฐานเอง งานปรับครั้งนี้ไม่ยืนยัน successful delivery / failure demo / Docker Hub push จาก final submitted revision แล้ว

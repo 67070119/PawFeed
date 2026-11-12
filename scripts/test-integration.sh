@@ -7,6 +7,7 @@ COMPOSE="docker compose -p $PROJECT -f $ROOT/docker-compose.test.yml"
 TEST_DB_PORT="${TEST_DB_PORT:-55432}"
 DATABASE_URL="postgresql://pawfeed:pawfeed_test@127.0.0.1:${TEST_DB_PORT}/pawfeed_test?schema=public"
 UPLOAD_DIR="${TMPDIR:-/tmp}/pawfeed-integration-uploads"
+mkdir -p "$ROOT/.ci/results"
 
 cleanup() {
   $COMPOSE down -v --remove-orphans >/dev/null 2>&1 || true
@@ -33,6 +34,6 @@ UPLOAD_DIR="$UPLOAD_DIR" \
 NODE_ENV=test \
 COOKIE_SECURE=false \
 JWT_ACCESS_SECRET="integration-test-secret-12345678901234567890" \
-npm run test:integration
+npm run test:integration -- --ci --json --outputFile=../.ci/results/integration.json
 
 echo "PawFeed backend integration verification passed."

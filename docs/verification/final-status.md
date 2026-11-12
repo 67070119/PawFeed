@@ -1,41 +1,24 @@
-# PawFeed — Final Verification Status
+# PawFeed — Current Verification Status
 
-## Requirement Summary
+ปรับ clean-clone setup, Docker/Mailpit, Course Container scripts, Jenkins infrastructure และ publish/deploy pipeline แล้ว
 
-จาก Requirement Baseline ปัจจุบัน **63 ข้อ**:
+## สถานะของงานปรับครั้งนี้
 
-- **VERIFIED: 60**
-- **IMPLEMENTED: 3**
-- **DEFECT: 0**
-- **LIMITATION status: 0** (known product limitations documented separately)
+ผู้ใช้ขอให้หยุดการทดสอบและจะทดสอบเอง จึงยังไม่รับรองว่ารุ่นที่ปรับผ่านทุก gate และไม่ใช้ผลเก่าก่อนแก้เป็นหลักฐานของรุ่นใหม่
 
-สามข้อที่ยังเป็น IMPLEMENTED:
+เริ่มทดสอบตาม `docs/devops/handoff.md` และดูผล `.ci/results/` โดยเช็ก source SHA และ clean/dirty state ก่อนอ้างในเอกสารส่ง
 
-- `REQ-NFR-DEVOPS-003` Jenkins Verification
-- `REQ-NFR-DEVOPS-004` Fail Stops Delivery
-- `REQ-NFR-DEVOPS-005` Course Container Compatibility (current revision evidence refresh pending)
+## ยังต้องทำเองก่อนส่ง
 
-`REQ-NFR-DEVOPS-003/004` มี Jenkinsfile/fail-gate แล้วแต่ยังไม่มี successful + intentional-failure Jenkins run จริง. `REQ-NFR-DEVOPS-005` เคยผ่าน Course Container ใน evidence revision ก่อนหน้า แต่ current working tree เพิ่ม UX/UI fixes และ Playwright เป็น 21 tests จึงต้อง rerun current revision ก่อนกลับเป็น VERIFIED.
+1. Commit/push และตรวจ clean clone ของ revision สุดท้าย
+2. รัน Course Container verification ให้ครบ (รวม E2E และ public routing ตาม scope)
+3. ตั้ง Jenkins admin/node/job และ Docker Hub access token
+4. รัน Jenkins DELIVER=true ให้ Verify/Publish/Deploy/Smoke ผ่าน
+5. รัน FAILURE_DEMO=true และยืนยันว่า Publish/Deploy ถูกข้าม
+6. เก็บหลักฐาน commit SHA/build IDs/logs แล้วอัปเดต traceability
+7. เติมสมาชิกทีมและหลักฐานปัญหา/ผลกระทบ
+8. Slide/Report/Video ทำภายหลังตามขอบเขตที่ตกลง
 
-## Automated Verification
+REQ-NFR-DEVOPS-003/004/005 ยังไม่ควรเปลี่ยนเป็น VERIFIED จนมีหลักฐาน final revision ทั้งหมด
 
-- Current working-tree Unit: **46/46 PASS**
-- Integration: **7/7 PASS**
-- Current working-tree Browser E2E: **21/21 PASS**
-- Responsive visual/interaction matrix: desktop/tablet/mobile/narrow plus Navigation landscape **PASS**
-- Live Routing Smoke: **DRIVING / WALKING / CYCLING PASS**
-- Lint/Build/Audit: PASS
-- Docker Smoke/Persistence: PASS
-- Archived Course Container `tuchsanai/devtools:2569_1`: **PASS / exit code 0** with Playwright **16/16** on its evidence revision; current 21-test suite still needs a fresh Course Container run before final submission evidence is replaced
-
-Navigation Redesign: **5/5 Phase completed**.
-
-## Submission Blockers
-
-ก่อนถือว่า Submission Ready 100% ยังต้อง:
-
-1. รัน Jenkins success + controlled failure และเก็บ evidence
-2. รัน Course Container กับ current working-tree 21-test suite และแทนที่ archived 16/16 evidence
-3. กรอกรายชื่อสมาชิกทีมจริง
-4. จัดทำ final Slide / Report / Video จาก outline
-5. Push final revision ไป GitHub และทดสอบ clean clone อีกครั้ง
+Dependency audit ใช้ threshold high เหมือนเดิม การอัปเดตครั้งนี้แก้ high/critical ที่พบตอนเริ่มตรวจ แต่ยังมี low/moderate ในเครื่องมือพัฒนา ต้องอ่านผล audit รอบที่รันจริง และไม่กล่าวอ้างว่าไม่มีช่องโหว่ทั้งหมด

@@ -1,36 +1,9 @@
-# Course Container Evidence
+# Course Container Evidence Status
 
-Target environment:
+Target: `tuchsanai/devtools:2569_1`
 
-```text
-tuchsanai/devtools:2569_1
-```
+ต้องรัน source รุ่นสุดท้ายเองตาม `docs/devops/handoff.md` แล้วแนบ summary, provenance และ logs จาก `.ci/results/`
 
-Final Navigation Redesign Phase 5 command:
+ผลเก่าจากก่อนปรับ Docker/Jenkins/dependencies ไม่ยืนยันรุ่นปัจจุบัน งานปรับครั้งนี้หยุดการทดสอบตามคำขอของผู้ใช้ จึงยังไม่ระบุผล full verification เป็น PASS
 
-```bash
-COURSE_RUN_E2E=1 ./scripts/course-container-test.sh
-```
-
-Final result: **PASS / exit code 0**
-
-Verified inside a clean working copy in the Course Container:
-
-- Backend dependency install + explicit Prisma Client generation
-- Backend lint
-- Unit tests: **15/15 PASS** across 4 suites
-- Backend build + npm audit
-- Frontend dependency install
-- Frontend lint + production build + npm audit
-- PostgreSQL Integration tests: **7/7 PASS**
-- Docker Compose build/up
-- Health / Smoke verification
-- Database + Upload persistence after restart
-- Playwright Browser E2E: **16/16 PASS**
-- Navigation mobile viewports: **375×667, 390×844, 430×932 PASS**
-- Navigation recovery flows: off-route reroute, poor GPS, routing retry and GPS recovery PASS
-- Cleanup
-
-The source copy excludes host `.git`, `node_modules`, `.next` and prior Playwright reports, so the result does not depend on Mac mini build artifacts.
-
-Live public routing is verified separately with `./scripts/smoke-routing.sh` because Course Container E2E intentionally uses the deterministic routing mock and must not depend on public-provider availability.
+เกณฑ์ปิดงาน: clean committed source → generated config → install/lint/unit/integration/build/audit → Compose/smoke/persistence → E2E → cleanup ผ่านครบ และ provenance อ้าง commit ที่ส่ง

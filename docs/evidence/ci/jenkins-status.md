@@ -1,22 +1,13 @@
 # Jenkins Evidence Status
 
-## Implemented
+Pipeline และ infrastructure เตรียมไว้แล้ว ดู `docs/devops/handoff.md`
 
-- `Jenkinsfile` exists as Pipeline as Code
-- Stages: Checkout → Install → Lint → Unit → Integration → Build → Audit → Docker Compose → Smoke → Persistence → Browser E2E
-- `post { always { ... } }` cleanup exists
-- Any failing `sh` command stops the pipeline before later delivery stages
+ต้องรันและเก็บหลักฐานเองจาก commit ที่ส่ง:
 
-## Still Required Before Submission
+1. `DELIVER=true`, `FAILURE_DEMO=false`: Verify → Publish SHA-tagged images → Deploy in Course Container → Smoke → SUCCESS
+2. `DELIVER=true`, `FAILURE_DEMO=true`: Unit FAIL → Publish/Deploy skipped → FAILURE
+3. เก็บ build number/URL, source SHA, console log, `.ci/results/` และ stage view ตามที่ต้องใช้ในการส่ง
 
-A real Jenkins server/job must be run and evidence captured for:
+งานปรับนี้ไม่อ้างว่าการส่งมอบผ่าน Jenkins/Docker Hub จาก final revision ผ่านแล้ว ผู้ใช้ขอหยุดการทดสอบและจะรันเอง
 
-1. Successful pipeline run from the final submitted revision
-2. Controlled failing run showing that a failed test/build prevents later delivery stages
-
-Until those two runs exist:
-
-- `REQ-NFR-DEVOPS-003` = IMPLEMENTED
-- `REQ-NFR-DEVOPS-004` = IMPLEMENTED
-
-Do not label them VERIFIED in report/slide yet.
+REQ-NFR-DEVOPS-003 และ REQ-NFR-DEVOPS-004 คงเป็น IMPLEMENTED จนมีหลักฐานที่ตรงกับ revision ที่ส่ง

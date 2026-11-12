@@ -9,7 +9,7 @@ function getTransporter() {
   const user = env.smtpUser?.trim();
   const pass = env.smtpPass?.replace(/\s+/g, '');
 
-  if (!user || !pass) {
+  if (env.smtpAuthRequired && (!user || !pass)) {
     return null;
   }
 
@@ -17,10 +17,13 @@ function getTransporter() {
     host: env.smtpHost,
     port: env.smtpPort,
     secure: env.smtpPort === 465, // true for 465, false for 587
-    auth: {
+    ...(user && pass ? { auth: {
       user,
       pass,
-    },
+    } } : {}),
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 
   return transporter;

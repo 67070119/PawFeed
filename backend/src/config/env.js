@@ -27,6 +27,7 @@ export const env = {
   routingRetries: int(process.env.ROUTING_RETRIES, 1),
   smtpHost: process.env.SMTP_HOST ?? 'smtp.gmail.com',
   smtpPort: int(process.env.SMTP_PORT, 465),
+  smtpAuthRequired: bool(process.env.SMTP_AUTH_REQUIRED, true),
   smtpUser: process.env.SMTP_USER ?? '',
   smtpPass: process.env.SMTP_PASS ?? '',
   smtpFrom: process.env.SMTP_FROM || (process.env.SMTP_USER ? `"PawFeed" <${process.env.SMTP_USER}>` : '"PawFeed" <no-reply@pawfeed.local>'),

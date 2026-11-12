@@ -1,60 +1,41 @@
 #!/bin/sh
 set -eu
-
 ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-IMAGE="${COURSE_IMAGE:-tuchsanai/devtools:2569_1}"
-NAME="pawfeed-course-$$"
-RUN_E2E="${COURSE_RUN_E2E:-0}"
-
-cleanup() {
-  docker rm -f "$NAME" >/dev/null 2>&1 || true
-}
-trap cleanup EXIT INT TERM
-
+. "$ROOT/scripts/course-lib.sh"
 cd "$ROOT"
-docker run -d --privileged \
-  --name "$NAME" \
-  -v "$ROOT:/source:ro" \
-  "$IMAGE" \
-  sh -c 'dockerd > /var/log/dockerd.log 2>&1 & tail -f /dev/null' >/dev/null
-
-attempt=0
-until docker exec "$NAME" docker info >/dev/null 2>&1; do
-  attempt=$((attempt + 1))
-  if [ "$attempt" -ge 60 ]; then
-    echo "Docker daemon inside Course Container did not become ready" >&2
-    docker logs "$NAME" >&2 || true
-    exit 1
+mkdir -p .ci
+if [ -d .ci/results ]; then mv .ci/results ".ci/results-$(date +%s)-$$"; fi
+NAME="pawfeed-ci-$(date +%s)-$$"
+SOURCE_REVISION=${SOURCE_REVISION:-$(git rev-parse HEAD)}
+SOURCE_STATE=${SOURCE_STATE:-$(if [ -z "$(git status --porcelain)" ]; then echo clean; else echo dirty; fi)}
+printf '%s\n' "$NAME" > .ci/course-container-name
+finish() {
+  code=$?
+  trap - EXIT INT TERM
+  mkdir -p .ci/results
+  docker cp "$NAME:/workspace/PawFeed/.ci/results/." .ci/results/ >/dev/null 2>&1 || true
+  if [ "${COURSE_KEEP_CONTAINER:-0}" != 1 ]; then
+    docker rm -f -v "$NAME" >/dev/null 2>&1 || true
   fi
-  sleep 1
-done
-
-docker exec "$NAME" sh -lc 'mkdir -p /workspace/PawFeed && tar -C /source --exclude=.git --exclude=*/node_modules --exclude=frontend/.next --exclude=tests/e2e/test-results --exclude=tests/e2e/playwright-report -cf - . | tar -C /workspace/PawFeed -xf -'
-
-docker exec "$NAME" bash -lc 'set -e
-  cd /workspace/PawFeed/backend
-  npm ci --no-audit --no-fund
-  npx prisma generate
-  npm run lint
-  npm test
-  npm run build
-  npm audit --audit-level=high
-  cd ../frontend
-  npm ci --no-audit --no-fund
-  npm run lint
-  npm run build
-  npm audit --audit-level=high
-  cd ..
-  ./scripts/test-integration.sh
-  docker compose config >/dev/null
-  docker compose up -d --build
-  ./scripts/smoke-test.sh
-  ./scripts/verify-persistence.sh
-  docker compose down -v --remove-orphans
-'
-
-if [ "$RUN_E2E" = "1" ]; then
-  docker exec "$NAME" bash -lc 'cd /workspace/PawFeed && ./scripts/test-e2e.sh'
-fi
-
-echo "PawFeed Course Container verification passed using $IMAGE (E2E=$RUN_E2E)."
+  exit "$code"
+}
+trap finish EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+docker info >/dev/null
+docker run -d --privileged --name "$NAME" \
+  --label io.pawfeed.purpose=verification \
+  --entrypoint sh "$COURSE_IMAGE" \
+  -c 'dockerd > /var/log/dockerd.log 2>&1 & exec tail -f /dev/null' >/dev/null
+wait_course_docker "$NAME"
+copy_course_source "$NAME"
+mkdir -p .ci/results
+# Exact outer image identity, in addition to source SHA and dirty/clean state.
+docker image inspect "$COURSE_IMAGE" --format '{{.Id}} {{json .RepoDigests}}' > .ci/results/course-image.txt
+docker exec \
+  -e "SOURCE_REVISION=$SOURCE_REVISION" -e "SOURCE_STATE=$SOURCE_STATE" \
+  -e "COURSE_IMAGE=$COURSE_IMAGE" -e "COURSE_RUN_E2E=${COURSE_RUN_E2E:-1}" \
+  -e "CI_FAILURE_DEMO=${CI_FAILURE_DEMO:-false}" \
+  -e "COURSE_RUN_LIVE_ROUTING=${COURSE_RUN_LIVE_ROUTING:-0}" \
+  "$NAME" bash /workspace/PawFeed/scripts/course-verify.sh
+echo "PawFeed course verification passed: $SOURCE_REVISION ($SOURCE_STATE)."

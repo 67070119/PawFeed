@@ -40,3 +40,7 @@ Thumbs.db
 .tmp/
 tmp/
 *.tmp
+
+# Local CI evidence and generated delivery configuration
+.ci/
+jenkins/.env

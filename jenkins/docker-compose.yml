@@ -1,0 +1,17 @@
+name: pawfeed-jenkins
+services:
+  jenkins:
+    build: .
+    # Local trusted-course setup: socket access controls the host Docker daemon.
+    user: root
+    environment:
+      PAWFEED_AUTO_DELIVER: ${PAWFEED_AUTO_DELIVER:-false}
+      PAWFEED_DOCKERHUB_NAMESPACE: ${PAWFEED_DOCKERHUB_NAMESPACE:-}
+    ports:
+      - "127.0.0.1:${JENKINS_PORT:-8080}:8080"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+volumes:
+  jenkins-home:

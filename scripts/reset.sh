@@ -6,6 +6,8 @@ if [ "${1:-}" != "--yes" ]; then
   exit 2
 fi
 
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "$ROOT"
 docker compose down -v --remove-orphans
 rm -rf backend/uploads 2>/dev/null || true
 

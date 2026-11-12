@@ -1,29 +1,18 @@
 #!/usr/bin/env sh
 set -eu
 
-FRONTEND_URL=${FRONTEND_URL:-http://127.0.0.1:3000}
-BACKEND_URL=${BACKEND_URL:-http://127.0.0.1:3001}
-
-wait_for() {
-  name=$1
-  url=$2
-  attempts=${3:-60}
-  i=1
-  while [ "$i" -le "$attempts" ]; do
-    if curl -fsS "$url" >/dev/null 2>&1; then
-      echo "OK: $name -> $url"
-      return 0
-    fi
-    sleep 2
-    i=$((i + 1))
-  done
-  echo "FAIL: $name did not become ready -> $url" >&2
-  docker compose ps >&2 || true
-  return 1
-}
-
-wait_for "backend readiness" "$BACKEND_URL/health/ready"
-wait_for "frontend" "$FRONTEND_URL/"
-wait_for "frontend-to-backend proxy" "$FRONTEND_URL/backend-health/ready"
-
-echo "PawFeed smoke test passed."
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "$ROOT"
+# Container-side checks work with custom host ports and need no host Node/curl.
+docker compose exec -T frontend node --input-type=module -e '
+  for (const url of ["http://backend:3001/health/ready", "http://127.0.0.1:3000/", "http://127.0.0.1:3000/backend-health/ready"]) {
+    let ok = false;
+    for (let i = 0; i < 60; i++) {
+      try { const r = await fetch(url, { signal: AbortSignal.timeout(5000) }); if (r.ok) { ok = true; break; } } catch {}
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    if (!ok) { console.error(`FAIL: ${url}`); process.exit(1); }
+    console.log(`OK: ${url}`);
+  }
+'
+echo 'PawFeed smoke test passed.'

@@ -6,11 +6,11 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-สถานะปัจจุบัน: **Phase 8 — Verification, Evidence & Submission: COMPLETED (repository-side)**
+เตรียม clean-clone setup, Docker-in-Docker verification และ Jenkins delivery pipeline แล้ว อ่าน [คู่มือตั้งค่าและรันทั้งหมด](docs/devops/handoff.md) ก่อนส่งงาน
 
-Development Plan **8/8 Phase เสร็จแล้ว**
+ผลทดสอบต้องอ้างอิง source revision และ provenance จริงใน `.ci/results/` ห้ามใช้ผลเก่าหรือผลจาก dirty working tree เป็นหลักฐานของ final commit การ Publish/Deploy ต้องตั้ง Docker Hub credentials ใน Jenkins และรัน `DELIVER=true` ส่วน Slide/Report/Video จัดทำแยกภายหลัง
 
-Current working-tree verification ผ่าน Unit **46/46**, Integration **7/7**, Playwright E2E **21/21**, responsive visual/interaction validation และ Live Routing Smoke ครบ DRIVING/WALKING/CYCLING. Archived Full Course Container `tuchsanai/devtools:2569_1` evidence ยังเป็น PASS / exit code 0 พร้อม E2E **16/16** จาก evidence revision ก่อนหน้า จึงควรรัน current 21-test suite ใน Course Container อีกครั้งก่อนแทนที่ final submission evidence. Navigation Redesign เสร็จ 5/5 Phase แล้ว; blockers ที่เหลือคือ Jenkins job run จริง, Course Container evidence refresh, รายชื่อทีมจริง และ final Slide/Report/Video
+ผู้ใช้จะทดสอบ source ที่ปรับครั้งนี้เอง จึงยังไม่ประกาศว่าผ่าน full verification / delivery ดูสถานะปัจจุบันที่ `docs/verification/final-status.md`
 
 ## Core MVP
 
@@ -76,16 +76,26 @@ PawFeed/
 
 ## Environment Variables
 
-ค่าที่ระบบจะใช้ในอนาคตถูกกำหนดชื่อไว้เบื้องต้นใน `.env.example`
+ค่าตั้งต้นอยู่ใน `.env.example` สคริปต์เริ่มระบบสร้าง `.env` และสุ่ม JWT secret / DB password เมื่อยังไม่มี config โดยไม่เขียนทับ secret เดิม
 
 ห้าม Commit `.env`, Password, Token, Secret หรือข้อมูลอ่อนไหวจริงเข้า Repository
 
 ## Quick Start
 
-ต้องมี Docker + Docker Compose เท่านั้นสำหรับ runtime หลัก
+ต้องมี Git, Docker ที่เปิด Linux containers และ Docker Compose v2.24+ ไม่ต้องลง Node.js บนเครื่องสำหรับ Quick Start
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/67070119/PawFeed.git
+cd PawFeed
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1
+```
+
+Linux/macOS/WSL จาก root repository:
 
 ```bash
-./scripts/start.sh
+sh scripts/start.sh
 ```
 
 เปิดระบบที่:
@@ -94,10 +104,12 @@ PawFeed/
 http://localhost:3000
 ```
 
-ตรวจ health/smoke:
+อีเมลรีเซ็ตรหัสผ่านสำหรับ Demo อ่านได้ที่ `http://localhost:8025` ผ่าน Mailpit ไม่ต้องตั้ง Gmail ส่วนตัว หากมี `.env` เดิมที่ตั้ง Gmail ไว้ ให้ดูวิธีสลับในคู่มือ
+
+ตรวจ health/smoke บน Linux/macOS/WSL:
 
 ```bash
-./scripts/smoke-test.sh
+sh scripts/smoke-test.sh
 ```
 
 ตรวจ persistence แบบสร้างข้อมูลจริงและ restart containers:
@@ -109,16 +121,40 @@ http://localhost:3000
 หยุดระบบโดยไม่ลบข้อมูล:
 
 ```bash
-./scripts/stop.sh
+docker compose down
 ```
 
 ลบ environment และ named volumes แบบตั้งใจเท่านั้น:
 
 ```bash
-./scripts/reset.sh --yes
+docker compose down -v --remove-orphans
 ```
 
 ## DevTools Delivery Requirements
+
+**คู่มือหลัก:** [Clone / Docker / Course Container / Jenkins / Docker Hub / Evidence](docs/devops/handoff.md)
+
+Course verification บน Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1
+```
+
+Linux/macOS/WSL:
+
+```bash
+sh scripts/course-container-test.sh
+```
+
+รวม Browser E2E โดย default แล้ว ไม่ใช้ `.env` ส่วนตัว ผลล่าสุดอยู่ใน `.ci/results/` และล้างเฉพาะกล่องทดสอบชั่วคราว
+
+เปิด Jenkins ของโครงการ:
+
+```bash
+docker compose -f jenkins/docker-compose.yml up -d --build
+```
+
+เปิด `http://localhost:8080` และตั้ง admin, node label `pawfeed-docker`, Pipeline from SCM และ Docker Hub credential ตามคู่มือ Pipeline ตรวจใน Course Container ก่อน publish images ที่ติด tag เป็น commit SHA และ deploy ในกล่อง `pawfeed-course-demo` แยกจาก CI; default `DELIVER=false` ตรวจอย่างเดียว
 
 ระบบรุ่นส่งต้องรองรับอย่างน้อย:
 

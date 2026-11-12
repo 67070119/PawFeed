@@ -14,6 +14,11 @@ services:
       ROUTING_BASE_URL: http://routing-mock:8080
       ROUTING_TIMEOUT_MS: 3000
       ROUTING_RETRIES: 0
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_AUTH_REQUIRED: "false"
+      SMTP_USER: ""
+      SMTP_PASS: ""
     depends_on:
       routing-mock:
         condition: service_healthy

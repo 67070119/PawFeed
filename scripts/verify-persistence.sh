@@ -1,7 +1,10 @@
 #!/usr/bin/env sh
 set -eu
 
-BASE_URL=${BASE_URL:-http://127.0.0.1:3000}
+ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "$ROOT"
+FRONTEND_BIND=$(docker compose port frontend 3000 | head -n 1)
+BASE_URL=${BASE_URL:-http://127.0.0.1:${FRONTEND_BIND##*:}}
 TMP_DIR=$(mktemp -d)
 COOKIE_JAR="$TMP_DIR/cookies.txt"
 IMAGE_FILE="$TMP_DIR/persist.png"
@@ -44,7 +47,7 @@ curl -fsS -b "$COOKIE_JAR" -X POST "$BASE_URL/api/points/$POINT_ID/reports" \
 echo "Created persistence fixture: $POINT_ID"
 
 docker compose restart postgres backend frontend >/dev/null
-"$(dirname "$0")/smoke-test.sh"
+sh "$ROOT/scripts/smoke-test.sh"
 
 DETAIL_RESPONSE=$(curl -fsS "$BASE_URL/api/points/$POINT_ID")
 printf '%s' "$DETAIL_RESPONSE" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s);if(!j.success)process.exit(2);const p=j.data;if(p.id!==process.argv[1])process.exit(3);if(!Array.isArray(p.feedings)||p.feedings.length<1)process.exit(4);if(!Array.isArray(p.reports)||p.reports.length<1)process.exit(5);})" "$POINT_ID"

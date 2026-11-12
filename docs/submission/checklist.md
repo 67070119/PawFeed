@@ -8,7 +8,8 @@
 - [x] Persistent PostgreSQL + Upload volumes
 - [x] Automated Unit / Integration / E2E tests
 - [x] Jenkinsfile
-- [x] Course Container `tuchsanai/devtools:2569_1` full verification
+- [ ] Course Container `tuchsanai/devtools:2569_1` full verification from final committed revision
+- [ ] Jenkins `DELIVER=true`: publish SHA-tagged images + persistent course deployment + smoke evidence
 - [ ] Jenkins successful pipeline run evidence
 - [ ] Jenkins intentional-failure pipeline evidence
 - [ ] Push final commits to GitHub
@@ -41,7 +42,9 @@
 ก่อนส่งให้รันอย่างน้อย:
 
 ```bash
-COURSE_RUN_E2E=1 ./scripts/course-container-test.sh
+sh scripts/course-container-test.sh
 ```
 
 และ Jenkins job จริงต้องมีทั้ง successful run และ controlled failing run เพื่อปิด `REQ-NFR-DEVOPS-003/004`
+
+ดูขั้นตอน Windows/Jenkins/Docker Hub ใน `docs/devops/handoff.md` ผล local snapshot หรือ dirty working tree ไม่แทนผลจาก commit สุดท้าย ส่วน Slide/Report/Video ยังไม่ทำในงานปรับ DevOps ครั้งนี้
