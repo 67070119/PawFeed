@@ -1,186 +1,96 @@
 # PawFeed — คู่มือสำหรับผู้ตรวจ
 
-PawFeed คือเว็บแผนที่แบ่งปันตำแหน่งสัตว์จรจัดและบันทึกการให้อาหาร สำหรับ Mini Project วิชา DevTools ธีม PetTech ระบบประกอบด้วย Next.js frontend, Express backend, PostgreSQL และ Mailpit สำหรับรับอีเมล Demo
+PawFeed คือเว็บแผนที่แบ่งปันตำแหน่งสัตว์จรจัดและบันทึกการให้อาหาร สำหรับ Mini Project วิชา DevTools ธีม PetTech
 
-## วิธีหลัก: ใช้ image ของรายวิชา
+## 1. เริ่มใช้งาน: clone แล้วรันสคริปต์เดียวใน image อาจารย์
 
-**ให้เริ่มด้วย `tuchsanai/devtools:2569_1` ตามข้อ 1** แล้ว clone source, รันทดสอบและเปิดเว็บภายในกล่องนั้น การรัน Docker Compose บนเครื่องโดยตรงอยู่ท้ายคู่มือเป็นแผนสำรอง
-
-| ลำดับ | วิธี | ผลที่ได้ | Docker Hub token |
-|---|---|---|---|
-| 1 | [Course Container — วิธีหลัก](#1-วิธีหลัก-course-container-ของรายวิชา) | ทดสอบใน image อาจารย์ และเปิดเว็บค้างที่พอร์ต 3400 | ไม่ต้องใช้ |
-| 2 | [Jenkins CI/CD](#2-ตรวจ-cicd-ด้วย-jenkins) | ตรวจใน Course Container ก่อน Publish/Deploy เมื่อเปิด delivery | โหมดตรวจอย่างเดียวไม่ใช้; Publish/Deploy ใช้ token ของผู้รัน |
-| 3 | [Docker บนเครื่อง — แผนสำรอง](#3-แผนสำรอง-รันบน-docker-ของเครื่องโดยตรง) | ทดลองเว็บพอร์ต 3000 หาก Course Container ใช้งานไม่ได้ | ไม่ต้องใช้ |
-
-ยังต้อง clone เพื่อรับ source แต่ในวิธีหลัก **clone ภายใน image อาจารย์** ไม่ต้อง clone ลง host ก่อน และไม่ต้องใช้ `.env` ส่วนตัวของผู้พัฒนา
-
-## สิ่งที่ต้องเตรียม
-
-- Docker Desktop ที่เปิด **Linux containers** หรือ Docker Engine ที่อนุญาต privileged/Docker-in-Docker
-- Internet สำหรับดึง image/source/dependencies และใช้งาน OpenStreetMap tiles / public routing
-- Terminal บน host: PowerShell หรือ Linux/macOS terminal ที่สั่ง `docker` ได้
-- Docker Compose v2.24+ บน host สำหรับส่วน Jenkins/แผนสำรอง; Docker Desktop มี Compose plugin มาให้
-- Git บน host ใช้เฉพาะกรณี clone ลงเครื่องสำหรับ Jenkins/แผนสำรอง ส่วนวิธีหลักใช้ Git ที่มีใน Course image
-
-ไม่ต้องลง Node.js, npm, PostgreSQL หรือ Java บน host สำหรับวิธีหลัก การตรวจครั้งแรกดาวน์โหลดหลาย images/dependencies จึงควรเผื่อเวลา พื้นที่ disk และหน่วยความจำ Docker ให้เพียงพอ
-
-หาก PowerShell หา `docker` ไม่เจอ ให้เปิด terminal ใหม่หลังติดตั้ง หรือเพิ่ม PATH ของ Docker Desktop ในหน้าต่างนั้น:
+**วิธีหลักสำหรับผู้ตรวจ:** ติดตั้ง Git และเปิด Docker Desktop แบบ Linux containers ให้พร้อม จากนั้นรันใน PowerShell:
 
 ```powershell
-$env:PATH = "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin;$env:ProgramFiles\Docker\Docker\resources\bin;$env:PATH"
+git clone https://github.com/67070119/PawFeed.git
+cd PawFeed
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-start.ps1
 ```
 
-## 1. วิธีหลัก: Course Container ของรายวิชา
+รอคำสั่งจบแล้วเปิด **[http://localhost:3400](http://localhost:3400)** สมัครสมาชิกใหม่และทดลองระบบได้เลย ไม่มีบัญชีตั้งต้น
 
-### 1.1 เปิด image อาจารย์ก่อน — คำสั่งบน host
+**การ clone เป็นการรับ source เท่านั้น** สคริปต์จะเปิด `tuchsanai/devtools:2569_1`, เปิด Docker ภายในกล่อง แล้ว copy/build/run แอปทั้งหมดภายใน image อาจารย์ให้เอง ไม่ต้องเข้าไปสั่งงานในกล่องหรือเปิด Jenkins ก่อน
 
-เปิด Docker Desktop แล้วรันสองคำสั่งนี้บน PowerShell หรือ Linux/macOS terminal คำสั่ง `docker run` ด้านล่างเป็นบรรทัดเดียว:
+สำหรับ Linux/macOS/WSL ที่ใช้ Docker ได้:
 
 ```bash
-docker pull tuchsanai/devtools:2569_1
-docker run -d --privileged --name pawfeed-course-review --restart unless-stopped -p 127.0.0.1:3400:3000 -p 127.0.0.1:3401:3001 -p 127.0.0.1:8425:8025 -v pawfeed-course-review-docker:/var/lib/docker -v pawfeed-course-review-workspace:/workspace --entrypoint sh tuchsanai/devtools:2569_1 -c "dockerd > /var/log/dockerd.log 2>&1 & exec tail -f /dev/null"
-docker exec -it pawfeed-course-review bash
+git clone https://github.com/67070119/PawFeed.git
+cd PawFeed
+sh scripts/course-start.sh
 ```
 
-หลัง `docker exec` จะอยู่ใน Bash ของ Course Container คำสั่งในข้อ 1.2–1.5 ให้รัน **ภายในกล่องนี้** ส่วน browser ยังคงเปิดบน host
+### สิ่งที่สคริปต์เตรียมให้
 
-ครั้งต่อไปถ้ามี container ชื่อนี้แล้ว ใช้ `docker start pawfeed-course-review` และ `docker exec -it pawfeed-course-review bash` แทนการ `docker run` ซ้ำ หากพอร์ต 3400/3401/8425 มีบริการอื่นใช้ ให้เลือกพอร์ต host ที่ว่างก่อนสร้างกล่อง พร้อมแก้ URL ในข้อ 1.4–1.5 ให้ตรงกัน
+1. สร้าง persistent Course Container ชื่อ `pawfeed-course-source` ด้วย image รายวิชา
+2. คัดลอก source เข้าไป โดยไม่ใช้ `.env` ส่วนตัว, node_modules, uploads หรือ build outputs ของผู้พัฒนา
+3. สร้าง config และสุ่ม JWT secret/DB password ภายในกล่อง
+4. Build และเปิด frontend, backend, PostgreSQL และ Mailpit ภายใน Docker ของ Course Container
+5. รัน migrations และรอ health/smoke checks แล้วเปิดเว็บค้างให้ทดลอง
 
-### 1.2 Clone source ภายในกล่องและรันทดสอบ
-
-**ภายใน Course Container:**
-
-```bash
-cd /workspace
-git clone https://github.com/67070119/PawFeed.git PawFeed
-cd /workspace/PawFeed
-docker info
+```text
+เครื่องผู้ตรวจ: clone source → รัน course-start
+└── tuchsanai/devtools:2569_1 (pawfeed-course-source)
+    └── Docker Compose: frontend + backend + PostgreSQL + Mailpit
 ```
 
-ถ้า Docker daemon ภายในกำลังเริ่ม ให้รอสักครู่แล้วเรียก `docker info` จนแสดงข้อมูล server หากมี repository นี้อยู่แล้ว ให้ใช้ checkout เดิมที่ต้องการตรวจและไม่ต้อง clone ทับ
+ไม่ต้องติดตั้ง Node.js/npm/PostgreSQL บนเครื่อง ไม่ต้องให้ `.env` หรือ secret ของผู้พัฒนา และไม่ต้องใช้ Docker Hub token คำสั่งนี้เปิดเว็บพร้อม health checks โดยไม่รัน Unit/Integration/E2E suite หรือ Publish images
 
-เตรียมข้อมูล revision และรันชุดตรวจ:
+### URL และการทดลองระบบ
 
-```bash
-export SOURCE_REVISION="$(git rev-parse HEAD)"
-export SOURCE_STATE="$(if [ -z "$(git status --porcelain)" ]; then echo clean; else echo dirty; fi)"
-export COURSE_IMAGE=tuchsanai/devtools:2569_1
-bash scripts/course-verify.sh
-```
-
-ลำดับตรวจคือ generated config → Install/Prisma → Lint → Unit → Integration → Build → Security Audit → Compose build/start → Health/Smoke → Persistence หลัง restart → Browser E2E → Cleanup
-
-คำสั่งนี้เป็น **การรันชุดทดสอบ** ผลอยู่ที่ `/workspace/PawFeed/.ci/results/` เมื่อจบจะเก็บกวาด containers/volumes ของชุดทดสอบ โดย Course Container ชั้นนอกยังอยู่ และยังไม่เปิดเว็บ Demo ค้างไว้
-
-ก่อนรันชุดทดสอบซ้ำ หากเปิดเว็บจากข้อ 1.4 อยู่ ให้หยุดแอป Demo ด้านในก่อนเพื่อไม่ให้แย่งพอร์ต โดยรักษาข้อมูล Demo ไว้:
-
-```bash
-docker compose -p pawfeed-course-review-app down
-```
-
-### 1.3 รันชุดทดสอบพร้อม Public routing จริง
-
-**ภายใน Course Container** จาก `/workspace/PawFeed` และเตรียม revision ตามข้อ 1.2 แล้ว:
-
-```bash
-COURSE_RUN_LIVE_ROUTING=1 bash scripts/course-verify.sh
-```
-
-นี่คือ **ชุดทดสอบเดิมทั้งชุดพร้อมเพิ่ม Public routing DRIVING/WALKING/CYCLING** ไม่ใช่คำสั่งเปิดเว็บค้าง และไม่ใช่การรัน routing gate อย่างเดียว ต้องใช้ Internet และ public provider พร้อมให้บริการ
-
-ชุด E2E ใช้ routing mock เพื่อทำซ้ำและจำลอง error ส่วน gate `live-routing` ตรวจ public provider จริง เมื่อผ่านครบ `summary.txt` มีทุก gate `exit=0`, `live-routing exit=0` และ `VERIFICATION_PASS`
-
-### 1.4 เปิดเว็บค้างภายใน image อาจารย์
-
-หลังรันทดสอบแล้ว (หรือเมื่อต้องการตรวจเว็บด้วยตนเอง) ให้รัน **ภายใน Course Container**:
-
-```bash
-cd /workspace/PawFeed
-sh scripts/setup.sh
-printf '\nCOMPOSE_PROJECT_NAME=pawfeed-course-review-app\nMAILPIT_BIND_HOST=0.0.0.0\nPUBLIC_FRONTEND_URL=http://localhost:3400\n' >> .env
-sh scripts/start.sh
-```
-
-สคริปต์ build แอปและเปิด Compose ภายใน Docker daemon ของ image อาจารย์ พร้อม migration และ health/smoke checks โดยไม่รัน Unit/Integration/E2E suite ชุดใหม่
-
-ให้เปิด browser **บนเครื่อง host**:
-
-| บริการใน Course Container | URL บน host |
+| บริการที่รันใน Course Container | URL บน browser ของเครื่องผู้ตรวจ |
 |---|---|
 | PawFeed | [http://localhost:3400](http://localhost:3400) |
 | Backend readiness | [http://localhost:3401/health/ready](http://localhost:3401/health/ready) |
 | กล่องอีเมล Mailpit | [http://localhost:8425](http://localhost:8425) |
 
-```text
-Host Docker
-└── pawfeed-course-review (tuchsanai/devtools:2569_1)
-    └── Docker Compose: frontend + backend + PostgreSQL + Mailpit
-```
+ตัวอย่าง flow: สมัคร/เข้าสู่ระบบ → เพิ่มจุดสัตว์พร้อมตำแหน่งและรูป → Navigation → บันทึกให้อาหาร → ดูประวัติ แผนที่/เส้นทางจริงต้องใช้ Internet; GPS ต้องอนุญาตตำแหน่งใน browser บน localhost หรือ HTTPS
 
-เว็บจะเปิดค้างไว้ ข้อมูลใช้ named volumes ของ Demo แยกจาก `pawfeed-ci` และ `pawfeed-e2e` ที่ใช้ทดสอบ สมัครสมาชิกใหม่ผ่านหน้า Register ได้เลย ไม่มีบัญชีตั้งต้น
+**ทดสอบลืมรหัสผ่าน:** สมัครบัญชี เช่น `reviewer@example.com` → กด Forgot Password ด้วยอีเมลเดียวกัน → เปิด Mailpit พอร์ต 8425 → เปิดอีเมลและกดลิงก์ตั้งรหัสใหม่ → เข้าสู่ระบบด้วยรหัสใหม่
 
-ตัวอย่าง flow: สมัคร/เข้าสู่ระบบ → เพิ่มจุดพร้อมพิกัด/รูป → Navigation → บันทึกให้อาหาร → ดูประวัติ แผนที่/เส้นทางจริงใช้ Internet และ GPS ใน browser ต้องอนุญาตตำแหน่งบน localhost หรือ HTTPS
+Mailpit รับอีเมลจาก backend ภายในชุด Demo โดยไม่ส่งต่อไป Gmail ภายนอก จึงไม่ต้องใช้ Gmail App Password ของผู้พัฒนา หากต้องการส่งออกไป Gmail จริงเพิ่มเติม ให้ผู้รันตั้ง SMTP credentials ของตนเองแยกจาก source
 
-### 1.5 ตรวจลืมรหัสผ่านโดยไม่รับ `.env` ของผู้พัฒนา
+### หยุด เปิดใหม่ และดู logs
 
-1. สมัครบัญชีบน [http://localhost:3400](http://localhost:3400) เช่น `reviewer@example.com` และกำหนดรหัสผ่านของตนเอง
-2. เปิดหน้า Forgot Password แล้วกรอกอีเมลเดียวกับที่สมัคร
-3. เปิด [Mailpit ที่ http://localhost:8425](http://localhost:8425) บน host
-4. เปิดอีเมลของบัญชีนั้นและกดลิงก์ตั้งรหัสผ่านใหม่
-5. ตั้งรหัสใหม่แล้วทดลองเข้าสู่ระบบด้วยรหัสใหม่
-
-**Mailpit เป็น SMTP/inbox ภายในชุด Demo** รับอีเมลจริงจาก backend แต่ไม่ส่งต่อไปกล่อง Gmail ภายนอก จึงไม่ต้องใช้ Gmail App Password, Docker Hub token หรือ secret ของผู้พัฒนา
-
-`.env.example` กำหนด `SMTP_HOST=mailpit`, `SMTP_PORT=1025`, `SMTP_AUTH_REQUIRED=false` ไว้แล้ว `scripts/setup.sh` สร้าง `.env` และสุ่ม JWT secret/DB password บน environment ของผู้ตรวจเอง ให้เก็บไฟล์นั้นไว้กับ volumes ของ environment เดิม ไม่ต้องส่ง `.env` ส่วนตัวมาประกอบการตรวจ
-
-ถ้าลิงก์ในอีเมลชี้พอร์ตผิด ให้ตรวจ `PUBLIC_FRONTEND_URL=http://localhost:3400` ใน `.env` ภายในกล่อง แล้วเรียก `sh scripts/start.sh` อีกครั้ง หากเปลี่ยนพอร์ต host ต้องใช้ URL ใหม่ให้ตรงกัน
-
-หากจะตรวจส่งอีเมลไป Gmail จริงเพิ่มเติม ผู้รันต้องตั้ง SMTP credentials ของตนเองผ่าน environment/config ภายในกล่องที่ตรวจ ค่าดังกล่าวแยกจาก source และไม่ต้อง commit ลง GitHub หรือส่ง secret ของนักศึกษา
-
-### 1.6 หยุด/เปิดใหม่ และนำผลออกจากกล่อง
-
-**ภายใน Course Container** ดูสถานะหรือหยุดเฉพาะแอปโดยรักษาข้อมูล:
+คำสั่งจาก terminal ของเครื่องผู้ตรวจ:
 
 ```bash
-cd /workspace/PawFeed
-docker compose -p pawfeed-course-review-app ps
-docker compose -p pawfeed-course-review-app logs --tail=100
-docker compose -p pawfeed-course-review-app down
+# หยุดและเปิดใหม่ โดยเก็บข้อมูลไว้
+docker stop pawfeed-course-source
+docker start pawfeed-course-source
+
+# ดูสถานะแอปและ logs ภายในกล่อง
+docker exec -w /workspace/PawFeed pawfeed-course-source docker compose -p pawfeed-source-demo ps
+docker exec -w /workspace/PawFeed pawfeed-course-source docker compose -p pawfeed-source-demo logs --tail=100
 ```
 
-เปิดแอปเดิมอีกครั้งด้วย `sh scripts/start.sh` ค่าพอร์ต/URL เก็บใน `.env` แล้ว ส่วนคำสั่ง `down -v` ลบข้อมูลของ Compose project นั้น ใช้เฉพาะเมื่อตั้งใจเริ่มข้อมูลใหม่
+หลังเปิดใหม่ให้รอ Docker daemon และบริการกลับมาพร้อม ข้อมูลอยู่ใน named volumes `pawfeed-course-source-docker` และ `pawfeed-course-source-workspace` หากอัปเดต source ให้เรียก start script เดิมอีกครั้งเพื่อ build รุ่นใหม่ โดยรักษา config/ข้อมูลและเก็บ source copy ก่อนหน้าไว้ใน workspace เพื่อกู้คืนได้
 
-ออกจาก Bash ด้วย `exit` แล้วใช้คำสั่งเหล่านี้ **บน host**:
+### สิ่งที่ต้องมีและกรณีพอร์ตชน
+
+- Git, Docker Desktop แบบ Linux containers หรือ Docker Engine ที่รองรับ privileged/Docker-in-Docker
+- Internet และทรัพยากร Docker เพียงพอสำหรับ Course image/dependencies การเปิดครั้งแรกอาจใช้เวลาจากการดาวน์โหลด/build
+- เปิดจาก root checkout ของ PawFeed; ไม่ต้อง clone หรือ run แอปเองภายในกล่อง
+
+หากต้องการใช้พอร์ตอื่นตั้งแต่ครั้งแรก:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-start.ps1 -WebPort 3500 -ApiPort 3501 -MailPort 8525
+```
 
 ```bash
-# เก็บผลทดสอบจากกล่องไว้บน host
-docker cp pawfeed-course-review:/workspace/PawFeed/.ci/results ./PawFeed-Course-Results
-
-# หยุด/เปิดกล่องโดยรักษาข้อมูล
-docker stop pawfeed-course-review
-docker start pawfeed-course-review
-docker exec -it pawfeed-course-review bash
+COURSE_WEB_PORT=3500 COURSE_API_PORT=3501 COURSE_MAIL_PORT=8525 sh scripts/course-start.sh
 ```
 
-การออกจาก Bash ไม่หยุดกล่อง ข้อมูล Docker/app และ workspace อยู่ใน named volumes `pawfeed-course-review-docker` และ `pawfeed-course-review-workspace` หลังเปิดใหม่ให้รอ daemon/บริการพร้อม ถ้าเคยสั่ง app `down` ให้รัน start script ภายในอีกครั้ง
+สคริปต์ตั้ง URL ของลิงก์อีเมลตาม WebPort ให้เอง หากมี container เดิมอยู่แล้ว port mapping จะคงเดิม เมื่อตั้งใจเปลี่ยนพอร์ตให้ลบเฉพาะ container ด้วย `docker rm -f pawfeed-course-source` แล้วเรียก start script ใหม่ โดยรักษา named volumes ทั้งสองไว้เพื่อเก็บข้อมูล
 
-อ่านผลจาก `.ci/results/provenance.txt`, `summary.txt`, `unit.json`, `integration.json`, `e2e/e2e.xml`, `smoke.log`, `persistence.log` และ `live-routing.log` เมื่อเปิด flag
+อย่าเปิดกล่องอื่นที่ใช้ host ports 3400/3401/8425 พร้อมกัน เช่น `pawfeed-course-review` จากคู่มือ manual รุ่นก่อน สคริปต์ใหม่นี้ใช้พอร์ตแยกจาก Jenkins Demo ที่ 3100/3101/8125
 
-### 1.7 ทางลัดเมื่อมี checkout บน host อยู่แล้ว
-
-หากมี source บน host แล้ว ใช้ scripts ที่สร้าง Course Container และ copy source ให้โดยอัตโนมัติได้ ผลการรันแอป/ทดสอบยังอยู่ภายใน image รายวิชา:
-
-| จุดประสงค์ | Windows PowerShell จาก root checkout |
-|---|---|
-| เปิดเว็บค้าง | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-start.ps1` |
-| ทดสอบทั้งชุด | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1` |
-| ทั้งชุดรวม public routing | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1 -LiveRouting` |
-
-Linux/macOS/WSL ใช้ `sh scripts/course-start.sh`, `sh scripts/course-container-test.sh` หรือ `COURSE_RUN_LIVE_ROUTING=1 sh scripts/course-container-test.sh`
-
-`course-start` เปิดเว็บค้างใน `pawfeed-course-source` ที่พอร์ต 3400/inbox 8425 ส่วน `course-container-test` ใช้กล่องชั่วคราวและลบกล่องนั้นเมื่อจบ จึงไม่ปิด Demo ห้ามเปิด `pawfeed-course-source` และ `pawfeed-course-review` ด้วย host ports ชุดเดียวกันพร้อมกัน
-
-ลำดับ manual/คำสั่งเปิดเว็บค้างในคู่มือส่วนนี้เพิ่มภายหลังหลักฐาน #13/#14 และยังไม่ได้รันยืนยันใหม่ ผลเดิมใน ZIP ยังคงอ้างรอบและ SHA เดิม การแก้คู่มือครั้งนี้ไม่รัน pipeline หรือ test เพิ่ม
+**สถานะคำสั่งนี้:** เพิ่มภายหลังชุดหลักฐาน #13/#14 และยังไม่ได้รันยืนยันใหม่ในการปรับคู่มือครั้งนี้ ผลเดิมใน ZIP ยังคงอ้าง source SHA เดิม ไม่มีการรัน pipeline หรือ test เพิ่ม
 
 ## 2. ตรวจ CI/CD ด้วย Jenkins
 
@@ -263,11 +173,59 @@ Pipeline ตรวจให้ผ่านก่อน Publish images ที่�
 
 Pipeline ตั้ง Git polling ประมาณทุก 5 นาที เมื่อพบ revision ใหม่จะเริ่มตรวจอัตโนมัติ การเปิด delivery ใช้ `DELIVER=true` หรือ `PAWFEED_AUTO_DELIVER=true`; namespace ที่เว้นว่างในฟอร์มจะใช้ `PAWFEED_DOCKERHUB_NAMESPACE` แทน
 
-## 3. แผนสำรอง: รันบน Docker ของเครื่องโดยตรง
+## 3. รันทดสอบอัตโนมัติใน Course Container (เพิ่มเติม)
+
+ส่วนนี้ใช้เมื่อผู้ตรวจต้องการรัน automated verification เลือกแบบที่ต้องการจากสองข้อด้านล่าง การเปิดเว็บทดลองตามข้อ 1 ไม่ต้องรันคำสั่งเหล่านี้ก่อน
+
+### 3.1 ชุดตรวจหลัก
+
+จาก root checkout บนเครื่องผู้ตรวจ:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1
+```
+
+Linux/macOS/WSL:
+
+```bash
+sh scripts/course-container-test.sh
+```
+
+สคริปต์สร้าง Course Container ชั่วคราวและทำ Install/Prisma → Lint → Unit → Integration → Build → Security Audit → Compose → Smoke → Persistence → Browser E2E → Cleanup
+
+### 3.2 ชุดเดิมพร้อม Public routing จริง
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-container-test.ps1 -LiveRouting
+```
+
+Linux/macOS/WSL:
+
+```bash
+COURSE_RUN_LIVE_ROUTING=1 sh scripts/course-container-test.sh
+```
+
+รันชุดทดสอบทั้งหมดเหมือนข้อ 3.1 และเพิ่ม public routing DRIVING/WALKING/CYCLING ไม่ใช่การรัน routing อย่างเดียว E2E ใช้ routing mock สำหรับทำซ้ำ/จำลองข้อผิดพลาด ส่วน gate `live-routing` เชื่อมต่อ public provider จริง
+
+ทั้งสองคำสั่งเป็น **การทดสอบแล้วเก็บกวาดกล่องชั่วคราว** ไม่เปิดเว็บค้างและไม่ลบ `pawfeed-course-source` ที่เปิดตามข้อ 1 ไม่เรียก Jenkins หรือ Publish images
+
+### อ่านผล
+
+ผลล่าสุดอยู่ใน `.ci/results/` บนเครื่องผู้ตรวจ ผลรอบก่อนถูกย้ายเป็น `.ci/results-.../` เช่น:
+
+- `provenance.txt`: source SHA, clean/dirty state, Course image และเวลา
+- `course-image.txt`: image identity
+- `summary.txt`: exit code ของ gates และ `VERIFICATION_PASS` เมื่อผ่านครบ
+- `unit.json`, `integration.json`, `e2e/e2e.xml`: test reports
+- `smoke.log`, `persistence.log`, `live-routing.log` เมื่อเปิด flag
+
+คำสั่งส่งต่อ exit code ล้มเหลวจริงเมื่อมี gate fail ใช้ log ของขั้นนั้นวินิจฉัย และระบุ SHA ที่ตรวจจริงเมื่ออ้างผล
+
+## 4. แผนสำรอง: รันบน Docker ของเครื่องโดยตรง
 
 วิธีนี้ใช้เมื่อ environment ของเครื่องผู้ตรวจไม่สามารถเปิด Course Container ได้ เป็นแผนสำรองสำหรับทดลองเว็บ ส่วนผลตรวจอย่างเป็นทางการยังต้องอ้างอิง Course Container/หลักฐานที่แนบหรือประสานผู้สอนเรื่อง environment
 
-### 3.1 Clone และเริ่มระบบ
+### 4.1 Clone และเริ่มระบบ
 
 **Windows PowerShell** — เปิด Docker Desktop ให้พร้อม แล้วรัน:
 
@@ -295,7 +253,7 @@ sh scripts/start.sh
 
 ค่าที่ตั้งไว้แล้วใน `.env` จะถูกเก็บไว้ ไม่ต้องคัดลอก `.env` ของผู้พัฒนาหรือตั้ง Gmail ส่วนตัวสำหรับ Demo
 
-### 3.2 เปิดเว็บและทดลองใช้งาน
+### 4.2 เปิดเว็บและทดลองใช้งาน
 
 | บริการ | URL เริ่มต้น |
 |---|---|
@@ -315,7 +273,7 @@ sh scripts/start.sh
 
 Mailpit รับอีเมลไว้ในเครื่องสำหรับ Demo จึงใช้ที่อยู่อีเมลทดสอบของตนเองได้ โดยอีเมลไม่ได้ถูกส่งออกไปยัง Gmail จริง แผนที่และการคำนวณเส้นทางจริงต้องเชื่อมต่อ Internet ส่วน GPS ใน browser ต้องอนุญาตตำแหน่งและใช้ localhost หรือ HTTPS
 
-### 3.3 ดูสถานะ หยุด และเปิดใหม่
+### 4.3 ดูสถานะ หยุด และเปิดใหม่
 
 คำสั่งต่อไปนี้ใช้ได้ทั้ง PowerShell และ Linux terminal:
 
@@ -341,7 +299,7 @@ docker compose down -v --remove-orphans
 
 คำสั่งที่มี `-v` ลบข้อมูลใน volumes ของ Compose project นี้ รวม DB, รูป และ inbox ส่วนคำสั่ง `down` ปกติเก็บข้อมูลไว้
 
-### 3.4 เปลี่ยนพอร์ตหรือแก้การเริ่มระบบ
+### 4.4 เปลี่ยนพอร์ตหรือแก้การเริ่มระบบ
 
 หากพอร์ตชน หลังสคริปต์สร้าง `.env` แล้วให้แก้ `FRONTEND_PORT`, `BACKEND_PORT`, `MAILPIT_PORT` ในไฟล์นั้น เช่น `3300`, `3301`, `8325` แล้วเรียก start script อีกครั้ง ใช้ URL ตามพอร์ตใหม่
 
