@@ -190,7 +190,9 @@ Demo หลัง pipeline สำเร็จ: http://localhost:3100, อีเ�
 docker compose --env-file jenkins/.env -f jenkins/docker-compose.yml up -d --build
 ```
 
-กด Build with Parameters อีกหนึ่งครั้งด้วย `DELIVER=true` และ namespace ถูกต้องเพื่อโหลด default ใหม่ หลังจากนั้น Git polling ที่พบ commit ใหม่จะใช้ค่า default สำหรับส่งมอบโดยอัตโนมัติ ตรวจหน้า parameters ว่า DELIVER ถูกเลือกและ namespace ถูกต้องก่อนใช้จริง หากยังตั้ง `PAWFEED_AUTO_DELIVER=false` รอบที่ trigger อัตโนมัติจะตรวจอย่างเดียว
+Pipeline อ่านค่าจาก environment ใน Checkout stage ขณะรัน ไม่ใช้ expression เป็น default ของ Declarative parameters ค่า default ในหน้า Build with Parameters จึงยังเป็น `DELIVER=false` และ namespace ว่าง แต่ถ้า `PAWFEED_AUTO_DELIVER=true` จะเปิดส่งมอบโดยอัตโนมัติ และ namespace ว่างจะใช้ `PAWFEED_DOCKERHUB_NAMESPACE` ดู Console Output ที่บรรทัด `Delivery enabled: true` เพื่อยืนยันโหมด
+
+Git polling ที่พบ commit ใหม่จะใช้ค่าตั้งต้นเหล่านี้ หากต้องการตรวจอย่างเดียว ต้องตั้ง `PAWFEED_AUTO_DELIVER=false` สร้าง Jenkins container ใหม่ด้วยคำสั่งเดิม และไม่เลือก `DELIVER` ตอนกดรัน หากยังตั้ง auto เป็น true การไม่เลือก DELIVER เพียงอย่างเดียวจะไม่ปิดการส่งมอบ
 
 หาก port 3100/3101/8125 ชน ให้เปลี่ยน parameter **ก่อน deploy ครั้งแรก** หากมี Demo container เดิมแล้ว script จะปฏิเสธ port ใหม่เพื่อไม่ทำลาย environment เดิม ถ้าตั้งใจเปลี่ยน port ให้หยุดและลบเฉพาะ container `docker rm -f pawfeed-course-demo` แล้ว build ใหม่ โดยรักษา volumes `pawfeed-course-demo-docker` และ `pawfeed-course-demo-workspace` ไว้
 

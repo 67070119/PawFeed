@@ -9,8 +9,8 @@ pipeline {
   }
   triggers { pollSCM('H/5 * * * *') }
   parameters {
-    booleanParam(name: 'DELIVER', defaultValue: (env.PAWFEED_AUTO_DELIVER ?: 'false').toBoolean(), description: 'Publish tested images to Docker Hub and deploy inside a persistent course container. Required for final delivery evidence.')
-    string(name: 'REGISTRY_NAMESPACE', defaultValue: (env.PAWFEED_DOCKERHUB_NAMESPACE ?: ''), description: 'Docker Hub username or organization (no URL)')
+    booleanParam(name: 'DELIVER', defaultValue: false, description: 'Publish/deploy this run. PAWFEED_AUTO_DELIVER=true also enables delivery automatically.')
+    string(name: 'REGISTRY_NAMESPACE', defaultValue: '', description: 'Docker Hub username or organization (no URL); blank uses PAWFEED_DOCKERHUB_NAMESPACE')
     string(name: 'REGISTRY_CREDENTIALS_ID', defaultValue: 'dockerhub-pawfeed', description: 'Jenkins Username/Password credential ID; password is a Docker Hub access token')
     booleanParam(name: 'FAILURE_DEMO', defaultValue: false, description: 'Insert a failing unit test in the disposable course copy; Publish/Deploy must be skipped')
     booleanParam(name: 'LIVE_ROUTING', defaultValue: false, description: 'Also verify the real external routing provider; requires provider availability')
@@ -33,11 +33,13 @@ pipeline {
           env.SOURCE_STATE = 'clean'
           env.CI_FAILURE_DEMO = params.FAILURE_DEMO.toString()
           env.COURSE_RUN_LIVE_ROUTING = params.LIVE_ROUTING ? '1' : '0'
-          env.REGISTRY_NAMESPACE = params.REGISTRY_NAMESPACE.trim()
+          // Resolve dynamic configuration at runtime, outside Declarative parameters.
+          env.DELIVERY_ENABLED = (params.DELIVER || env.PAWFEED_AUTO_DELIVER == 'true').toString()
+          env.REGISTRY_NAMESPACE = params.REGISTRY_NAMESPACE?.trim() ?: (env.PAWFEED_DOCKERHUB_NAMESPACE ?: '').trim()
           env.DEPLOY_FRONTEND_PORT = params.DEPLOY_FRONTEND_PORT
           env.DEPLOY_BACKEND_PORT = params.DEPLOY_BACKEND_PORT
           env.DEPLOY_MAILPIT_PORT = params.DEPLOY_MAILPIT_PORT
-          if (params.DELIVER && !(env.REGISTRY_NAMESPACE ==~ /[a-z0-9][a-z0-9_-]*/)) {
+          if (env.DELIVERY_ENABLED == 'true' && !(env.REGISTRY_NAMESPACE ==~ /[a-z0-9][a-z0-9_-]*/)) {
             error('DELIVER requires a valid Docker Hub namespace')
           }
           def ports = [params.DEPLOY_FRONTEND_PORT, params.DEPLOY_BACKEND_PORT, params.DEPLOY_MAILPIT_PORT]
@@ -47,7 +49,8 @@ pipeline {
             }
           }
           if (ports.toSet().size() != 3) { error('Deployment ports must be distinct') }
-          currentBuild.description = "${env.SOURCE_REVISION.take(12)} / ${params.DELIVER ? 'delivery' : 'verification only'}"
+          currentBuild.description = "${env.SOURCE_REVISION.take(12)} / ${env.DELIVERY_ENABLED == 'true' ? 'delivery' : 'verification only'}"
+          echo "Delivery enabled: ${env.DELIVERY_ENABLED}"
         }
       }
     }
@@ -64,7 +67,7 @@ pipeline {
       }
     }
     stage('Publish Tested Images') {
-      when { expression { params.DELIVER } }
+      when { expression { env.DELIVERY_ENABLED == 'true' } }
       steps {
         withCredentials([usernamePassword(credentialsId: params.REGISTRY_CREDENTIALS_ID, usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
           sh '''
@@ -75,7 +78,7 @@ pipeline {
       }
     }
     stage('Deploy and Verify in Course Container') {
-      when { expression { params.DELIVER } }
+      when { expression { env.DELIVERY_ENABLED == 'true' } }
       steps {
         withCredentials([usernamePassword(credentialsId: params.REGISTRY_CREDENTIALS_ID, usernameVariable: 'REGISTRY_USERNAME', passwordVariable: 'REGISTRY_PASSWORD')]) {
           sh '''
