@@ -359,5 +359,3 @@ git checkout --detach 185336097f42445c3d08fad69b1efdbb2920af4a
 | Evidence / Submission | [Evidence Register](docs/evidence/README.md), [Submission Checklist](docs/submission/checklist.md) |
 | Project / Team / AI usage | [Problem](docs/project/problem-evidence.md), [Target Users](docs/project/target-users.md), [Social Impact](docs/project/social-impact.md), [Team](docs/project/team-network.md), [Sustainability](docs/project/sustainability.md), [AI Usage](docs/project/ai-usage.md) |
 | Development | [Backend](backend/README.md), [Frontend](frontend/README.md), [Docker](docs/devops/docker.md), [Jenkins](docs/devops/jenkins.md) |
-
-รายการก่อนส่งที่ยังเหลือ ได้แก่ ชื่อสมาชิก/หน้าที่จริง, หลักฐานปัญหา/ผู้ใช้และการประเมินผลกระทบ, Slide, Report ประมาณ 20 หน้า, Video ประมาณ 20 นาทีรวม Demo, การซ้อมและตรวจสิทธิ์ไฟล์ส่ง ติดตามที่ [Submission Checklist](docs/submission/checklist.md)
