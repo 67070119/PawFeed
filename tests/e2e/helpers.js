@@ -1,3 +1,5 @@
+import { expect } from '@playwright/test';
+
 export async function registerAndLogin(page, label = 'e2e') {
   const email = `${label}-${Date.now()}-${Math.floor(Math.random() * 100000)}@example.com`;
   const password = 'Passw0rd123';
@@ -38,16 +40,23 @@ export async function fillCreatePointForm(page, {
   description,
   count = '1',
   animalType = 'DOG',
+  customAnimal,
   image = pngFile,
   startTime,
   endTime,
 } = {}) {
   await selectCreatePointLocation(page);
   await page.getByLabel(/จำนวนโดยประมาณ/).fill(String(count));
-  await page.getByLabel(/ประเภทสัตว์/).selectOption(animalType);
+  const animalNames = { DOG: /สุนัข/, CAT: /แมว/, OTHER: /สัตว์อื่น/ };
+  if (!animalNames[animalType]) throw new Error(`Unsupported animal type: ${animalType}`);
+  const animalOption = page.getByRole('radiogroup', { name: 'เลือกประเภทสัตว์' })
+    .getByRole('radio', { name: animalNames[animalType] });
+  await animalOption.click();
+  await expect(animalOption).toHaveAttribute('aria-checked', 'true');
+  if (customAnimal != null) await page.getByLabel('ระบุชนิดสัตว์ที่พบ').fill(customAnimal);
   if (description != null) await page.getByLabel(/คำอธิบาย/).fill(description);
-  if (startTime != null) await page.getByLabel('เริ่ม').fill(startTime);
-  if (endTime != null) await page.getByLabel('ถึง').fill(endTime);
+  if (startTime != null) await page.getByRole('textbox', { name: 'เวลาเริ่ม', exact: true }).fill(startTime);
+  if (endTime != null) await page.getByRole('textbox', { name: 'เวลาสิ้นสุด', exact: true }).fill(endTime);
   if (image) await page.locator('input[type="file"]').setInputFiles(image);
 }
 

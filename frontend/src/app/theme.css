@@ -5958,5 +5958,31 @@ body { min-height:100dvh; }
   box-shadow: 0 0 10px rgba(208, 154, 101, 0.2);
 }
 
+/* Keep the register action in view on short, narrow phones without overlaying inputs. */
+@media (max-width:350px) and (max-height:640px) {
+  .authPanel {
+    padding-top:4px;
+  }
+  .authCardRegister > .eyebrow {
+    padding-block:3px;
+    font-size:11px;
+  }
+  .authCardRegister h1 {
+    margin-top:6px;
+    margin-bottom:4px;
+  }
+  .authCardRegister .authFieldGap {
+    margin-top:3px;
+  }
+  .authCardRegister .passwordRequirements li {
+    min-height:36px;
+    padding-block:3px;
+  }
+  .authCardRegister .authSubmit {
+    min-height:44px;
+    margin-top:6px;
+  }
+}
+
 
 

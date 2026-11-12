@@ -86,7 +86,7 @@ sh scripts/course-container-test.sh
 
 ค่า default รัน E2E ด้วยแล้ว ลำดับคือ clean source bundle → Course Container (privileged) → Docker-in-Docker → generated test config → Install/Prisma → Lint → Unit → Integration → Build → Audit → Compose → Smoke → Persistence → Browser E2E → Cleanup
 
-ไม่คัดลอก `.env`, `.env.*`, `.git`, dependencies, uploads, build outputs หรือ evidence เก่าจากเครื่องพัฒนา แต่คัดลอก `.env.example` แยกเพื่อสร้าง config ใหม่ อ่านผลที่ `.ci/results/summary.txt`, provenance, logs และ E2E XML/screenshots/traces สคริปต์ส่ง exit code ที่ล้มเหลวออกมาจริง แม้จะเก็บ logs/cleanup แล้ว ก่อนแชร์ trace ของ failed auth/email test ให้ตรวจและปิดบัง session/reset tokens หรือข้อมูลผู้ใช้ที่อาจอยู่ใน network trace
+ไม่คัดลอก `.env`, `.env.*`, `.git`, dependencies, uploads, build outputs หรือ evidence เก่าจากเครื่องพัฒนา แต่คัดลอก `.env.example` แยกเพื่อสร้าง config ใหม่ อ่านผลที่ `.ci/results/summary.txt`, provenance, logs และ E2E XML สคริปต์ส่ง exit code ที่ล้มเหลวออกมาจริง แม้จะเก็บ logs/cleanup แล้ว ปิด screenshot, video และ trace ของ Playwright ตามความต้องการไม่สร้างภาพ หลักฐานใช้ข้อความและ JUnit reports
 
 แต่ละรอบเก็บผลล่าสุดที่ `.ci/results/` และย้ายผลรอบก่อนเป็น `.ci/results-.../` ให้ตรวจ `provenance.txt`: `source` คือ HEAD, `state=dirty` หมายถึงมีการแก้ที่ยังไม่ commit จึงยังใช้เป็นหลักฐาน final commit ไม่ได้
 

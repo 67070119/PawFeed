@@ -14,7 +14,9 @@ export default defineConfig({
   use: {
     baseURL,
     headless: true,
-    trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
+    // Keep text/JUnit evidence without generating screenshots, videos or traces.
+    trace: 'off',
+    screenshot: 'off',
+    video: 'off',
   },
 });
