@@ -7,7 +7,7 @@ PawFeed คือเว็บแผนที่แบ่งปันตำแห
 | วิธี | เหมาะสำหรับ | ผลที่ได้ | Docker Hub token |
 |---|---|---|---|
 | [1. รันเว็บปกติจาก source](#1-รันเว็บปกติจาก-source) | เปิดเว็บและทดลอง user flow | เว็บที่ `http://localhost:3000` | ไม่ต้องใช้ |
-| [2. ตรวจใน Course Container](#2-ตรวจใน-course-container) | ตรวจตาม environment รายวิชา | ผล automated verification ใน `tuchsanai/devtools:2569_1` | ไม่ต้องใช้ |
+| [2. เปิดเว็บและตรวจใน Course Container](#2-ตรวจใน-course-container) | ทดลองเว็บ/ตรวจตาม environment รายวิชา | เว็บค้างที่พอร์ต 3400 หรือผล automated verification | ไม่ต้องใช้ |
 | [3. ตรวจด้วย Jenkins](#3-ตรวจด้วย-jenkins) | ตรวจ CI/CD และการส่งมอบ | Logs/artifacts; หากเปิด delivery จะ Publish/Deploy ด้วย | โหมดตรวจอย่างเดียวไม่ต้องใช้; Publish/Deploy ใช้ token ของผู้รัน |
 
 การเปิดเว็บตามวิธีที่ 1 ทำแยกจาก Jenkins ได้ ส่วนการตรวจอย่างเป็นทางการตามโจทย์ใช้ Course Container ในวิธีที่ 2 หรือ pipeline ในวิธีที่ 3 ซึ่งตรวจภายใน Course Container เช่นกัน
@@ -122,9 +122,71 @@ $env:PATH = "$env:LOCALAPPDATA\Programs\DockerDesktop\resources\bin;$env:Program
 
 ## 2. ตรวจใน Course Container
 
-วิธีนี้สร้างกล่อง `tuchsanai/devtools:2569_1` แล้วใช้ **Docker-in-Docker** รันระบบและทดสอบภายในกล่องตามข้อกำหนดรายวิชา ใช้ source ใน checkout ปัจจุบัน และสร้าง config ทดสอบใหม่ภายในกล่อง โดยไม่คัดลอก `.env`, dependencies, uploads หรือ build outputs ของผู้พัฒนาเข้าไปใช้
+ส่วนนี้มีสองคำสั่งแยกกัน: **เปิดเว็บค้างให้ผู้ตรวจใช้งาน** และ **รันชุด automated verification แล้วเก็บกวาด** ทั้งคู่สร้างกล่อง `tuchsanai/devtools:2569_1` แล้วใช้ Docker-in-Docker ภายใน ใช้ source ใน checkout ปัจจุบันและสร้าง config ภายในกล่อง โดยไม่คัดลอก `.env`, dependencies, uploads หรือ build outputs ของผู้พัฒนาเข้าไปใช้
 
-### 2.1 รันชุดตรวจหลัก
+### 2.1 เปิดเว็บค้างในกล่องอาจารย์จาก source
+
+สำหรับผู้ตรวจที่ต้องการ clone แล้วทดลองเว็บภายใน Course Container โดยตรง ให้ใช้คำสั่งนี้จาก root repository
+
+**Windows PowerShell:**
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-start.ps1
+```
+
+**Linux / macOS / WSL:**
+
+```bash
+sh scripts/course-start.sh
+```
+
+สคริปต์สร้าง persistent Course Container ชื่อ `pawfeed-course-source`, copy source และ build frontend/backend ภายใน Docker ของกล่อง แล้วเปิด PostgreSQL, backend, frontend และ Mailpit พร้อม health/smoke checks โดยไม่รัน Unit/Integration/E2E suite และไม่ Publish images
+
+| บริการภายใน Course Container | URL ที่เปิดจาก browser บนเครื่องผู้ตรวจ |
+|---|---|
+| PawFeed | [http://localhost:3400](http://localhost:3400) |
+| Backend readiness | [http://localhost:3401/health/ready](http://localhost:3401/health/ready) |
+| กล่องอีเมล Demo | [http://localhost:8425](http://localhost:8425) |
+
+สมัครบัญชีใหม่ผ่านเว็บได้เลย ข้อมูลแยกจากระบบปกติพอร์ต 3000 และ Jenkins Demo พอร์ต 3100 ไม่ต้องตั้ง Jenkins หรือ Docker Hub token เพื่อใช้วิธีนี้
+
+```text
+Host Docker
+└── pawfeed-course-source (tuchsanai/devtools:2569_1)
+    └── Docker Compose: frontend + backend + postgres + mailpit
+```
+
+หยุดแล้วเปิดใหม่โดยเก็บข้อมูล:
+
+```bash
+docker stop pawfeed-course-source
+docker start pawfeed-course-source
+```
+
+หลัง `start` ให้รอ Docker daemon/บริการกลับมาพร้อม หากต้องการอัปเดตตาม source ที่ checkout ให้เรียก `course-start.ps1` หรือ `sh scripts/course-start.sh` อีกครั้ง สคริปต์รักษา config/DB/images ที่อัปโหลดไว้ และเก็บ source copy ก่อนหน้าใน workspace volume เพื่อกู้คืนได้
+
+ดูสถานะและ logs ของแอปด้านใน:
+
+```bash
+docker exec -w /workspace/PawFeed pawfeed-course-source docker compose -p pawfeed-source-demo ps
+docker exec -w /workspace/PawFeed pawfeed-course-source docker compose -p pawfeed-source-demo logs --tail=100
+```
+
+หากต้องการเปลี่ยนพอร์ตก่อนเปิดครั้งแรก:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/course-start.ps1 -WebPort 3500 -ApiPort 3501 -MailPort 8525
+```
+
+```bash
+COURSE_WEB_PORT=3500 COURSE_API_PORT=3501 COURSE_MAIL_PORT=8525 sh scripts/course-start.sh
+```
+
+เมื่อมี container เดิมแล้ว port mapping จะคงเดิม หากจะเปลี่ยน port ให้หยุด/ลบเฉพาะ container ด้วย `docker rm -f pawfeed-course-source` แล้วเรียกคำสั่งเปิดอีกครั้ง โดยรักษา named volumes `pawfeed-course-source-docker` และ `pawfeed-course-source-workspace` ไว้เพื่อเก็บข้อมูล สคริปต์ปฏิเสธการใช้พอร์ตใหม่กับ container เดิมโดยอัตโนมัติ
+
+คำสั่งเปิดเว็บค้างนี้เพิ่มภายหลังชุดหลักฐาน #13/#14 และยังไม่ได้รันยืนยันในงานปรับครั้งนี้ ผลเดิมใน ZIP ยังคงอ้างรอบและ SHA เดิม สำหรับผล automated verification ใช้ข้อ 2.2–2.4
+
+### 2.2 รันชุดตรวจหลักแบบชั่วคราว
 
 จาก root repository โดย Docker พร้อมใช้งาน:
 
@@ -144,7 +206,7 @@ sh scripts/course-container-test.sh
 
 Course Container ใช้ privileged เพื่อเปิด Docker daemon ภายใน จึงควรตรวจ source ที่เชื่อถือได้บนเครื่องที่อนุญาต Docker-in-Docker
 
-### 2.2 รวม Public routing จริง
+### 2.3 รวม Public routing จริง
 
 **Windows:**
 
@@ -160,7 +222,7 @@ COURSE_RUN_LIVE_ROUTING=1 sh scripts/course-container-test.sh
 
 จะเพิ่มการตรวจ public provider จริงครบ DRIVING/WALKING/CYCLING แยกจาก E2E ที่ใช้ routing mock เพื่อทดสอบแบบทำซ้ำได้และจำลองกรณีผิดพลาด
 
-### 2.3 อ่านผลและ cleanup
+### 2.4 อ่านผลและ cleanup ของชุดตรวจชั่วคราว
 
 ผลอยู่ใน `.ci/results/` บนเครื่องที่รัน เช่น:
 
@@ -172,7 +234,7 @@ COURSE_RUN_LIVE_ROUTING=1 sh scripts/course-container-test.sh
 
 ผลรอบก่อนถูกย้ายเป็น `.ci/results-.../` สคริปต์ส่ง exit code ล้มเหลวจริงออกมาเมื่อมี gate fail และลบกล่องทดสอบชั่วคราวเมื่อจบ
 
-**วิธีนี้จบแล้วไม่ได้เปิดเว็บค้างไว้สำหรับ Demo** หากต้องการทดลองเว็บต่อ ให้ใช้วิธีที่ 1 หรือ persistent deployment จาก Jenkins
+ชุด `course-container-test` จบแล้วจะลบกล่องทดสอบของตนเอง หากต้องการเว็บค้างใน Course Container ให้ใช้ `course-start` ตามข้อ 2.1 ชุดตรวจชั่วคราวไม่ลบ `pawfeed-course-source` หรือ Jenkins Demo
 
 ## 3. ตรวจด้วย Jenkins
 
