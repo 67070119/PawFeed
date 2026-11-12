@@ -4,7 +4,9 @@
 
 ## สถานะของงานปรับครั้งนี้
 
-ผู้ใช้ขอให้หยุดการทดสอบและจะทดสอบเอง จึงยังไม่รับรองว่ารุ่นที่ปรับผ่านทุก gate และไม่ใช้ผลเก่าก่อนแก้เป็นหลักฐานของรุ่นใหม่
+หลังผู้ใช้ขอให้รันทดสอบเอง ได้แก้การปิด time picker และการรอ Leaflet animation ก่อนลากแผนที่ แล้วรันชุดเต็มใน `tuchsanai/devtools:2569_1` ผ่าน Unit 54/54, Integration 7/7, E2E 22/22, Lint, Build, Audit (threshold high), Compose startup, Smoke, Persistence และ Cleanup ด้วย exit code 0 เมื่อ 2026-11-12
+
+ตรวจ Jenkinsfile ด้วย Jenkins Declarative validator ผ่าน และ controlled-failure run คืน exit code 1 ที่ Unit โดยไม่เข้าสู่ Integration/Build ต่อ ไม่มีการสร้าง screenshot/video/trace ผลทดสอบอ้าง working tree ที่มีการแก้ test files บน base commit `bf34140a60947616adb897fadc059475a1bb1400` ไม่ใช่ final committed revision และยังไม่ได้ทดสอบ Docker Hub Publish/Deploy จริง
 
 เริ่มทดสอบตาม `docs/devops/handoff.md` และดูผล `.ci/results/` โดยเช็ก source SHA และ clean/dirty state ก่อนอ้างในเอกสารส่ง
 

@@ -57,6 +57,13 @@ export async function fillCreatePointForm(page, {
   if (description != null) await page.getByLabel(/คำอธิบาย/).fill(description);
   if (startTime != null) await page.getByRole('textbox', { name: 'เวลาเริ่ม', exact: true }).fill(startTime);
   if (endTime != null) await page.getByRole('textbox', { name: 'เวลาสิ้นสุด', exact: true }).fill(endTime);
+  if (startTime != null || endTime != null) {
+    // Dismiss the time picker as a user would before submitting the form.
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.timePickerPopover')).toHaveCount(0);
+    if (startTime != null) await expect(page.getByRole('textbox', { name: 'เวลาเริ่ม', exact: true })).toHaveValue(startTime);
+    if (endTime != null) await expect(page.getByRole('textbox', { name: 'เวลาสิ้นสุด', exact: true })).toHaveValue(endTime);
+  }
   if (image) await page.locator('input[type="file"]').setInputFiles(image);
 }
 

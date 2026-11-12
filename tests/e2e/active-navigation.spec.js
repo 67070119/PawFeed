@@ -70,11 +70,29 @@ test('active navigation follows GPS, shows maneuver, recenters, and stops cleanl
   const initialRemaining = await remaining.textContent();
 
   const map = page.locator('.navigationMapCanvas');
-  const box = await map.boundingBox();
-  if (!box) throw new Error('Navigation map has no bounding box');
-  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.45);
+  // Leaflet ignores drags while its initial pan/zoom animation is in progress.
+  await expect(map.locator('.leaflet-pan-anim, .leaflet-zoom-anim')).toHaveCount(0);
+  // The map centre contains the user marker/accuracy layer; drag unobscured
+  // background rather than a marker or one of the navigation overlays.
+  const drag = await map.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    const backgroundAt = (x, y) => {
+      const target = document.elementFromPoint(x, y);
+      return target && element.contains(target)
+        && !target.closest('.leaflet-interactive, .leaflet-control');
+    };
+    for (const row of [0.35, 0.45, 0.25, 0.55]) {
+      for (const column of [0.2, 0.6, 0.35]) {
+        const start = { x: box.x + box.width * column, y: box.y + box.height * row };
+        const end = { x: start.x + box.width * 0.15, y: start.y + 30 };
+        if (backgroundAt(start.x, start.y) && backgroundAt(end.x, end.y)) return { start, end };
+      }
+    }
+    throw new Error('No unobscured map background available for dragging');
+  });
+  await page.mouse.move(drag.start.x, drag.start.y);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.55, { steps: 5 });
+  await page.mouse.move(drag.end.x, drag.end.y, { steps: 10 });
   await page.mouse.up();
   await expect(page.getByText(/คุณเลื่อนแผนที่แล้ว/)).toBeVisible();
   await page.getByRole('button', { name: 'กลับมาติดตามตำแหน่งฉัน' }).click();

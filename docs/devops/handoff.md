@@ -224,7 +224,7 @@ Slide/Report/Video อยู่นอกงานรอบนี้ คำสั
 
 ## สถานะการส่งต่อครั้งนี้
 
-ผู้ใช้ขอหยุดการทดสอบระหว่างทำงานและจะรันทดสอบเอง จึงยังไม่รับรองว่า source ที่ปรับครั้งนี้ผ่านครบทุกขั้นตอน รวมถึง full E2E, Jenkins delivery และ Docker Hub publish/deploy ต้องเก็บผลใหม่จาก final commit ตามขั้นตอนข้างบน ไม่มีการสร้างภาพหน้าเว็บหรือภาพประกอบเป็น deliverable
+หลังผู้ใช้ขอให้รันทดสอบ ได้ตรวจ working tree ใน Course Container ผ่าน Unit 54/54, Integration 7/7, E2E 22/22 และ Lint/Build/Audit/Compose/Smoke/Persistence/Cleanup รวมถึง Jenkinsfile validator และ controlled Unit failure แล้ว ดู `docs/verification/final-status.md` ยังต้องเก็บหลักฐาน Jenkins delivery และ Docker Hub Publish/Deploy จาก final commit ตามขั้นตอนข้างบน ไม่มีการสร้าง screenshot/video/trace ในรอบตรวจนี้
 
 Dependency audit ยังคงหยุดที่ high/critical ไม่ลดเกณฑ์เพื่อให้ผ่าน แต่ยังมีรายการ low/moderate ใน development dependencies ให้อ่านรายงาน audit ในรอบที่รันเองด้วย
 

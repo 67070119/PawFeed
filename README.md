@@ -10,7 +10,7 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ผลทดสอบต้องอ้างอิง source revision และ provenance จริงใน `.ci/results/` ห้ามใช้ผลเก่าหรือผลจาก dirty working tree เป็นหลักฐานของ final commit การ Publish/Deploy ต้องตั้ง Docker Hub credentials ใน Jenkins และรัน `DELIVER=true` ส่วน Slide/Report/Video จัดทำแยกภายหลัง
 
-ผู้ใช้จะทดสอบ source ที่ปรับครั้งนี้เอง จึงยังไม่ประกาศว่าผ่าน full verification / delivery ดูสถานะปัจจุบันที่ `docs/verification/final-status.md`
+ล่าสุดทดสอบ working tree ใน Course Container ผ่าน Unit 54/54, Integration 7/7 และ E2E 22/22 รวม Build/Audit/Smoke/Persistence/Cleanup แล้ว ดูหลักฐานและข้อจำกัดที่ `docs/verification/final-status.md` ผลนี้ยังไม่แทน Jenkins Publish/Deploy ของ final commit
 
 ## Core MVP
 
