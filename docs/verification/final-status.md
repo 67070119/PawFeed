@@ -1,26 +1,41 @@
-# PawFeed — Current Verification Status
+# PawFeed — Final Verification Status
 
-ปรับ clean-clone setup, Docker/Mailpit, Course Container scripts, Jenkins infrastructure และ publish/deploy pipeline แล้ว
+## Docker / Jenkins: VERIFIED
 
-## สถานะของงานปรับครั้งนี้
+สถานะนี้อัปเดตจากหลักฐานเดิมที่รวบรวมไว้ใน **PawFeed-Evidence.zip** เมื่อ 12 พฤศจิกายน 2026 ไม่มีการรัน pipeline, test หรือ deploy เพิ่มในการแก้เอกสารครั้งนี้
 
-หลังผู้ใช้ขอให้รันทดสอบเอง ได้แก้การปิด time picker และการรอ Leaflet animation ก่อนลากแผนที่ แล้วรันชุดเต็มใน `tuchsanai/devtools:2569_1` ผ่าน Unit 54/54, Integration 7/7, E2E 22/22, Lint, Build, Audit (threshold high), Compose startup, Smoke, Persistence และ Cleanup ด้วย exit code 0 เมื่อ 2026-11-12
+Source ที่ผ่านการตรวจหลัก: `185336097f42445c3d08fad69b1efdbb2920af4a` บน branch `main` เอกสารที่แก้หลังจากนี้ไม่เปลี่ยน SHA ที่หลักฐานเดิมอ้างอิง
 
-ตรวจ Jenkinsfile ด้วย Jenkins Declarative validator ผ่าน และ controlled-failure run คืน exit code 1 ที่ Unit โดยไม่เข้าสู่ Integration/Build ต่อ ไม่มีการสร้าง screenshot/video/trace ผลทดสอบอ้าง working tree ที่มีการแก้ test files บน base commit `bf34140a60947616adb897fadc059475a1bb1400` ไม่ใช่ final committed revision และยังไม่ได้ทดสอบ Docker Hub Publish/Deploy จริง
+| หลักฐาน | ผลที่ยืนยัน |
+|---|---|
+| #13 SUCCESS | SCM change trigger อัตโนมัติ → Course verification → Publish → Deploy/Smoke |
+| #14 SUCCESS | Clean source ใน `tuchsanai/devtools:2569_1`; Unit 54/54, Integration 7/7, Browser E2E 22/22; Lint/Build/Audit/Compose/Smoke/Persistence/Cleanup ผ่าน |
+| #14 Public routing | DRIVING, WALKING, CYCLING ผ่าน และ `live-routing exit=0` |
+| Docker Hub | Backend/frontend tag ตรงกับ source SHA และ digest ตรงกับ push log ของ #14 |
+| #8 controlled FAILURE | `FAILURE_DEMO=true`; `expect(true).toBe(false)` ล้มเหลว แล้ว Publish/Deploy ถูกข้าม |
 
-เริ่มทดสอบตาม `docs/devops/handoff.md` และดูผล `.ci/results/` โดยเช็ก source SHA และ clean/dirty state ก่อนอ้างในเอกสารส่ง
+#8 ใช้ SHA `0dfe66844bbd1d98a967d21bbd31539546cbe8fb` ซึ่งต่างจาก #13/#14 เฉพาะ `docs/evidence/README.md` เพิ่ม 2 บรรทัด code/scripts/Compose/Jenkinsfile ไม่เปลี่ยน จึงใช้ #8 พร้อม metadata และ source diff เป็นหลักฐาน fail gate ได้ จุดล้มเหลวเป็น controlled assertion มีการระบุ SHA จริงแยกจากรอบล่าสุด
 
-## ยังต้องทำเองก่อนส่ง
+สถานะ Requirement ที่ปิดจากหลักฐานนี้:
 
-1. Commit/push และตรวจ clean clone ของ revision สุดท้าย
-2. รัน Course Container verification ให้ครบ (รวม E2E และ public routing ตาม scope)
-3. ตั้ง Jenkins admin/node/job และ Docker Hub access token
-4. รัน Jenkins DELIVER=true ให้ Verify/Publish/Deploy/Smoke ผ่าน
-5. รัน FAILURE_DEMO=true และยืนยันว่า Publish/Deploy ถูกข้าม
-6. เก็บหลักฐาน commit SHA/build IDs/logs แล้วอัปเดต traceability
-7. เติมสมาชิกทีมและหลักฐานปัญหา/ผลกระทบ
-8. Slide/Report/Video ทำภายหลังตามขอบเขตที่ตกลง
+- `REQ-NFR-DEVOPS-003` Jenkins Verification: **VERIFIED**
+- `REQ-NFR-DEVOPS-004` Fail Stops Delivery: **VERIFIED** ตาม #8 และ source diff
+- `REQ-NFR-DEVOPS-005` Course Container Compatibility: **VERIFIED** ตาม #14
 
-REQ-NFR-DEVOPS-003/004/005 ยังไม่ควรเปลี่ยนเป็น VERIFIED จนมีหลักฐาน final revision ทั้งหมด
+ใน ZIP อ่าน `SUBMISSION-SUMMARY.txt`, `README-FIRST.txt`, `evidence-checks.json`, `auto-trigger/build-13/`, `success/build-14/`, `failure/build-8/` และ `dockerhub/` ชุดหลักฐานแนบแยกจาก source และมี checksums กำกับ
 
-Dependency audit ใช้ threshold high เหมือนเดิม การอัปเดตครั้งนี้แก้ high/critical ที่พบตอนเริ่มตรวจ แต่ยังมี low/moderate ในเครื่องมือพัฒนา ต้องอ่านผล audit รอบที่รันจริง และไม่กล่าวอ้างว่าไม่มีช่องโหว่ทั้งหมด
+## สิ่งที่ยังต้องทำก่อนส่ง Mini Project
+
+1. เติมชื่อสมาชิกจริงและหน้าที่รายบุคคล
+2. เพิ่มหลักฐานปัญหา/Target Users เช่น แหล่งอ้างอิงหรือข้อมูลสัมภาษณ์ พร้อมวิธีเก็บและข้อจำกัด
+3. ระบุวิธีและตัวชี้วัดประเมินผลกระทบ แยกผลที่คาดหวังกับผลที่วัดได้
+4. จัดทำ Slide, Report ประมาณ 20 หน้า และ Video ประมาณ 20 นาทีรวม Demo
+5. ซ้อม Live Demo และ Failure Cases ตาม scope และ known limitations
+6. ทบทวน README Quick Start สำหรับผู้รับงานจาก clean clone และตรวจสิทธิ์ GitHub/ไฟล์ส่ง
+7. Commit/push เอกสารสถานะที่แก้และไฟล์สุดท้ายที่ต้องการส่ง พร้อมระบุ tested SHA และแนบ `PawFeed-Evidence.zip`
+
+รายการละเอียดอยู่ใน [Submission Checklist](../submission/checklist.md) การมีเอกสารหัวข้อหนึ่งแล้วไม่ได้ยืนยันว่ามีข้อมูลผู้ใช้หรือผลประเมินจริงครบ
+
+หากภายหลังเปลี่ยน code/runtime/pipeline ให้ทบทวนความครอบคลุมของหลักฐานก่อนอ้างผลของรุ่นใหม่ การแก้เอกสารสถานะครั้งนี้ไม่ได้สร้างผล verification ใหม่
+
+Security Audit ใช้ threshold high; ผลผ่านไม่ได้หมายความว่าไม่มีรายการ low/moderate ทั้งหมด ให้อ่าน `security-audit.log` ใน artifacts ประกอบ

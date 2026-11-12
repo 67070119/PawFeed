@@ -6,11 +6,20 @@ PawFeed คือระบบแผนที่แบ่งปันตำแห
 
 ## Project Status
 
-เตรียม clean-clone setup, Docker-in-Docker verification และ Jenkins delivery pipeline แล้ว อ่าน [คู่มือตั้งค่าและรันทั้งหมด](docs/devops/handoff.md) ก่อนส่งงาน
+**Docker และ Jenkins: ผ่านพร้อมหลักฐานแล้ว** อ้างอิง source commit `185336097f42445c3d08fad69b1efdbb2920af4a` และผล Jenkins ที่รวบรวมเมื่อ 12 พฤศจิกายน 2026
 
-ผลทดสอบต้องอ้างอิง source revision และ provenance จริงใน `.ci/results/` ห้ามใช้ผลเก่าหรือผลจาก dirty working tree เป็นหลักฐานของ final commit การ Publish/Deploy ต้องตั้ง Docker Hub credentials ใน Jenkins และรัน `DELIVER=true` ส่วน Slide/Report/Video จัดทำแยกภายหลัง
+| หลักฐาน | ผลที่ยืนยัน |
+|---|---|
+| Jenkins **#13 SUCCESS** | เริ่มอัตโนมัติจาก SCM change แล้ว Verify → Publish → Deploy/Smoke ผ่าน |
+| Jenkins **#14 SUCCESS** | Clean source ใน `tuchsanai/devtools:2569_1`; Unit **54/54**, Integration **7/7**, E2E **22/22**, Lint/Build/Audit, Smoke, Persistence และ Public routing **DRIVING/WALKING/CYCLING** ผ่าน |
+| Docker Hub | Backend/Frontend tag ตรงกับ source SHA และ digest ตรงกับ push log ของ #14 |
+| Jenkins **#8 controlled FAILURE** | `FAILURE_DEMO=true` ทำให้ unit assertion ล้มเหลวและข้าม Publish/Deploy ใช้เป็นหลักฐาน fail gate ได้ |
 
-ล่าสุดทดสอบ working tree ใน Course Container ผ่าน Unit 54/54, Integration 7/7 และ E2E 22/22 รวม Build/Audit/Smoke/Persistence/Cleanup แล้ว ดูหลักฐานและข้อจำกัดที่ `docs/verification/final-status.md` ผลนี้ยังไม่แทน Jenkins Publish/Deploy ของ final commit
+#8 ใช้ SHA `0dfe66844bbd1d98a967d21bbd31539546cbe8fb` ซึ่งต่างจาก #13/#14 เฉพาะ `docs/evidence/README.md` เพิ่ม 2 บรรทัด โค้ด application, scripts, Compose และ Jenkinsfile ไม่เปลี่ยน หลักฐานมี metadata และ Git diff กำกับ โดยยังระบุ SHA จริงของแต่ละรอบ
+
+ชุดส่งหลักฐานคือ **`PawFeed-Evidence.zip`** ที่แนบแยกจาก source มี `SUBMISSION-SUMMARY.txt`, console logs, artifacts, registry snapshots และ checksums ดู [สรุปสถานะ](docs/verification/final-status.md), [Evidence Register](docs/evidence/README.md) และ [Submission Checklist](docs/submission/checklist.md)
+
+**ก่อนส่งยังเหลือ:** เติมชื่อสมาชิกและหน้าที่จริง, เพิ่มหลักฐานปัญหา/ผู้ใช้และวิธีประเมินผลกระทบ, ทำ Slide/Report/Video, ซ้อม Demo และตรวจลิงก์/สิทธิ์เข้าถึง source กับไฟล์ส่ง การอัปเดตเอกสารครั้งนี้ยังต้อง commit/push และไม่ได้รัน pipeline หรือ test เพิ่ม ผลที่อ้างด้านบนเป็นผลจาก tested SHA ที่ระบุไว้
 
 ## Core MVP
 
@@ -154,7 +163,7 @@ sh scripts/course-container-test.sh
 docker compose -f jenkins/docker-compose.yml up -d --build
 ```
 
-เปิด `http://localhost:8080` และตั้ง admin, node label `pawfeed-docker`, Pipeline from SCM และ Docker Hub credential ตามคู่มือ Pipeline ตรวจใน Course Container ก่อน publish images ที่ติด tag เป็น commit SHA และ deploy ในกล่อง `pawfeed-course-demo` แยกจาก CI; default `DELIVER=false` ตรวจอย่างเดียว
+เปิด `http://localhost:8080` และตั้ง admin, node label `pawfeed-docker`, Pipeline from SCM และ Docker Hub credential ตามคู่มือ Pipeline ตรวจใน Course Container ก่อน publish images ที่ติด tag เป็น commit SHA และ deploy ในกล่อง `pawfeed-course-demo` แยกจาก CI เปิด delivery ได้ด้วย `DELIVER=true` หรือ `PAWFEED_AUTO_DELIVER=true`; ช่อง namespace ว่างจะใช้ `PAWFEED_DOCKERHUB_NAMESPACE` แทน หากไม่เปิดทั้งสองทางจะตรวจอย่างเดียว
 
 ระบบรุ่นส่งต้องรองรับอย่างน้อย:
 
@@ -226,4 +235,4 @@ docker compose -f jenkins/docker-compose.yml up -d --build
 - Report ประมาณ 20 หน้า
 - Video Presentation ประมาณ 20 นาทีรวม Software Demo
 
-รายละเอียดหลักฐานและ Submission จะจัดทำใน Phase 8
+หลักฐาน Docker/Jenkins จัดเก็บแล้วใน `PawFeed-Evidence.zip` ส่วนเอกสารส่งและรายการที่เหลือติดตามใน [Submission Checklist](docs/submission/checklist.md)

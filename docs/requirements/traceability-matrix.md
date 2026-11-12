@@ -2,7 +2,7 @@
 
 เอกสารนี้เชื่อม Proposal/Requirement → Acceptance Criteria → Implementation → Verification → Evidence
 
-สถานะในตาราง reconcile จาก implementation, automated/runtime verification และ inspection จริง: `REQ-NFR-DEVOPS-003/004` คงเป็น `IMPLEMENTED` จนกว่าจะมี Jenkins job run จริง และ `REQ-NFR-DEVOPS-005` คงเป็น `IMPLEMENTED` จนกว่าจะ rerun current revision ใน Course Container
+สถานะ DevOps อัปเดตจากหลักฐาน Jenkins จริงใน `PawFeed-Evidence.zip`: #13/#14 SUCCESS ของ clean source `185336097f42445c3d08fad69b1efdbb2920af4a` และ #8 controlled failure ของ `0dfe66844bbd1d98a967d21bbd31539546cbe8fb` ซึ่งต่างเฉพาะเอกสาร 2 บรรทัด โค้ดและ pipeline ไม่เปลี่ยน มี source diff กำกับ การอัปเดตเอกสารนี้ไม่ได้รัน test เพิ่ม
 
 ## Status Legend
 
@@ -85,9 +85,9 @@
 | REQ-NFR-OPS-002 Useful Logs | AC-OPS-002 | Request/error logging | Controlled error + log inspection | EV-OPS-LOG | VERIFIED |
 | REQ-NFR-DEVOPS-001 Docker Compose Startup | AC-DEVOPS-001 | Dockerfiles + Compose | `docker compose up -d --build` + smoke | EV-DOCKER, EV-COURSE-CONTAINER | VERIFIED |
 | REQ-NFR-DEVOPS-002 Repeatable Stop/Start | AC-DEVOPS-002 | Compose lifecycle + volumes | stop/start + persistence verification | EV-PERSISTENCE | VERIFIED |
-| REQ-NFR-DEVOPS-003 Jenkins Verification | AC-DEVOPS-003 | Jenkinsfile | Successful pipeline run | EV-CI | IMPLEMENTED |
-| REQ-NFR-DEVOPS-004 Fail Stops Delivery | AC-DEVOPS-004 | Jenkins stage dependencies | Intentional failing test/build run | EV-CI-FAILURE | IMPLEMENTED |
-| REQ-NFR-DEVOPS-005 Course Container Compatibility | AC-DEVOPS-005 | Course verification script/docs | Archived clean run in `tuchsanai/devtools:2569_1`; current 21-test suite rerun pending | EV-COURSE-CONTAINER | IMPLEMENTED |
+| REQ-NFR-DEVOPS-003 Jenkins Verification | AC-DEVOPS-003 | Jenkinsfile | #13 SCM-triggered delivery; #14 Verify/Publish/Deploy/Smoke SUCCESS | EV-CI | VERIFIED |
+| REQ-NFR-DEVOPS-004 Fail Stops Delivery | AC-DEVOPS-004 | Jenkins stage dependencies | #8 FAILURE_DEMO=true: assertion fail, Publish/Deploy skipped; source diff shows unchanged code/pipeline | EV-CI-FAILURE | VERIFIED |
+| REQ-NFR-DEVOPS-005 Course Container Compatibility | AC-DEVOPS-005 | Course verification script/docs | #14 clean source in `tuchsanai/devtools:2569_1`: Unit 54/54, Integration 7/7, E2E 22/22, Smoke/Persistence/public routing/cleanup PASS | EV-COURSE-CONTAINER | VERIFIED |
 
 ---
 

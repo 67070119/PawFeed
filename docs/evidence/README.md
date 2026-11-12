@@ -31,11 +31,11 @@ Evidence ในโฟลเดอร์นี้อ้างถึงผล veri
 | EV-DEMO-MAIN | `docs/verification/demo-scenario.md` |
 | EV-DEMO-AUTH | Register/Login steps in `docs/verification/demo-scenario.md` + browser critical flow |
 | EV-DEMO-FAILURE | `docs/verification/failure-cases.md` |
-| EV-CI | `Jenkinsfile` + Jenkins job evidence pending |
-| EV-CI-FAILURE | Controlled Jenkins failing-run evidence pending |
+| EV-CI | `PawFeed-Evidence.zip`: #13 auto-trigger SUCCESS, #14 full Verify/Publish/Deploy SUCCESS; source `185336097f42445c3d08fad69b1efdbb2920af4a` |
+| EV-CI-FAILURE | `PawFeed-Evidence.zip`: #8 FAILURE_DEMO=true, assertion failure blocks Publish/Deploy; source diff documents unchanged code/pipeline |
 
 ## Important Status
 
-Automated/runtime evidence is available and repeatable. Jenkins Pipeline as Code is implemented, but `EV-CI` and `EV-CI-FAILURE` must receive screenshots/build URLs or exported console logs from a real Jenkins server before the two Jenkins-specific Requirements are marked VERIFIED.
+Docker/Jenkins evidence is collected and verified from existing exported logs/artifacts. `REQ-NFR-DEVOPS-003/004/005` are VERIFIED for the recorded code/pipeline. The ZIP includes `SUBMISSION-SUMMARY.txt`, metadata, console logs, test reports, public registry snapshots and checksums. Build #8 used `0dfe66844bbd1d98a967d21bbd31539546cbe8fb`; #13/#14 used `185336097f42445c3d08fad69b1efdbb2920af4a`. Only two evidence-documentation lines differ; the Git diff is included. No new builds/tests were run to update these documents.
 
 หลักฐาน Jenkins และ Docker Hub จัดเก็บแยกไว้ในโฟลเดอร์ PawFeed-Evidence.
