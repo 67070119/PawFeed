@@ -128,8 +128,11 @@ test('off-route GPS fixes trigger automatic rerouting and keep active navigation
   expect(routeRequests).toBe(1);
 
   const farPosition = { latitude: Number(point.latitude) + 0.02, longitude: Number(point.longitude) + 0.02 };
-  await page.evaluate(({ latitude, longitude }) => window.__pushGeo(latitude, longitude, 6), farPosition);
-  await page.waitForTimeout(120);
+  // The app requires two separately processed off-route fixes. Wait for the
+  // first fix to render so React cannot batch both mock callbacks into one fix.
+  // Accuracy stays in the "good" GPS range; its change acknowledges the fix.
+  await page.evaluate(({ latitude, longitude }) => window.__pushGeo(latitude, longitude, 7), farPosition);
+  await expect(page.locator('.navGpsPill strong')).toHaveText('±7 ม.');
   await page.evaluate(({ latitude, longitude }) => window.__pushGeo(latitude + 0.0001, longitude + 0.0001, 6), farPosition);
 
   await expect.poll(() => routeRequests).toBeGreaterThanOrEqual(2);
@@ -163,9 +166,11 @@ test('failed automatic reroute keeps old route and can recover with manual retry
   await startActiveNavigation(page);
 
   let failNextRoute = true;
+  let failedRouteRequests = 0;
   await page.route('**/api/navigation/route?**', async (route) => {
     if (failNextRoute) {
       failNextRoute = false;
+      failedRouteRequests += 1;
       await route.fulfill({
         status: 502,
         contentType: 'application/json',
@@ -176,9 +181,14 @@ test('failed automatic reroute keeps old route and can recover with manual retry
     await route.continue();
   });
 
-  await page.evaluate(() => window.__pushGeo(13.7350, 100.7900, 6));
+  // Distinct rendered fixes trigger the real two-fix guard even on a busy CI
+  // browser; two consecutive page.evaluate calls can otherwise be batched.
+  await page.evaluate(() => window.__pushGeo(13.7350, 100.7900, 7));
+  await expect(page.locator('.navGpsPill strong')).toHaveText('±7 ม.');
+  expect(failedRouteRequests).toBe(0);
   await page.evaluate(() => window.__pushGeo(13.7351, 100.7901, 6));
 
+  await expect.poll(() => failedRouteRequests).toBe(1);
   await expect(page.getByText(/ปรับเส้นทางไม่สำเร็จ/)).toBeVisible();
   await expect(page.locator('.navigation-road-route path')).toHaveCount(2);
   await page.getByRole('button', { name: 'ลองอีกครั้ง' }).click();
