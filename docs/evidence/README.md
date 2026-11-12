@@ -38,4 +38,4 @@ Evidence ในโฟลเดอร์นี้อ้างถึงผล veri
 
 Automated/runtime evidence is available and repeatable. Jenkins Pipeline as Code is implemented, but `EV-CI` and `EV-CI-FAILURE` must receive screenshots/build URLs or exported console logs from a real Jenkins server before the two Jenkins-specific Requirements are marked VERIFIED.
 
-หลักฐาน Jenkins และ Docker Hub จัดเก็บแยกไว้ในโฟลเดอร์ PawFeed-Evidence
+หลักฐาน Jenkins และ Docker Hub จัดเก็บแยกไว้ในโฟลเดอร์ PawFeed-Evidence.
